@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>辉夜姬·逃离月球 | 完整版</title>
+    <title>辉夜姬·逃离月球 | 问号弹板·火箭终章</title>
     <style>
         * {
             margin: 0;
@@ -176,7 +176,7 @@
         <button class="ctrl-btn right-btn">→</button>
         <button class="ctrl-btn jump-btn">↑</button>
     </div>
-    <div class="info-tip">⭐ 收集星辉 · 避开尖刺 · 乘船终局 ⭐</div>
+    <div class="info-tip">⭐ 收集星辉 · 避开尖刺与鬼火 · 登上火箭胜利 ⭐</div>
 </div>
 
 <script>
@@ -188,7 +188,8 @@
         const W = 400, H = 600;
         
         let gameRunning = false;
-        let gameEnded = false;      // 游戏结束显示分数
+        let gameVictory = false;      // 胜利状态（火箭通关）
+        let gameFailed = false;       // 失败状态（碰刺/坠落）
         
         // ========== 音效 ==========
         let audioCtx = null;
@@ -202,7 +203,7 @@
             if(type === 'jump') { osc.frequency.value=880; gain.gain.setValueAtTime(vol,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.25); osc.start(); osc.stop(now+0.22); }
             else if(type === 'collect') { osc.frequency.value=1568; gain.gain.setValueAtTime(vol,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.18); osc.start(); osc.stop(now+0.16);
                 setTimeout(()=>{ let o2=audioCtx.createOscillator(), g2=audioCtx.createGain(); o2.connect(g2); g2.connect(audioCtx.destination); o2.frequency.value=2093; g2.gain.setValueAtTime(vol*0.6,now+0.1); g2.gain.exponentialRampToValueAtTime(0.0001,now+0.28); o2.start(now+0.1); o2.stop(now+0.26); },10); }
-            else if(type === 'escape') { [523,659,784,1046].forEach((f,i)=>{ let o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value=f; g.gain.setValueAtTime(vol*0.5,now+i*0.12); g.gain.exponentialRampToValueAtTime(0.0001,now+i*0.12+0.35); o.start(now+i*0.12); o.stop(now+i*0.12+0.32); }); }
+            else if(type === 'victory') { [523,659,784,1046,1318].forEach((f,i)=>{ let o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value=f; g.gain.setValueAtTime(vol*0.5,now+i*0.12); g.gain.exponentialRampToValueAtTime(0.0001,now+i*0.12+0.45); o.start(now+i*0.12); o.stop(now+i*0.12+0.4); }); }
             else if(type === 'spike') { osc.frequency.value=220; gain.gain.setValueAtTime(vol*0.3,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.3); osc.start(); osc.stop(now+0.28); }
             else if(type === 'fall') { osc.frequency.value=160; gain.gain.setValueAtTime(vol*0.3,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.4); osc.start(); osc.stop(now+0.35); }
         }
@@ -222,25 +223,32 @@
         window.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft'){ input.left=true; e.preventDefault(); enableAudio(); } if(e.key==='ArrowRight'){ input.right=true; e.preventDefault(); } if(e.key==='ArrowUp'||e.key===' '){ input.jump=true; e.preventDefault(); enableAudio(); } });
         window.addEventListener('keyup',(e)=>{ if(e.key==='ArrowLeft') input.left=false; if(e.key==='ArrowRight') input.right=false; if(e.key==='ArrowUp'||e.key===' ') input.jump=false; });
         
-        // ========== 玩家 ==========
+        // ========== 玩家属性 ==========
         let player = {
             x: 60, y: 520, w: 28, h: 42, vx: 0, vy: 0,
             speed: 4.3, jumpPower: -10.8, gravity: 0.68,
-            onGround: false, facingRight: true
+            onGround: false, facingRight: false // 默认朝左
         };
         let currentScene = 0;
         let score = 0;
         let message = "";
         let msgTimer = 0;
-        let movingHazards = [];   // 移动火焰/鬼火
-        let spikes = [];           // 地刺 (静态)
+        let movingHazards = [];   
+        let spikes = [];           
         
-        // ========== 5个完整场景 (平台,星星,地刺,移动陷阱) ==========
+        // ========== 角色立绘预加载 ==========
+        const playerStandImg = new Image();
+        const playerMoveImg = new Image();
+        // 👇 把这里换成你自己的图片路径！
+        playerStandImg.src = "stand.png";  // 站立图（默认朝左）
+        playerMoveImg.src = "walk.png";   // 行走图（默认朝左）
+
+        // ========== 5个完整场景 (场景4改为“火箭发射台”) ==========
         const scenes = [
-            { // 场景0: 月之森 (加大间距提升难度)
+            { // 场景0: 月之森
                 name:"月之森", bgTop:[48,32,88], bgMid:[85,65,130], bgBottom:[135,110,185],
-                platforms:[ {x:0,y:560,w:400,h:40,type:"ground"}, {x:45,y:500,w:70,h:18,type:"questionBlock"}, {x:165,y:440,w:70,h:18,type:"questionBlock"}, {x:285,y:380,w:70,h:18,type:"questionBlock"}, {x:360,y:310,w:55,h:18,type:"questionBlock"} ],
-                stars:[ {x:80,y:470,size:11,col:false,color:[255,210,120]}, {x:200,y:405,size:12,col:false,color:[255,190,255]}, {x:320,y:345,size:10,col:false,color:[200,210,255]}, {x:390,y:275,size:13,col:false,color:[255,230,150]} ],
+                platforms:[ {x:0,y:560,w:400,h:40,type:"ground"}, {x:45,y:500,w:70,h:18,type:"questionBlock"}, {x:155,y:440,w:70,h:18,type:"questionBlock"}, {x:265,y:380,w:70,h:18,type:"questionBlock"}, {x:340,y:310,w:55,h:18,type:"questionBlock"} ],
+                stars:[ {x:80,y:470,size:11,col:false,color:[255,210,120]}, {x:190,y:405,size:12,col:false,color:[255,190,255]}, {x:300,y:345,size:10,col:false,color:[200,210,255]}, {x:370,y:275,size:13,col:false,color:[255,230,150]} ],
                 spikes:[], hazards:[]
             },
             { // 场景1: 尖刺回廊
@@ -250,65 +258,85 @@
                 spikes:[ {x:180,y:540,w:35,h:20}, {x:260,y:480,w:35,h:20}, {x:340,y:410,w:35,h:20} ],
                 hazards:[]
             },
-            { // 场景2: 火焰峡谷 (移动鬼火)
+            { // 场景2: 火焰峡谷
                 name:"火焰峡谷", bgTop:[88,45,70], bgMid:[130,70,105], bgBottom:[170,100,130],
                 platforms:[ {x:0,y:570,w:100,h:28,type:"ground"}, {x:300,y:570,w:100,h:28,type:"ground"}, {x:45,y:500,w:70,h:18,type:"questionBlock"}, {x:150,y:440,w:70,h:18,type:"questionBlock"}, {x:250,y:380,w:70,h:18,type:"questionBlock"}, {x:60,y:320,w:70,h:18,type:"questionBlock"}, {x:330,y:270,w:55,h:18,type:"questionBlock"} ],
                 stars:[ {x:80,y:465,size:11,col:false,color:[255,200,130]}, {x:185,y:405,size:12,col:false,color:[255,180,210]}, {x:285,y:345,size:10,col:false,color:[200,200,255]}, {x:95,y:285,size:12,col:false,color:[255,210,100]}, {x:360,y:235,size:11,col:false,color:[230,160,255]} ],
                 spikes:[ {x:210,y:530,w:40,h:20} ],
                 hazards:[ {x:120,y:460,dir:1,range:100,radius:8,type:"flame",moveX:true,speed:1.1}, {x:280,y:400,dir:-1,range:90,radius:7,type:"willowisp",moveX:true,speed:0.9} ]
             },
-            { // 场景3: 荆棘月台 (大量地刺)
+            { // 场景3: 荆棘月台
                 name:"荆棘月台", bgTop:[60,38,85], bgMid:[95,70,125], bgBottom:[140,110,165],
                 platforms:[ {x:0,y:570,w:80,h:28,type:"ground"}, {x:320,y:570,w:80,h:28,type:"ground"}, {x:50,y:505,w:65,h:18,type:"questionBlock"}, {x:145,y:455,w:70,h:18,type:"questionBlock"}, {x:250,y:395,w:70,h:18,type:"questionBlock"}, {x:70,y:340,w:70,h:18,type:"questionBlock"}, {x:185,y:285,w:70,h:18,type:"questionBlock"}, {x:300,y:235,w:55,h:18,type:"questionBlock"} ],
                 stars:[ {x:85,y:470,size:11,col:false,color:[255,210,140]}, {x:180,y:420,size:12,col:false,color:[255,200,220]}, {x:285,y:360,size:11,col:false,color:[210,200,255]}, {x:105,y:305,size:12,col:false,color:[255,210,110]}, {x:220,y:250,size:13,col:false,color:[230,180,255]}, {x:330,y:200,size:11,col:false,color:[255,190,180]} ],
                 spikes:[ {x:110,y:535,w:40,h:20}, {x:270,y:490,w:45,h:20}, {x:30,y:400,w:35,h:20}, {x:370,y:315,w:35,h:20} ],
                 hazards:[]
             },
-            { // 场景4: 离别月舟 (大船结局)
-                name:"离别月舟", bgTop:[30,25,70], bgMid:[55,48,105], bgBottom:[95,80,130],
-                platforms:[ {x:0,y:590,w:400,h:12,type:"water"}, {x:70,y:510,w:260,h:38,type:"boat"} ],
-                stars:[ {x:150,y:475,size:12,col:false,color:[255,210,170]}, {x:250,y:475,size:12,col:false,color:[210,190,255]} ],
-                spikes:[], hazards:[]
+            { // 场景4: 火箭码头 —— 尽头火箭，触碰即胜利！
+                name:"火箭码头", bgTop:[30,25,70], bgMid:[55,48,105], bgBottom:[95,80,130],
+                platforms:[ 
+                    {x:0,y:590,w:400,h:12,type:"water"},      // 底部湖水特效
+                    {x:40,y:530,w:100,h:28,type:"ground"},
+                    {x:160,y:470,w:80,h:18,type:"questionBlock"},
+                    {x:280,y:530,w:100,h:28,type:"ground"},
+                    // 火箭基座平台 (必须站上去触发胜利)
+                    {x:330,y:450,w:60,h:18,type:"rocketPad"}
+                ],
+                stars:[ 
+                    {x:90,y:500,size:11,col:false,color:[255,210,170]},
+                    {x:210,y:440,size:12,col:false,color:[210,190,255]},
+                    {x:345,y:420,size:12,col:false,color:[255,220,150]}
+                ],
+                spikes:[], 
+                hazards:[],
+                // 火箭区域定义 (视觉 + 碰撞胜利)
+                rocketZone: { x: 335, y: 410, w: 50, h: 48 }  // 火箭实体区域，站在基座上+触碰火箭即胜利
             }
         ];
         
         let currentPlat = [], currentStars = [];
+        let rocketVictoryFlag = false;  // 防止重复胜利
         
         function reloadScene(sceneId){
             const sc = scenes[sceneId];
             currentPlat = sc.platforms.map(p=>({...p}));
             currentStars = sc.stars.map(s=>({...s,col:false}));
             spikes = sc.spikes ? sc.spikes.map(sp=>({...sp})) : [];
-            // 为所有非水/船场景添加底部连续尖刺
-            if(sceneId !== 4){
-                const baseY = 560;
-                const spikeW = 30;
-                const gap = 2;
-                const count = Math.floor(W / (spikeW + gap));
-                for(let i=0;i<count;i++){
-                    spikes.push({x:i*(spikeW+gap), y:baseY, w:spikeW, h:20});
-                }
-            }
             movingHazards = sc.hazards ? sc.hazards.map(h=>({...h, currentX:h.x, angle:Math.random()*Math.PI*2})) : [];
+            rocketVictoryFlag = false;
         }
         
         function changeScene(newIdx){
-            if(newIdx===currentScene) return;
+            if(newIdx === currentScene) return;
             currentScene = newIdx;
             reloadScene(currentScene);
             player.x = 50;
             player.y = 500;
             player.vy = 0; player.vx = 0; player.onGround = true;
-            if(newIdx===4) message="✨ 踏上月舟 · 按跳跃逃离 ✨";
+            player.facingRight = false; // 切场景默认朝左
+            if(newIdx===4) message="🚀 登上火箭，逃离月球！🚀";
             else message="⭐ 收集星辰 小心尖刺 ⭐";
             msgTimer=90;
         }
         
-        function gameOver(finalScore){
+        // 胜利结局 (火箭升空)
+        function winGame(finalScore){
+            if(gameVictory) return;
             gameRunning = false;
-            gameEnded = true;
-            message = `⭐ 得分: ${finalScore} ⭐`;
-            playSound('escape',0.3);
+            gameVictory = true;
+            gameFailed = false;
+            playSound('victory',0.45);
+            message = `✨ 胜利！ 辉夜姬乘火箭归乡 ✨  得分: ${Math.floor(finalScore)}`;
+            msgTimer = 200;
+        }
+        
+        // 失败重置
+        function failAndReset(){
+            if(gameVictory) return; // 胜利了不再失败重置
+            playSound('spike',0.3);
+            message = "💀 月之试炼失败 · 重新开始 💀";
+            msgTimer=70;
+            fullReset();
         }
         
         function fullReset(){
@@ -317,8 +345,10 @@
             reloadScene(0);
             player.x = 60; player.y = 520;
             player.vy = 0; player.vx = 0; player.onGround = true;
-            gameEnded = false;
+            player.facingRight = false; // 重置默认朝左
             gameRunning = true;
+            gameVictory = false;
+            gameFailed = false;
             message = "逃离月球 · 启程！";
             msgTimer = 80;
         }
@@ -335,17 +365,19 @@
         
         function updateGame(){
             if(!gameRunning) return;
+            
             // 移动
             let move = (input.left ? -1 : 0) + (input.right ? 1 : 0);
             player.vx = move * player.speed;
             player.x += player.vx;
             if(player.x<2) player.x=2;
             if(player.x+player.w>W-2) player.x=W-player.w-2;
+            
             // 重力
             player.vy += player.gravity;
             player.y += player.vy;
             player.onGround = false;
-            let onBoat = false;
+            
             // 平台碰撞
             for(let plat of currentPlat){
                 const platRect = {x:plat.x,y:plat.y,w:plat.w,h:plat.h};
@@ -355,7 +387,6 @@
                         player.y = plat.y - player.h;
                         player.vy = 0;
                         player.onGround = true;
-                        if(plat.type==='boat') onBoat=true;
                     } else if(player.vy<0 && (plat.y+plat.h - player.y <=12)){
                         player.y = plat.y + plat.h;
                         player.vy = 0;
@@ -365,44 +396,44 @@
                     }
                 }
             }
+            
             // 地刺伤害
             for(let sp of spikes){
                 const spikeRect = {x:sp.x, y:sp.y, w:sp.w, h:sp.h};
                 const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
                 if(collide(pRect,spikeRect)){
-                    playSound('spike',0.3);
-                    message = "💀 尖刺之痛 · 重归起点 💀";
-                    msgTimer=70;
-                    fullReset();
+                    failAndReset();
                     return;
                 }
             }
+            
             // 移动危险物
             for(let h of movingHazards){
                 const hazardRect = {x:h.currentX-h.radius, y:h.currentY-h.radius, w:h.radius*2, h:h.radius*2};
                 const pRect = {x:player.x,y:player.y,w:player.w,h:player.h};
                 if(collide(pRect,hazardRect)){
-                    playSound('spike',0.28);
-                    message = "🔥 邪火焚身 · 重归起点 🔥";
-                    msgTimer=70;
-                    fullReset();
+                    failAndReset();
                     return;
                 }
             }
+            
             // 水/掉落死亡
             const waterPlat = currentPlat.find(p=>p.type==='water');
             if(waterPlat && player.y+player.h >= waterPlat.y){
                 playSound('fall',0.25);
                 message = "🌊 坠入月湖 · 重新开始 🌊";
                 msgTimer=70;
-                fullReset(); return;
+                fullReset(); 
+                return;
             }
             if(player.y+player.h > H){
                 playSound('fall',0.2);
                 message = "✨ 坠入深渊 ✨";
                 msgTimer=70;
-                fullReset(); return;
+                fullReset(); 
+                return;
             }
+            
             // 跳跃
             if(input.jump && player.onGround){
                 player.vy = player.jumpPower;
@@ -410,6 +441,7 @@
                 input.jump = false;
                 playSound('jump',0.22);
             }
+            
             // 收集星星
             for(let s of currentStars){
                 if(!s.col){
@@ -424,27 +456,33 @@
                     }
                 }
             }
+            
             // 场景切换 (向右)
             if(currentScene===0 && player.x+player.w > W-15) { changeScene(1); player.x=20; playSound('fall',0.08); }
             else if(currentScene===1 && player.x+player.w > W-15) { changeScene(2); player.x=20; }
             else if(currentScene===2 && player.x+player.w > W-15) { changeScene(3); player.x=20; }
-            else if(currentScene===3 && player.x+player.w > W-15) { changeScene(4); player.x=70; player.y=470; }
-            // 大船结局: 最后场景 按跳跃结束游戏显示分数
-            const boat = currentPlat.find(p=>p.type==='boat');
-            if(currentScene===4 && boat && player.onGround && player.x+player.w>boat.x && player.x<boat.x+boat.w){
-                if(input.jump){
-                    gameOver(score);
-                    input.jump=false;
+            else if(currentScene===3 && player.x+player.w > W-15) { changeScene(4); player.x=30; player.y=500; }
+            
+            // ========== 最终场景火箭胜利判定 ==========
+            if(currentScene === 4 && !gameVictory){
+                const rocketZone = scenes[4].rocketZone;
+                // 玩家与火箭区域碰撞 + 玩家必须站在某个平台(确保触碰火箭)
+                const playerRect = {x:player.x, y:player.y, w:player.w, h:player.h};
+                const rocketRect = {x:rocketZone.x, y:rocketZone.y, w:rocketZone.w, h:rocketZone.h};
+                if(collide(playerRect, rocketRect)){
+                    winGame(score);
                     return;
                 }
             }
+            
+            // 动画刷新
             if(player.vx>0) player.facingRight=true;
             if(player.vx<0) player.facingRight=false;
             updateHazards();
             if(msgTimer>0) msgTimer--; else message="";
         }
         
-        // ========== 绘图 ==========
+        // ========== 绘图部分 ==========
         function drawBackground(){
             const sc = scenes[currentScene];
             const grad = ctx.createLinearGradient(0,0,0,H);
@@ -457,30 +495,47 @@
             ctx.fillStyle="#FFF5CF"; ctx.shadowBlur=12; ctx.beginPath(); ctx.arc(330,60,25,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#EEDDAA"; ctx.beginPath(); ctx.arc(326,56,6,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
             for(let i=0;i<6;i++){ ctx.fillStyle=`rgba(255,245,220,${0.1+Math.sin(Date.now()*0.0006+i)*0.06})`; ctx.beginPath(); ctx.ellipse(30+i*70+Math.sin(Date.now()*0.0005)*6,90+i*18,28,16,0,0,Math.PI*2); ctx.fill(); }
         }
+        
+        // 绘制方块+中间问号 (代替原先的弹板)
+        function drawQuestionBlock(x,y,w,h){
+            ctx.fillStyle = "#FFD966";
+            ctx.shadowBlur = 3;
+            ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = "#C97E2A";
+            ctx.strokeStyle = "#B45F1B";
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(x+2, y+2, w-4, h-4);
+            ctx.font = `bold ${Math.floor(h*0.6)}px "Segoe UI", monospace`;
+            ctx.fillStyle = "#3D2B1A";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("?", x + w/2, y + h/2);
+            ctx.textAlign = "left";
+        }
+        
         function drawPlatforms(){
             for(let plat of currentPlat){
-                if(plat.type==='questionBlock'){
-                    // 方块+问号样式
-                    ctx.fillStyle="#FFB0C4"; ctx.shadowBlur=5; ctx.fillRect(plat.x,plat.y,plat.w,plat.h);
-                    ctx.strokeStyle="#FF7F9F"; ctx.lineWidth=3; ctx.strokeRect(plat.x+2,plat.y+2,plat.w-4,plat.h-4);
-                    ctx.fillStyle="#FFFFFF"; ctx.font="bold 20px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle";
-                    ctx.fillText("?", plat.x + plat.w/2, plat.y + plat.h/2);
-                } else if(plat.type==='boat'){
-                    ctx.fillStyle="#B87C4F"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h);
-                    ctx.fillStyle="#DEB887"; ctx.fillRect(plat.x+15,plat.y-14,plat.w-30,14);
-                    ctx.fillStyle="#FFF0C0"; ctx.beginPath(); ctx.moveTo(plat.x+plat.w/2-28,plat.y-26); ctx.lineTo(plat.x+plat.w/2,plat.y-52); ctx.lineTo(plat.x+plat.w/2+28,plat.y-26); ctx.fill();
-                    ctx.fillStyle="#FFCF8A"; ctx.font="28px monospace"; ctx.fillText("⛵",plat.x+plat.w/2-15,plat.y-24);
-                    ctx.fillStyle="#FFF6E0"; ctx.fillRect(plat.x+plat.w/2-6,plat.y-40,12,32);
-                } else if(plat.type==='water'){
-                    ctx.fillStyle="rgba(100,160,210,0.65)"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h);
-                    for(let i=0;i<15;i++){ ctx.fillStyle=`rgba(255,255,210,${0.3+Math.sin(Date.now()*0.004+i)*0.2})`; ctx.fillRect(plat.x+i*27,plat.y+5,20,3); }
+                if(plat.type === 'questionBlock'){
+                    drawQuestionBlock(plat.x, plat.y, plat.w, plat.h);
+                } else if(plat.type === 'rocketPad'){
+                    ctx.fillStyle = "#AA8C6F";
+                    ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+                    ctx.fillStyle = "#D9B48B";
+                    ctx.fillRect(plat.x+5, plat.y-6, plat.w-10, 6);
+                } else if(plat.type === 'water'){
+                    ctx.fillStyle = "rgba(100,160,210,0.65)";
+                    ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+                    for(let i=0;i<15;i++){ ctx.fillStyle=`rgba(255,255,210,${0.3+Math.sin(Date.now()*0.004+i)*0.2})`; ctx.fillRect(plat.x+i*27, plat.y+5,20,3); }
                 } else {
-                    ctx.fillStyle="#EFC9A0"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h);
-                    ctx.fillStyle="#FFE5C8"; ctx.fillRect(plat.x+4,plat.y-5,plat.w-8,5);
+                    ctx.fillStyle = "#EFC9A0";
+                    ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+                    ctx.fillStyle = "#FFE5C8";
+                    ctx.fillRect(plat.x+4, plat.y-5, plat.w-8,5);
                 }
             }
             ctx.shadowBlur=0;
         }
+        
         function drawSpikes(){
             for(let sp of spikes){
                 ctx.fillStyle="#5a4a2e"; ctx.fillRect(sp.x,sp.y,sp.w,sp.h);
@@ -488,6 +543,7 @@
                 ctx.fillStyle="#c99e5f"; for(let i=0;i<5;i++){ ctx.beginPath(); ctx.moveTo(sp.x+ i*(sp.w/5)+2, sp.y+2); ctx.lineTo(sp.x+ i*(sp.w/5)+sp.w/10, sp.y-8); ctx.lineTo(sp.x+ i*(sp.w/5)+sp.w/5-2, sp.y+2); ctx.fill(); }
             }
         }
+        
         function drawHazards(){
             for(let h of movingHazards){
                 if(h.type==='willowisp'){
@@ -500,6 +556,7 @@
                 ctx.shadowBlur=0;
             }
         }
+        
         function drawStars(){
             for(let s of currentStars){
                 if(!s.col){
@@ -511,30 +568,75 @@
             }
             ctx.shadowBlur=0;
         }
+        
+        function drawRocket(){
+            if(currentScene !== 4) return;
+            const rocket = scenes[4].rocketZone;
+            ctx.fillStyle = "#C0C0E0";
+            ctx.shadowBlur = 5;
+            ctx.fillRect(rocket.x+8, rocket.y-26, 34, 26);
+            ctx.fillStyle = "#FF4F4F";
+            ctx.beginPath(); ctx.moveTo(rocket.x+rocket.w/2, rocket.y-40); ctx.lineTo(rocket.x+rocket.w/2+12, rocket.y-20); ctx.lineTo(rocket.x+rocket.w/2-12, rocket.y-20); ctx.fill();
+            ctx.fillStyle = "#F9C28C";
+            ctx.fillRect(rocket.x+12, rocket.y-18, 26, 12);
+            ctx.fillStyle = "#2B2B3A";
+            ctx.fillRect(rocket.x+20, rocket.y-10, 10, 16);
+            ctx.fillStyle = "#FFF9C4";
+            ctx.font = "bold 18px monospace";
+            ctx.fillText("🚀", rocket.x+rocket.w/2-12, rocket.y+8);
+            ctx.fillStyle = "#FFD966";
+            ctx.font = "12px monospace";
+            ctx.fillText("逃离", rocket.x+15, rocket.y-6);
+            ctx.shadowBlur=0;
+        }
+        
+        // ========== 新的角色绘制（用你的立绘） ==========
         function drawPlayer(){
+            // 图片加载完成前不渲染
+            if (!playerStandImg.complete || !playerMoveImg.complete) return;
+
             ctx.save();
-            if(!player.facingRight){ ctx.translate(player.x+player.w/2,player.y+player.h/2); ctx.scale(-1,1); ctx.translate(-(player.x+player.w/2),-(player.y+player.h/2)); }
-            let x=player.x,y=player.y;
-            ctx.fillStyle="#FADB67"; ctx.fillRect(x+6,y+2,16,12);
-            ctx.fillStyle="#FCE8A8"; ctx.fillRect(x+2,y+12,24,8);
-            ctx.fillStyle="#FFDABC"; ctx.fillRect(x+8,y+14,12,18);
-            ctx.fillStyle="#D94F6A"; ctx.fillRect(x+12,y+20,3,4); ctx.fillRect(x+20,y+20,3,4);
-            ctx.fillStyle="#2C2340"; ctx.fillRect(x+6,y+30,20,16);
-            ctx.fillStyle="#F3B0C2"; ctx.fillRect(x+12,y+32,4,6); ctx.fillRect(x+18,y+32,4,6);
-            ctx.fillStyle="#FFDABC"; ctx.fillRect(x+8,y+44,5,8); ctx.fillRect(x+19,y+44,5,8);
-            if(Math.floor(Date.now()/150)%2===0){ ctx.fillStyle="#FFB8D9"; ctx.fillRect(x+24,y+22,5,10); }
+            // 以角色中心为原点，方便翻转
+            const centerX = player.x + player.w / 2;
+            const centerY = player.y + player.h / 2;
+            ctx.translate(centerX, centerY);
+
+            // 朝右时翻转（因为两张图默认朝左）
+            if (player.facingRight) {
+                ctx.scale(-1, 1);
+            }
+
+            // 根据移动状态切换立绘
+            let currentImg = player.vx === 0 ? playerStandImg : playerMoveImg;
+
+            // 绘制立绘（适配碰撞盒，居中显示）
+            const drawScale = 2.8; // 缩放比例，按你立绘大小调
+            const drawW = player.w * drawScale;
+            const drawH = player.h * drawScale;
+            ctx.drawImage(
+                currentImg,
+                -drawW / 2,  // 居中X
+                -drawH / 2,  // 居中Y
+                drawW,
+                drawH
+            );
+
             ctx.restore();
         }
+        
         function drawUI(){
             ctx.font="bold 22px 'Courier New'"; ctx.fillStyle="#FFF4E0"; ctx.fillRect(W-100,12,92,32); ctx.fillStyle="#482E5A"; ctx.fillText(`${Math.floor(score).toString().padStart(6,'0')}`,W-95,38);
             if(message){ ctx.font="bold 12px 'Segoe UI'"; ctx.fillStyle="#FFFDE7"; ctx.shadowBlur=4; ctx.fillText(message,W/2-ctx.measureText(message).width/2,H-22); ctx.shadowBlur=0; }
-            let q = currentScene===0?"🌙 月之森 →":currentScene===1?"⚔️ 尖刺回廊 →":currentScene===2?"🔥 火焰峡谷 →":currentScene===3?"🌵 荆棘月台 →":"🚢 月舟 · 跳跃逃离";
+            let q = currentScene===0?"🌙 月之森 →":currentScene===1?"⚔️ 尖刺回廊 →":currentScene===2?"🔥 火焰峡谷 →":currentScene===3?"🌵 荆棘月台 →":"🚀 火箭码头 · 触碰火箭胜利";
             ctx.font="10px monospace"; ctx.fillStyle="#FFEFC0"; ctx.fillText(q,12,H-8);
-            if(gameEnded){
-                ctx.fillStyle="rgba(0,0,0,0.75)"; ctx.fillRect(0,0,W,H);
-                ctx.font="bold 28px monospace"; ctx.fillStyle="#FFE6B0"; ctx.fillText("GAME OVER",W/2-100,240);
-                ctx.font="20px monospace"; ctx.fillStyle="#FFC9A0"; ctx.fillText(`得分 ${Math.floor(score)}`,W/2-55,300);
-                ctx.font="14px monospace"; ctx.fillStyle="#FFAA88"; ctx.fillText("点击「逃离月球」重新开始",W/2-110,380);
+            
+            if(gameVictory){
+                ctx.fillStyle="rgba(0,0,0,0.85)"; ctx.fillRect(0,0,W,H);
+                ctx.font="bold 28px monospace"; ctx.fillStyle="#FFE68F"; ctx.fillText("✨ 胜利 ✨",W/2-78,220);
+                ctx.font="20px monospace"; ctx.fillStyle="#FFD966"; ctx.fillText(`最终星辉 ${Math.floor(score)}`,W/2-80,290);
+                ctx.font="16px monospace"; ctx.fillStyle="#FFB882"; ctx.fillText("点击「逃离月球」再次冒险",W/2-115,370);
+            } else if(!gameRunning && !gameVictory && gameFailed===false){
+                // 特殊状态处理 (一般不会触发)
             }
         }
         
@@ -545,26 +647,28 @@
             drawSpikes();
             drawStars();
             drawHazards();
+            drawRocket();
             drawPlayer();
             drawUI();
             requestAnimationFrame(gameLoop);
         }
         
-        // 启动界面逻辑
+        // 启动/重新开始逻辑
         startBtn.addEventListener('click',()=>{
             enableAudio();
             fullReset();
             startOverlay.style.display = 'none';
             gameRunning = true;
-            gameEnded = false;
+            gameVictory = false;
+            gameFailed = false;
         });
-        // 如果游戏结束且覆盖层隐藏，但需要重启（通过覆盖层重启）
-        function checkRestart(){
-            if(gameEnded && startOverlay.style.display === 'none'){
+        
+        function checkRestartOverlay(){
+            if((gameVictory || (!gameRunning && !startOverlay.style.display==='flex')) && startOverlay.style.display !== 'flex'){
                 startOverlay.style.display = 'flex';
             }
         }
-        setInterval(checkRestart,100);
+        setInterval(checkRestartOverlay,150);
         reloadScene(0);
         gameLoop();
     })();
