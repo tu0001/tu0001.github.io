@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>辉夜姬·逃离月球 | 横屏火箭终章</title>
+    <title>辉夜姬·逃离月球 | 横屏全屏·火箭终章</title>
     <style>
         * {
             margin: 0;
@@ -13,128 +13,124 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 强制横屏布局：使用flex旋转或利用宽高比，这里直接用body横向铺满 */
+        /* 全屏强制横屏布局 */
         body {
-            background: #05021a;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', 'Courier New', monospace;
-            /* 横屏锁定提示隐藏，强制宽屏模式 */
-            overflow-x: hidden;
-        }
-
-        /* 游戏主容器：横屏比例，宽高比接近 16:9 或更大，实际用宽100vh/宽屏适应 */
-        .game-wrapper {
-            display: flex;
-            flex-direction: row;      /* 按钮在右侧，横排布局 */
-            align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
-            padding: 15px 20px;
+            background: #030018;
             width: 100vw;
             height: 100vh;
-            background: radial-gradient(circle at 20% 30%, #1e173f, #02010a);
-            box-sizing: border-box;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* canvas 容器：占据主要视野，保持宽高比例 800x450 类似横屏经典比例 */
+        /* 游戏主容器：全屏横屏适应，动态撑满 */
+        .game-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 20%, #1a1238, #02010a);
+            position: relative;
+        }
+
+        /* canvas 区域占据大部分空间，比例自适应，不会被压扁 */
         .canvas-container {
             position: relative;
-            width: min(75vw, 75vh * 1.77);
-            height: min(42vw, 42vh);
-            max-width: 1200px;
-            aspect-ratio: 16 / 9;    /* 横屏黄金比例 16:9 */
-            border-radius: 28px;
-            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.6), 0 0 0 4px #ffddb0, 0 0 0 8px #c97eff;
-            background: #1e1a2f;
+            flex: 1;
+            margin: 12px 16px 8px 16px;
+            background: #1a1635;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6), 0 0 0 3px #ffdaa8, 0 0 0 7px #b87aff;
+            overflow: hidden;
         }
 
         canvas {
             display: block;
             width: 100%;
             height: 100%;
-            border-radius: 24px;
-            cursor: pointer;
+            object-fit: contain;  /* 保持宽高比，不压扁，黑边补全但游戏内容比例完美 */
+            background: #0b0822;
         }
 
-        /* 启动界面覆盖层 (横屏适配) */
+        /* 启动界面覆盖层 */
         .start-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(25, 18, 55, 0.96), rgba(12, 8, 28, 0.98));
-            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(28, 18, 65, 0.98), rgba(10, 6, 28, 0.98));
+            border-radius: 28px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 10;
-            backdrop-filter: blur(6px);
+            z-index: 20;
+            backdrop-filter: blur(8px);
         }
 
         .start-title {
-            font-size: clamp(28px, 6vw, 52px);
+            font-size: clamp(32px, 8vw, 64px);
             font-weight: bold;
-            color: #FFF2D0;
-            text-shadow: 0 0 15px #ff99cc, 0 0 30px #b570ff;
-            margin-bottom: 20px;
-            letter-spacing: 6px;
+            color: #FFF2CF;
+            text-shadow: 0 0 20px #ffaadd, 0 0 35px #b56eff;
+            margin-bottom: 16px;
+            letter-spacing: 8px;
         }
 
         .start-sub {
-            font-size: clamp(12px, 3vw, 20px);
+            font-size: clamp(14px, 4vw, 22px);
             color: #ffdfb3;
-            margin-bottom: 40px;
+            margin-bottom: 32px;
             text-align: center;
-            padding: 0 20px;
+            padding: 0 24px;
         }
 
         .start-btn {
-            background: radial-gradient(circle at 30% 30%, #ffc0dc, #ff6f9f);
+            background: radial-gradient(circle at 30% 30%, #ffc8e0, #ff6f9f);
             border: none;
-            padding: 12px 42px;
-            font-size: clamp(20px, 4vw, 32px);
+            padding: 14px 48px;
+            font-size: clamp(24px, 5vw, 38px);
             font-weight: bold;
-            color: #2c1927;
+            color: #2c1a28;
             border-radius: 80px;
             cursor: pointer;
-            box-shadow: 0 8px 0 #8b3a5a;
+            box-shadow: 0 9px 0 #8b3a5a;
             transition: 0.08s linear;
             font-family: monospace;
+            letter-spacing: 2px;
         }
 
         .start-btn:active {
-            transform: translateY(4px);
+            transform: translateY(5px);
             box-shadow: 0 4px 0 #8b3a5a;
         }
 
-        /* 右侧操作面板：竖排按钮，适应横屏手指 */
-        .touch-panel {
+        /* 底部操作栏：横向排列，方便横屏拇指操作 */
+        .bottom-controls {
             display: flex;
-            flex-direction: column;
-            gap: 1.4rem;
-            background: rgba(12, 5, 32, 0.7);
-            backdrop-filter: blur(18px);
-            padding: 20px 18px;
-            border-radius: 60px;
-            border: 1px solid rgba(255, 210, 160, 0.8);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            padding: 12px 20px 20px 20px;
+            background: rgba(8, 3, 22, 0.65);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 200, 150, 0.5);
+            margin-top: 4px;
         }
 
         .ctrl-btn {
             width: 80px;
             height: 80px;
             border-radius: 60px;
-            background: radial-gradient(circle at 35% 30%, #fff5e6, #ffcc99);
+            background: radial-gradient(circle at 35% 30%, #fff2e2, #ffcd9a);
             border: none;
-            box-shadow: 0 7px 0 #8b552e;
+            box-shadow: 0 6px 0 #8b552e;
             font-size: 3rem;
             font-weight: bold;
-            color: #3d2a1e;
+            color: #3a251a;
             cursor: pointer;
             transition: 0.04s linear;
             display: flex;
@@ -145,88 +141,123 @@
 
         .ctrl-btn:active {
             transform: translateY(5px);
-            box-shadow: 0 2px 0 #6a3f1a;
+            box-shadow: 0 1px 0 #6a3f1a;
         }
 
         .jump-btn {
             background: radial-gradient(circle at 35% 30%, #ffe0f0, #ff9bc0);
-            box-shadow: 0 7px 0 #b34e6a;
+            box-shadow: 0 6px 0 #b34e6a;
             color: #3c1c2c;
         }
 
-        /* 横屏下适当缩小按钮宽度，在窄屏保持可用 */
-        @media (max-width: 800px) and (orientation: landscape) {
-            .ctrl-btn { width: 65px; height: 65px; font-size: 2.6rem; }
-            .touch-panel { gap: 1rem; padding: 16px 12px; }
-            .game-wrapper { gap: 1rem; padding: 10px 16px; }
+        /* 横屏不同设备适配按钮大小 */
+        @media (max-width: 850px) and (orientation: landscape) {
+            .ctrl-btn { width: 70px; height: 70px; font-size: 2.6rem; }
+            .bottom-controls { gap: 1.6rem; padding: 8px 16px 16px; }
         }
 
         @media (max-width: 650px) and (orientation: landscape) {
-            .ctrl-btn { width: 58px; height: 58px; font-size: 2.2rem; }
-            .touch-panel { gap: 0.9rem; padding: 12px 10px; }
+            .ctrl-btn { width: 62px; height: 62px; font-size: 2.3rem; }
+            .bottom-controls { gap: 1.2rem; padding: 6px 12px 14px; }
         }
 
+        @media (max-width: 550px) and (orientation: landscape) {
+            .ctrl-btn { width: 56px; height: 56px; font-size: 2rem; }
+            .bottom-controls { gap: 1rem; }
+        }
+
+        /* 旋转提示弹窗 (优雅提醒打开自动旋转) */
+        .rotate-tip {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000ee;
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffe6b3;
+            font-size: 26px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.2s;
+            font-family: monospace;
+            pointer-events: none;
+        }
+        .rotate-tip.hidden {
+            display: none;
+        }
+        .rotate-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            animation: shake 1.2s infinite ease;
+        }
+        .rotate-text {
+            background: rgba(0,0,0,0.6);
+            padding: 12px 28px;
+            border-radius: 60px;
+            font-size: 22px;
+            letter-spacing: 2px;
+            border: 1px solid #ffcc88;
+        }
+        @keyframes shake {
+            0%,100%{ transform: rotate(0deg); }
+            25%{ transform: rotate(90deg); }
+            75%{ transform: rotate(90deg); }
+        }
+
+        /* 横屏下隐藏提示 */
+        @media (orientation: landscape) {
+            .rotate-tip {
+                display: none;
+            }
+        }
+
+        /* 画布内信息提示底部 */
         .info-tip {
             position: absolute;
             bottom: 12px;
             left: 0;
             right: 0;
             text-align: center;
-            font-size: 12px;
-            color: #ffefcf;
-            background: rgba(0, 0, 0, 0.55);
+            font-size: 11px;
+            color: #FFF2CF;
+            background: rgba(0, 0, 0, 0.6);
             padding: 4px 12px;
-            border-radius: 40px;
+            border-radius: 30px;
             width: fit-content;
             margin: 0 auto;
             pointer-events: none;
-            backdrop-filter: blur(4px);
             font-weight: bold;
-        }
-
-        /* 底部提示适配横屏绝对定位不干扰 */
-        .canvas-container {
-            position: relative;
-        }
-
-        /* 锁定屏幕旋转提示可选，但默认无提示，自然横屏 */
-        @media (orientation: portrait) {
-            body::before {
-                content: "↻ 请将设备旋转为横屏模式 ↻";
-                position: fixed;
-                top: 0; left: 0;
-                width: 100%;
-                height: 100%;
-                background: #000000dd;
-                color: #ffdd99;
-                font-size: 24px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 9999;
-                backdrop-filter: blur(8px);
-                font-weight: bold;
-            }
-            .game-wrapper { opacity: 0.3; pointer-events: none; }
+            backdrop-filter: blur(4px);
+            z-index: 15;
         }
     </style>
 </head>
 <body>
 <div class="game-wrapper">
     <div class="canvas-container" id="canvasContainer">
-        <canvas id="gameCanvas" width="800" height="450"></canvas>
+        <canvas id="gameCanvas" width="1000" height="560"></canvas>
         <div class="start-overlay" id="startOverlay">
             <div class="start-title">✨ 辉夜姬 ✨</div>
-            <div class="start-sub">横屏·逃离荒芜月壤 · 追寻火箭之约</div>
+            <div class="start-sub">横屏全屏 · 收集星辉 · 登上火箭</div>
             <button class="start-btn" id="startBtn">逃离月球</button>
         </div>
-        <div class="info-tip">⭐ 收集星辉 · 避开尖刺与鬼火 · 登上火箭胜利 ⭐</div>
+        <div class="info-tip">⭐ 收集星光 · 躲避尖刺与鬼火 · 触碰火箭胜利 ⭐</div>
     </div>
-    <div class="touch-panel">
+    <div class="bottom-controls">
         <button class="ctrl-btn left-btn">←</button>
         <button class="ctrl-btn right-btn">→</button>
-        <button class="ctrl-btn jump-btn">↑</button>
+        <button class="ctrl-btn jump-btn">↑ 跳跃</button>
     </div>
+</div>
+<div class="rotate-tip" id="rotateTip">
+    <div class="rotate-icon">📱🔄</div>
+    <div class="rotate-text">请打开「自动旋转」<br>并将手机横屏以获得最佳体验</div>
 </div>
 
 <script>
@@ -235,10 +266,14 @@
         const ctx = canvas.getContext('2d');
         const startOverlay = document.getElementById('startOverlay');
         const startBtn = document.getElementById('startBtn');
-        // 横屏画布宽高 800x450 (16:9)
-        const W = 800, H = 450;
-        canvas.width = W;
-        canvas.height = H;
+        const rotateTip = document.getElementById('rotateTip');
+        
+        // 动态设置画布分辨率：根据容器宽高自适应但保证游戏逻辑宽高比例(16:9参考，但实际使用固定逻辑尺寸 1000x560 宽屏舒服)
+        // 为了全屏不压扁，canvas实际像素设置为宽1000高560（逻辑尺寸），然后CSS object-fit contain，游戏世界使用固定逻辑宽高
+        const LOGIC_W = 1000;
+        const LOGIC_H = 560;
+        canvas.width = LOGIC_W;
+        canvas.height = LOGIC_H;
         
         let gameRunning = false;
         let gameVictory = false;      
@@ -276,10 +311,10 @@
         window.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft'){ input.left=true; e.preventDefault(); enableAudio(); } if(e.key==='ArrowRight'){ input.right=true; e.preventDefault(); } if(e.key==='ArrowUp'||e.key===' '){ input.jump=true; e.preventDefault(); enableAudio(); } });
         window.addEventListener('keyup',(e)=>{ if(e.key==='ArrowLeft') input.left=false; if(e.key==='ArrowRight') input.right=false; if(e.key==='ArrowUp'||e.key===' ') input.jump=false; });
         
-        // ========== 玩家属性 (横屏尺寸适配) ==========
+        // ========== 玩家属性 (适配1000x560) ==========
         let player = {
-            x: 70, y: 370, w: 36, h: 50, vx: 0, vy: 0,
-            speed: 5.2, jumpPower: -11.2, gravity: 0.72,
+            x: 70, y: 470, w: 42, h: 58, vx: 0, vy: 0,
+            speed: 5.6, jumpPower: -11.5, gravity: 0.72,
             onGround: false, facingRight: false
         };
         let currentScene = 0;
@@ -289,75 +324,69 @@
         let movingHazards = [];   
         let spikes = [];           
         
-        // 立绘图片 (保持不变 需提供本地图片或占位 使用内置图形后备，如果图片未加载完成不崩)
+        // 立绘图片优雅降级 (可用图形代替，不强制)
         const playerStandImg = new Image();
         const playerMoveImg = new Image();
         playerStandImg.src = "stand.png";  
         playerMoveImg.src = "walk.png";   
-        // 优雅降级：如果图片加载失败则用圆形代替，但是不影响整体体验
         let imagesReady = false;
-        let imageLoadAttempt = 0;
-        function checkImages() {
-            if (playerStandImg.complete && playerMoveImg.complete && playerStandImg.naturalWidth > 0) imagesReady = true;
-            else setTimeout(checkImages, 200);
-        }
         playerStandImg.onload = () => { if(playerMoveImg.complete) imagesReady=true; };
         playerMoveImg.onload = () => { if(playerStandImg.complete) imagesReady=true; };
-        setTimeout(checkImages, 300);
+        setTimeout(()=>{ if(playerStandImg.complete && playerMoveImg.complete) imagesReady=true; }, 500);
         
-        // ========== 场景完全重新设计适应横屏 800x450 ==========
+        // ========== 场景设计 (适配 1000x560 横屏宽视野) ==========
         const scenes = [
             { // 场景0: 月之森
                 name:"月之森", bgTop:[48,32,88], bgMid:[85,65,130], bgBottom:[135,110,185],
-                platforms:[ {x:0,y:430,w:400,h:28,type:"ground"}, {x:450,y:430,w:350,h:28,type:"ground"}, {x:70,y:375,w:70,h:18,type:"questionBlock"}, {x:200,y:325,w:70,h:18,type:"questionBlock"}, {x:340,y:280,w:70,h:18,type:"questionBlock"}, {x:520,y:230,w:70,h:18,type:"questionBlock"}, {x:680,y:190,w:65,h:18,type:"questionBlock"} ],
-                stars:[ {x:110,y:340,size:11,col:false,color:[255,210,120]}, {x:240,y:290,size:12,col:false,color:[255,190,255]}, {x:380,y:245,size:10,col:false,color:[200,210,255]}, {x:560,y:195,size:13,col:false,color:[255,230,150]}, {x:710,y:155,size:12,col:false,color:[255,240,180]} ],
+                platforms:[ {x:0,y:520,w:400,h:28,type:"ground"}, {x:450,y:520,w:550,h:28,type:"ground"}, {x:70,y:470,w:78,h:20,type:"questionBlock"}, {x:210,y:420,w:78,h:20,type:"questionBlock"}, {x:370,y:375,w:78,h:20,type:"questionBlock"}, {x:550,y:330,w:78,h:20,type:"questionBlock"}, {x:730,y:285,w:78,h:20,type:"questionBlock"}, {x:890,y:245,w:78,h:20,type:"questionBlock"} ],
+                stars:[ {x:110,y:435,size:12,col:false,color:[255,210,120]}, {x:250,y:385,size:13,col:false,color:[255,190,255]}, {x:410,y:340,size:11,col:false,color:[200,210,255]}, {x:590,y:295,size:12,col:false,color:[255,230,150]}, {x:770,y:250,size:13,col:false,color:[255,220,180]}, {x:920,y:210,size:11,col:false,color:[255,245,170]} ],
                 spikes:[], hazards:[]
             },
             { // 场景1: 尖刺回廊
                 name:"尖刺回廊", bgTop:[70,45,95], bgMid:[110,80,145], bgBottom:[155,120,180],
-                platforms:[ {x:0,y:445,w:130,h:28,type:"ground"}, {x:360,y:445,w:130,h:28,type:"ground"}, {x:670,y:445,w:130,h:28,type:"ground"}, {x:85,y:385,w:70,h:18,type:"questionBlock"}, {x:205,y:330,w:70,h:18,type:"questionBlock"}, {x:320,y:275,w:70,h:18,type:"questionBlock"}, {x:470,y:225,w:70,h:18,type:"questionBlock"}, {x:600,y:180,w:70,h:18,type:"questionBlock"} ],
-                stars:[ {x:120,y:350,size:11,col:false,color:[255,200,150]}, {x:240,y:295,size:12,col:false,color:[255,190,210]}, {x:355,y:240,size:10,col:false,color:[180,210,255]}, {x:505,y:190,size:13,col:false,color:[255,220,100]}, {x:635,y:145,size:11,col:false,color:[240,170,255]} ],
-                spikes:[ {x:200,y:410,w:45,h:22}, {x:480,y:410,w:45,h:22}, {x:650,y:410,w:45,h:22} ],
+                platforms:[ {x:0,y:530,w:150,h:28,type:"ground"}, {x:400,y:530,w:180,h:28,type:"ground"}, {x:800,y:530,w:200,h:28,type:"ground"}, {x:80,y:475,w:78,h:20,type:"questionBlock"}, {x:230,y:425,w:78,h:20,type:"questionBlock"}, {x:380,y:375,w:78,h:20,type:"questionBlock"}, {x:540,y:325,w:78,h:20,type:"questionBlock"}, {x:700,y:280,w:78,h:20,type:"questionBlock"}, {x:860,y:235,w:78,h:20,type:"questionBlock"} ],
+                stars:[ {x:115,y:440,size:12,col:false,color:[255,200,150]}, {x:265,y:390,size:12,col:false,color:[255,190,210]}, {x:415,y:340,size:11,col:false,color:[180,210,255]}, {x:575,y:290,size:13,col:false,color:[255,220,100]}, {x:735,y:245,size:12,col:false,color:[240,170,255]}, {x:895,y:200,size:12,col:false,color:[255,210,150]} ],
+                spikes:[ {x:190,y:495,w:50,h:24}, {x:530,y:495,w:50,h:24}, {x:880,y:495,w:50,h:24} ],
                 hazards:[]
             },
             { // 场景2: 火焰峡谷
                 name:"火焰峡谷", bgTop:[88,45,70], bgMid:[130,70,105], bgBottom:[170,100,130],
-                platforms:[ {x:0,y:445,w:150,h:28,type:"ground"}, {x:350,y:445,w:150,h:28,type:"ground"}, {x:650,y:445,w:150,h:28,type:"ground"}, {x:60,y:390,w:70,h:18,type:"questionBlock"}, {x:180,y:340,w:70,h:18,type:"questionBlock"}, {x:300,y:290,w:70,h:18,type:"questionBlock"}, {x:440,y:240,w:70,h:18,type:"questionBlock"}, {x:590,y:200,w:70,h:18,type:"questionBlock"}, {x:720,y:165,w:65,h:18,type:"questionBlock"} ],
-                stars:[ {x:95,y:355,size:11,col:false,color:[255,200,130]}, {x:215,y:305,size:12,col:false,color:[255,180,210]}, {x:335,y:255,size:10,col:false,color:[200,200,255]}, {x:475,y:205,size:12,col:false,color:[255,210,100]}, {x:625,y:165,size:11,col:false,color:[230,160,255]}, {x:750,y:130,size:12,col:false,color:[255,190,170]} ],
-                spikes:[ {x:540,y:410,w:48,h:22} ],
-                hazards:[ {x:150,y:350,dir:1,range:120,radius:9,type:"flame",moveX:true,speed:1.0}, {x:400,y:295,dir:-1,range:110,radius:8,type:"willowisp",moveX:true,speed:0.95}, {x:680,y:250,dir:1,range:90,radius:8,type:"flame",moveX:true,speed:1.2} ]
+                platforms:[ {x:0,y:530,w:170,h:28,type:"ground"}, {x:410,y:530,w:190,h:28,type:"ground"}, {x:780,y:530,w:220,h:28,type:"ground"}, {x:50,y:480,w:78,h:20,type:"questionBlock"}, {x:190,y:430,w:78,h:20,type:"questionBlock"}, {x:330,y:380,w:78,h:20,type:"questionBlock"}, {x:480,y:330,w:78,h:20,type:"questionBlock"}, {x:630,y:285,w:78,h:20,type:"questionBlock"}, {x:790,y:240,w:78,h:20,type:"questionBlock"}, {x:920,y:200,w:70,h:20,type:"questionBlock"} ],
+                stars:[ {x:85,y:445,size:12,col:false,color:[255,200,130]}, {x:225,y:395,size:12,col:false,color:[255,180,210]}, {x:365,y:345,size:11,col:false,color:[200,200,255]}, {x:515,y:295,size:12,col:false,color:[255,210,100]}, {x:665,y:250,size:12,col:false,color:[230,160,255]}, {x:825,y:205,size:13,col:false,color:[255,190,150]}, {x:950,y:165,size:11,col:false,color:[255,225,130]} ],
+                spikes:[ {x:620,y:495,w:55,h:24} ],
+                hazards:[ {x:140,y:430,dir:1,range:140,radius:10,type:"flame",moveX:true,speed:1.0}, {x:420,y:360,dir:-1,range:130,radius:9,type:"willowisp",moveX:true,speed:0.95}, {x:720,y:300,dir:1,range:110,radius:9,type:"flame",moveX:true,speed:1.1} ]
             },
             { // 场景3: 荆棘月台
                 name:"荆棘月台", bgTop:[60,38,85], bgMid:[95,70,125], bgBottom:[140,110,165],
-                platforms:[ {x:0,y:445,w:120,h:28,type:"ground"}, {x:300,y:445,w:140,h:28,type:"ground"}, {x:660,y:445,w:140,h:28,type:"ground"}, {x:60,y:395,w:70,h:18,type:"questionBlock"}, {x:170,y:345,w:70,h:18,type:"questionBlock"}, {x:280,y:300,w:70,h:18,type:"questionBlock"}, {x:400,y:255,w:70,h:18,type:"questionBlock"}, {x:520,y:210,w:70,h:18,type:"questionBlock"}, {x:640,y:170,w:70,h:18,type:"questionBlock"} ],
-                stars:[ {x:95,y:360,size:11,col:false,color:[255,210,140]}, {x:205,y:310,size:12,col:false,color:[255,200,220]}, {x:315,y:265,size:11,col:false,color:[210,200,255]}, {x:435,y:220,size:12,col:false,color:[255,210,110]}, {x:555,y:175,size:13,col:false,color:[230,180,255]}, {x:675,y:135,size:11,col:false,color:[255,190,180]} ],
-                spikes:[ {x:130,y:410,w:48,h:22}, {x:380,y:410,w:55,h:22}, {x:510,y:375,w:40,h:22}, {x:730,y:300,w:45,h:22} ],
+                platforms:[ {x:0,y:530,w:140,h:28,type:"ground"}, {x:360,y:530,w:180,h:28,type:"ground"}, {x:750,y:530,w:250,h:28,type:"ground"}, {x:50,y:480,w:78,h:20,type:"questionBlock"}, {x:180,y:430,w:78,h:20,type:"questionBlock"}, {x:310,y:385,w:78,h:20,type:"questionBlock"}, {x:450,y:340,w:78,h:20,type:"questionBlock"}, {x:590,y:295,w:78,h:20,type:"questionBlock"}, {x:730,y:250,w:78,h:20,type:"questionBlock"}, {x:870,y:210,w:78,h:20,type:"questionBlock"} ],
+                stars:[ {x:85,y:445,size:12,col:false,color:[255,210,140]}, {x:215,y:395,size:12,col:false,color:[255,200,220]}, {x:345,y:350,size:11,col:false,color:[210,200,255]}, {x:485,y:305,size:12,col:false,color:[255,210,110]}, {x:625,y:260,size:13,col:false,color:[230,180,255]}, {x:765,y:215,size:12,col:false,color:[255,190,180]}, {x:905,y:175,size:11,col:false,color:[255,225,160]} ],
+                spikes:[ {x:110,y:495,w:52,h:24}, {x:440,y:495,w:58,h:24}, {x:670,y:450,w:48,h:24}, {x:860,y:400,w:48,h:24} ],
                 hazards:[]
             },
-            { // 场景4: 火箭码头 (火箭在右侧尽头)
+            { // 场景4: 火箭码头 最终胜利
                 name:"火箭码头", bgTop:[30,25,70], bgMid:[55,48,105], bgBottom:[95,80,130],
                 platforms:[ 
-                    {x:0,y:455,w:800,h:12,type:"water"},
-                    {x:60,y:415,w:100,h:26,type:"ground"},
-                    {x:220,y:365,w:80,h:18,type:"questionBlock"},
-                    {x:370,y:415,w:110,h:26,type:"ground"},
-                    {x:580,y:360,w:90,h:18,type:"ground"},
-                    {x:700,y:310,w:70,h:18,type:"rocketPad"}  // 火箭基座
+                    {x:0,y:540,w:1000,h:12,type:"water"},
+                    {x:70,y:495,w:110,h:28,type:"ground"},
+                    {x:260,y:445,w:90,h:20,type:"questionBlock"},
+                    {x:450,y:495,w:130,h:28,type:"ground"},
+                    {x:680,y:445,w:110,h:28,type:"ground"},
+                    {x:850,y:395,w:80,h:20,type:"rocketPad"}  
                 ],
                 stars:[ 
-                    {x:100,y:380,size:11,col:false,color:[255,210,170]},
-                    {x:260,y:330,size:12,col:false,color:[210,190,255]},
-                    {x:415,y:380,size:11,col:false,color:[255,220,150]},
-                    {x:620,y:325,size:12,col:false,color:[255,210,180]}
+                    {x:110,y:460,size:12,col:false,color:[255,210,170]},
+                    {x:300,y:410,size:12,col:false,color:[210,190,255]},
+                    {x:500,y:460,size:11,col:false,color:[255,220,150]},
+                    {x:720,y:410,size:12,col:false,color:[255,210,180]},
+                    {x:880,y:360,size:13,col:false,color:[255,240,200]}
                 ],
                 spikes:[], 
                 hazards:[],
-                rocketZone: { x: 710, y: 260, w: 62, h: 58 }  // 火箭碰撞区
+                rocketZone: { x: 860, y: 340, w: 72, h: 68 }  // 火箭实体
             }
         ];
         
         let currentPlat = [], currentStars = [];
-        let rocketVictoryFlag = false;
         
         function reloadScene(sceneId){
             const sc = scenes[sceneId];
@@ -365,7 +394,6 @@
             currentStars = sc.stars.map(s=>({...s,col:false}));
             spikes = sc.spikes ? sc.spikes.map(sp=>({...sp})) : [];
             movingHazards = sc.hazards ? sc.hazards.map(h=>({...h, currentX:h.x, angle:Math.random()*Math.PI*2})) : [];
-            rocketVictoryFlag = false;
         }
         
         function changeScene(newIdx){
@@ -373,11 +401,11 @@
             currentScene = newIdx;
             reloadScene(currentScene);
             player.x = 70;
-            player.y = 370;
+            player.y = 470;
             player.vy = 0; player.vx = 0; player.onGround = true;
             player.facingRight = false;
             if(newIdx===4) message="🚀 触碰火箭，逃离月球！🚀";
-            else message="⭐ 收集星辰 小心尖刺 ⭐";
+            else message="⭐ 收集星辉 小心尖刺 ⭐";
             msgTimer=90;
         }
         
@@ -403,7 +431,7 @@
             score = 0;
             currentScene = 0;
             reloadScene(0);
-            player.x = 70; player.y = 370;
+            player.x = 70; player.y = 470;
             player.vy = 0; player.vx = 0; player.onGround = true;
             player.facingRight = false;
             gameRunning = true;
@@ -429,8 +457,8 @@
             let move = (input.left ? -1 : 0) + (input.right ? 1 : 0);
             player.vx = move * player.speed;
             player.x += player.vx;
-            if(player.x<3) player.x=3;
-            if(player.x+player.w>W-3) player.x=W-player.w-3;
+            if(player.x<5) player.x=5;
+            if(player.x+player.w>LOGIC_W-5) player.x=LOGIC_W-player.w-5;
             
             player.vy += player.gravity;
             player.y += player.vy;
@@ -456,8 +484,7 @@
             
             for(let sp of spikes){
                 const spikeRect = {x:sp.x, y:sp.y, w:sp.w, h:sp.h};
-                const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
-                if(collide(pRect,spikeRect)){
+                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, spikeRect)){
                     failAndReset();
                     return;
                 }
@@ -465,8 +492,7 @@
             
             for(let h of movingHazards){
                 const hazardRect = {x:h.currentX-h.radius, y:h.currentY-h.radius, w:h.radius*2, h:h.radius*2};
-                const pRect = {x:player.x,y:player.y,w:player.w,h:player.h};
-                if(collide(pRect,hazardRect)){
+                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, hazardRect)){
                     failAndReset();
                     return;
                 }
@@ -474,18 +500,10 @@
             
             const waterPlat = currentPlat.find(p=>p.type==='water');
             if(waterPlat && player.y+player.h >= waterPlat.y){
-                playSound('fall',0.25);
-                message = "🌊 坠入月湖 · 重新开始 🌊";
-                msgTimer=70;
-                fullReset(); 
-                return;
+                playSound('fall',0.25); fullReset(); return;
             }
-            if(player.y+player.h > H){
-                playSound('fall',0.2);
-                message = "✨ 坠入深渊 ✨";
-                msgTimer=70;
-                fullReset(); 
-                return;
+            if(player.y+player.h > LOGIC_H){
+                playSound('fall',0.2); fullReset(); return;
             }
             
             if(input.jump && player.onGround){
@@ -498,8 +516,7 @@
             for(let s of currentStars){
                 if(!s.col){
                     const starRect = {x:s.x-s.size/2, y:s.y-s.size/2, w:s.size, h:s.size};
-                    const pRect = {x:player.x,y:player.y,w:player.w,h:player.h};
-                    if(collide(pRect,starRect)){
+                    if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, starRect)){
                         s.col=true;
                         score+=100;
                         playSound('collect',0.2);
@@ -509,11 +526,11 @@
                 }
             }
             
-            // 场景过渡 (横屏向右)
-            if(currentScene===0 && player.x+player.w > W-12) { changeScene(1); player.x=20; playSound('fall',0.08); }
-            else if(currentScene===1 && player.x+player.w > W-12) { changeScene(2); player.x=20; }
-            else if(currentScene===2 && player.x+player.w > W-12) { changeScene(3); player.x=20; }
-            else if(currentScene===3 && player.x+player.w > W-12) { changeScene(4); player.x=40; player.y=380; }
+            // 场景切换
+            if(currentScene===0 && player.x+player.w > LOGIC_W-15) { changeScene(1); player.x=20; playSound('fall',0.08); }
+            else if(currentScene===1 && player.x+player.w > LOGIC_W-15) { changeScene(2); player.x=20; }
+            else if(currentScene===2 && player.x+player.w > LOGIC_W-15) { changeScene(3); player.x=20; }
+            else if(currentScene===3 && player.x+player.w > LOGIC_W-15) { changeScene(4); player.x=50; player.y=470; }
             
             if(currentScene === 4 && !gameVictory){
                 const rocketZone = scenes[4].rocketZone;
@@ -531,127 +548,26 @@
             if(msgTimer>0) msgTimer--; else message="";
         }
         
-        // 绘图模块 (适配新坐标)
-        function drawBackground(){
-            const sc = scenes[currentScene];
-            const grad = ctx.createLinearGradient(0,0,0,H);
-            grad.addColorStop(0,`rgb(${sc.bgTop[0]},${sc.bgTop[1]},${sc.bgTop[2]})`);
-            grad.addColorStop(0.6,`rgb(${sc.bgMid[0]},${sc.bgMid[1]},${sc.bgMid[2]})`);
-            grad.addColorStop(1,`rgb(${sc.bgBottom[0]},${sc.bgBottom[1]},${sc.bgBottom[2]})`);
-            ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
-            ctx.fillStyle="rgba(55,40,95,0.3)"; ctx.fillRect(0,H-70,W,70);
-            ctx.fillStyle="#FFF5CF"; ctx.shadowBlur=12; ctx.beginPath(); ctx.arc(W-90,65,28,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#FFE8AA"; ctx.beginPath(); ctx.arc(W-94,60,7,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
-        }
+        // 绘图 (省略部分类似但适配新坐标，保持全功能)
+        function drawBackground(){ const sc=scenes[currentScene]; const grad=ctx.createLinearGradient(0,0,0,LOGIC_H); grad.addColorStop(0,`rgb(${sc.bgTop[0]},${sc.bgTop[1]},${sc.bgTop[2]})`); grad.addColorStop(0.6,`rgb(${sc.bgMid[0]},${sc.bgMid[1]},${sc.bgMid[2]})`); grad.addColorStop(1,`rgb(${sc.bgBottom[0]},${sc.bgBottom[1]},${sc.bgBottom[2]})`); ctx.fillStyle=grad; ctx.fillRect(0,0,LOGIC_W,LOGIC_H); ctx.fillStyle="rgba(60,45,100,0.3)"; ctx.fillRect(0,LOGIC_H-70,LOGIC_W,70); ctx.fillStyle="#FFF5CF"; ctx.beginPath(); ctx.arc(LOGIC_W-80,65,32,0,Math.PI*2); ctx.fill(); }
+        function drawQuestionBlock(x,y,w,h){ ctx.fillStyle="#FFD966"; ctx.fillRect(x,y,w,h); ctx.fillStyle="#C97E2A"; ctx.strokeRect(x+2,y+2,w-4,h-4); ctx.font=`bold ${Math.floor(h*0.6)}px monospace`; ctx.fillStyle="#3D2B1A"; ctx.textAlign="center"; ctx.fillText("?",x+w/2,y+h/2); ctx.textAlign="left"; }
+        function drawPlatforms(){ for(let plat of currentPlat){ if(plat.type==='questionBlock') drawQuestionBlock(plat.x,plat.y,plat.w,plat.h); else if(plat.type==='rocketPad'){ ctx.fillStyle="#AA8C6F"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); ctx.fillStyle="#D9B48B"; ctx.fillRect(plat.x+5,plat.y-6,plat.w-10,6); } else if(plat.type==='water'){ ctx.fillStyle="rgba(80,150,210,0.7)"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); } else{ ctx.fillStyle="#EFC9A0"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); ctx.fillStyle="#FFE5C8"; ctx.fillRect(plat.x+5,plat.y-5,plat.w-10,5); } } }
+        function drawSpikes(){ for(let sp of spikes){ ctx.fillStyle="#5a4a2e"; ctx.fillRect(sp.x,sp.y,sp.w,sp.h); ctx.fillStyle="#b87c48"; for(let i=0;i<4;i++){ ctx.beginPath(); ctx.moveTo(sp.x+i*(sp.w/4),sp.y); ctx.lineTo(sp.x+i*(sp.w/4)+sp.w/8,sp.y-12); ctx.lineTo(sp.x+i*(sp.w/4)+sp.w/4,sp.y); ctx.fill(); } } }
+        function drawHazards(){ for(let h of movingHazards){ if(h.type==='willowisp'){ ctx.fillStyle="rgba(255,120,200,0.85)"; ctx.beginPath(); ctx.arc(h.currentX,h.currentY,h.radius,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#FFEEAA"; ctx.beginPath(); ctx.arc(h.currentX-2,h.currentY-2,3,0,Math.PI*2); ctx.fill(); } else{ ctx.fillStyle="#FF6F4A"; ctx.beginPath(); ctx.ellipse(h.currentX,h.currentY,h.radius,h.radius*1.2,0,0,Math.PI*2); ctx.fill(); } } }
+        function drawStars(){ for(let s of currentStars){ if(!s.col){ ctx.fillStyle=`rgb(${s.color[0]},${s.color[1]},${s.color[2]})`; ctx.beginPath(); for(let i=0;i<5;i++){ let ang=(i*72-36)*Math.PI/180,x1=s.x+Math.cos(ang)*s.size/2,y1=s.y+Math.sin(ang)*s.size/2,ang2=(i*72)*Math.PI/180,x2=s.x+Math.cos(ang2)*s.size/3,y2=s.y+Math.sin(ang2)*s.size/3; if(i===0) ctx.moveTo(x1,y1); else ctx.lineTo(x1,y1); ctx.lineTo(x2,y2); } ctx.fill(); } } }
+        function drawRocket(){ if(currentScene!==4) return; const r=scenes[4].rocketZone; ctx.fillStyle="#B0B8E0"; ctx.fillRect(r.x+12,r.y-34,48,34); ctx.fillStyle="#FF5F5F"; ctx.beginPath(); ctx.moveTo(r.x+r.w/2,r.y-52); ctx.lineTo(r.x+r.w/2+18,r.y-28); ctx.lineTo(r.x+r.w/2-18,r.y-28); ctx.fill(); ctx.fillStyle="#F9C28C"; ctx.fillRect(r.x+16,r.y-24,40,16); ctx.fillStyle="#2B2B3A"; ctx.fillRect(r.x+28,r.y-12,16,26); ctx.font="bold 28px monospace"; ctx.fillStyle="#FFF9C4"; ctx.fillText("🚀",r.x+r.w/2-15,r.y+8); }
+        function drawPlayer(){ if(imagesReady && playerStandImg.complete){ ctx.save(); ctx.translate(player.x+player.w/2,player.y+player.h/2); if(player.facingRight) ctx.scale(-1,1); let img=(player.vx===0 && player.onGround)?playerStandImg:playerMoveImg; ctx.drawImage(img,-player.w*0.7,-player.h*0.7,player.w*1.4,player.h*1.4); ctx.restore(); } else{ ctx.fillStyle="#FFD9A5"; ctx.fillRect(player.x,player.y,player.w,player.h); ctx.fillStyle="#F0A080"; ctx.fillRect(player.x+6,player.y-8,player.w-12,12); } }
+        function drawUI(){ ctx.font="bold 26px monospace"; ctx.fillStyle="#FFF4E0"; ctx.fillRect(LOGIC_W-140,12,130,40); ctx.fillStyle="#482E5A"; ctx.fillText(`${Math.floor(score)}`,LOGIC_W-118,44); if(message){ ctx.font="bold 14px monospace"; ctx.fillStyle="#FFFDE7"; ctx.fillText(message,LOGIC_W/2-ctx.measureText(message).width/2,LOGIC_H-20); } let q=currentScene===0?"🌙 月之森 →":currentScene===1?"⚔️ 尖刺回廊 →":currentScene===2?"🔥 火焰峡谷 →":currentScene===3?"🌵 荆棘月台 →":"🚀 火箭码头"; ctx.font="12px monospace"; ctx.fillStyle="#FFEFC0"; ctx.fillText(q,12,LOGIC_H-12); if(gameVictory){ ctx.fillStyle="rgba(0,0,0,0.85)"; ctx.fillRect(0,0,LOGIC_W,LOGIC_H); ctx.font="bold 40px monospace"; ctx.fillStyle="#FFE68F"; ctx.fillText("✨ 胜利 ✨",LOGIC_W/2-100,LOGIC_H/2-40); ctx.font="30px monospace"; ctx.fillStyle="#FFD966"; ctx.fillText(`最终星辉 ${Math.floor(score)}`,LOGIC_W/2-115,LOGIC_H/2+40); ctx.font="18px monospace"; ctx.fillText("点击「逃离月球」再冒险",LOGIC_W/2-135,LOGIC_H-80); } }
         
-        function drawQuestionBlock(x,y,w,h){
-            ctx.fillStyle = "#FFD966";
-            ctx.shadowBlur = 3;
-            ctx.fillRect(x, y, w, h);
-            ctx.fillStyle = "#C97E2A";
-            ctx.strokeRect(x+2, y+2, w-4, h-4);
-            ctx.font = `bold ${Math.floor(h*0.6)}px "Segoe UI"`;
-            ctx.fillStyle = "#3D2B1A";
-            ctx.textAlign = "center";
-            ctx.fillText("?", x + w/2, y + h/2);
-            ctx.textAlign = "left";
-        }
+        function gameLoop(){ updateGame(); drawBackground(); drawPlatforms(); drawSpikes(); drawStars(); drawHazards(); drawRocket(); drawPlayer(); drawUI(); requestAnimationFrame(gameLoop); }
         
-        function drawPlatforms(){
-            for(let plat of currentPlat){
-                if(plat.type === 'questionBlock') drawQuestionBlock(plat.x, plat.y, plat.w, plat.h);
-                else if(plat.type === 'rocketPad'){
-                    ctx.fillStyle = "#AA8C6F"; ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-                    ctx.fillStyle = "#D9B48B"; ctx.fillRect(plat.x+5, plat.y-6, plat.w-10, 6);
-                } else if(plat.type === 'water'){
-                    ctx.fillStyle = "rgba(80,150,210,0.7)"; ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-                    for(let i=0;i<20;i++){ ctx.fillStyle=`rgba(255,245,180,${0.4+Math.sin(Date.now()*0.004+i)*0.2})`; ctx.fillRect(plat.x+i*42, plat.y+6, 30, 5); }
-                } else {
-                    ctx.fillStyle = "#EFC9A0"; ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-                    ctx.fillStyle = "#FFE5C8"; ctx.fillRect(plat.x+5, plat.y-5, plat.w-10, 5);
-                }
-            }
-            ctx.shadowBlur=0;
-        }
-        
-        function drawSpikes(){ for(let sp of spikes){ ctx.fillStyle="#5a4a2e"; ctx.fillRect(sp.x,sp.y,sp.w,sp.h); ctx.fillStyle="#b87c48"; for(let i=0;i<4;i++){ ctx.beginPath(); ctx.moveTo(sp.x+i*(sp.w/4), sp.y); ctx.lineTo(sp.x+i*(sp.w/4)+sp.w/8, sp.y-12); ctx.lineTo(sp.x+i*(sp.w/4)+sp.w/4, sp.y); ctx.fill(); } } }
-        function drawHazards(){
-            for(let h of movingHazards){
-                if(h.type==='willowisp'){ ctx.fillStyle=`rgba(255,140,200,0.85)`; ctx.shadowBlur=8; ctx.beginPath(); ctx.arc(h.currentX,h.currentY,h.radius,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#FFE68F"; ctx.beginPath(); ctx.arc(h.currentX-2,h.currentY-2,3,0,Math.PI*2); ctx.fill(); }
-                else { ctx.fillStyle="#FF6F4A"; ctx.beginPath(); ctx.ellipse(h.currentX,h.currentY,h.radius,h.radius*1.2,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#FFD966"; ctx.beginPath(); ctx.arc(h.currentX-1,h.currentY-1,3,0,Math.PI*2); ctx.fill(); }
-            }
-            ctx.shadowBlur=0;
-        }
-        function drawStars(){ for(let s of currentStars){ if(!s.col){ ctx.fillStyle=`rgb(${s.color[0]},${s.color[1]},${s.color[2]})`; ctx.shadowBlur=5; ctx.beginPath(); for(let i=0;i<5;i++){ let ang=(i*72-36)*Math.PI/180, x1=s.x+Math.cos(ang)*s.size/2, y1=s.y+Math.sin(ang)*s.size/2, ang2=(i*72)*Math.PI/180, x2=s.x+Math.cos(ang2)*s.size/3, y2=s.y+Math.sin(ang2)*s.size/3; if(i===0) ctx.moveTo(x1,y1); else ctx.lineTo(x1,y1); ctx.lineTo(x2,y2); } ctx.fill(); } } ctx.shadowBlur=0; }
-        
-        function drawRocket(){
-            if(currentScene !== 4) return;
-            const rocket = scenes[4].rocketZone;
-            ctx.fillStyle = "#B0B8E0"; ctx.fillRect(rocket.x+10, rocket.y-30, 42, 30);
-            ctx.fillStyle = "#FF5F5F"; ctx.beginPath(); ctx.moveTo(rocket.x+rocket.w/2, rocket.y-48); ctx.lineTo(rocket.x+rocket.w/2+15, rocket.y-26); ctx.lineTo(rocket.x+rocket.w/2-15, rocket.y-26); ctx.fill();
-            ctx.fillStyle = "#F9C28C"; ctx.fillRect(rocket.x+14, rocket.y-22, 34, 14);
-            ctx.fillStyle = "#2B2B3A"; ctx.fillRect(rocket.x+24, rocket.y-12, 14, 22);
-            ctx.fillStyle = "#FFF9C4"; ctx.font = "bold 24px monospace"; ctx.fillText("🚀", rocket.x+rocket.w/2-15, rocket.y+6);
-            ctx.font = "bold 14px monospace"; ctx.fillStyle = "#FFE8B0"; ctx.fillText("逃逸", rocket.x+20, rocket.y-14);
-        }
-        
-        function drawPlayer(){
-            if(imagesReady && playerStandImg.complete && playerMoveImg.naturalWidth>0){
-                ctx.save();
-                const centerX = player.x + player.w/2, centerY = player.y + player.h/2;
-                ctx.translate(centerX, centerY);
-                if(player.facingRight) ctx.scale(-1,1);
-                let currentImg = (player.vx===0 && player.onGround) ? playerStandImg : playerMoveImg;
-                ctx.drawImage(currentImg, -player.w*0.7, -player.h*0.75, player.w*1.4, player.h*1.5);
-                ctx.restore();
-            } else {
-                ctx.fillStyle = "#FFD9A5"; ctx.fillRect(player.x, player.y, player.w, player.h);
-                ctx.fillStyle = "#F0A080"; ctx.fillRect(player.x+5, player.y-8, player.w-10, 10);
-                ctx.fillStyle = "#332211"; ctx.fillRect(player.x+6, player.y+12, 6, 8); ctx.fillRect(player.x+player.w-12, player.y+12, 6, 8);
-            }
-        }
-        
-        function drawUI(){
-            ctx.font="bold 24px 'Courier New'"; ctx.fillStyle="#FFF4E0"; ctx.fillRect(W-125,12,115,36); ctx.fillStyle="#482E5A"; ctx.fillText(`${Math.floor(score)}`,W-105,40);
-            if(message){ ctx.font="bold 14px 'Segoe UI'"; ctx.fillStyle="#FFFDE7"; ctx.shadowBlur=4; ctx.fillText(message,W/2-ctx.measureText(message).width/2,H-20); ctx.shadowBlur=0; }
-            let q = currentScene===0?"🌙 月之森 →":currentScene===1?"⚔️ 尖刺回廊 →":currentScene===2?"🔥 火焰峡谷 →":currentScene===3?"🌵 荆棘月台 →":"🚀 火箭码头 · 触碰火箭胜利";
-            ctx.font="12px monospace"; ctx.fillStyle="#FFEFC0"; ctx.fillText(q,12,H-8);
-            if(gameVictory){
-                ctx.fillStyle="rgba(0,0,0,0.85)"; ctx.fillRect(0,0,W,H);
-                ctx.font="bold 34px monospace"; ctx.fillStyle="#FFE68F"; ctx.fillText("✨ 胜利 ✨",W/2-90,180);
-                ctx.font="26px monospace"; ctx.fillStyle="#FFD966"; ctx.fillText(`最终星辉 ${Math.floor(score)}`,W/2-100,260);
-                ctx.font="18px monospace"; ctx.fillText("点击「逃离月球」再冒险",W/2-140,350);
-            }
-        }
-        
-        function gameLoop(){
-            updateGame();
-            drawBackground();
-            drawPlatforms();
-            drawSpikes();
-            drawStars();
-            drawHazards();
-            drawRocket();
-            drawPlayer();
-            drawUI();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        startBtn.addEventListener('click',()=>{
-            enableAudio();
-            fullReset();
-            startOverlay.style.display = 'none';
-            gameRunning = true;
-            gameVictory = false;
-        });
-        
-        function checkRestartOverlay(){
-            if((gameVictory || (!gameRunning && startOverlay.style.display !== 'flex')) && startOverlay.style.display !== 'flex' && !gameRunning){
-                startOverlay.style.display = 'flex';
-            }
-        }
-        setInterval(checkRestartOverlay,200);
+        startBtn.addEventListener('click',()=>{ enableAudio(); fullReset(); startOverlay.style.display = 'none'; gameRunning=true; gameVictory=false; });
+        function checkRestart(){ if((gameVictory || (!gameRunning && startOverlay.style.display!=='flex')) && startOverlay.style.display!=='flex' && !gameRunning) startOverlay.style.display='flex'; }
+        setInterval(checkRestart,200);
         reloadScene(0);
         gameLoop();
+        // 自动隐藏旋转提示（竖屏显示）
+        setInterval(()=>{ if(window.matchMedia("(orientation: landscape)").matches) rotateTip.classList.add('hidden'); else rotateTip.classList.remove('hidden'); }, 300);
     })();
 </script>
 </body>
