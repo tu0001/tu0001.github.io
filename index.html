@@ -34,25 +34,24 @@
             overflow: hidden;
         }
 
-        /* Canvas 全屏显示，无圆角 */
+        /* Canvas 上移，给按钮留出空间，不遮挡画面 */
         #gameCanvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: calc(100% - 110px); /* 底部留出110px给按钮，画面整体上移 */
             display: block;
-            /* 保持逻辑分辨率自适应，不压扁 */
             object-fit: cover;
         }
 
-        /* 启动界面全屏覆盖 */
+        /* 启动界面同步上移，不遮挡按钮 */
         .start-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: calc(100% - 110px);
             background: linear-gradient(135deg, rgba(18, 10, 45, 0.98), rgba(6, 3, 20, 0.98));
             backdrop-filter: blur(10px);
             display: flex;
@@ -98,22 +97,32 @@
             box-shadow: 0 4px 0 #8b3a5a;
         }
 
-        /* 底部按钮栏：半透明毛玻璃，不遮挡游戏核心视野，全宽靠下 */
+        /* 底部按钮栏：完全透明无黑边，左右分栏布局 */
         .bottom-controls {
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
             display: flex;
-            justify-content: center;
+            justify-content: space-between; /* 左右分开 */
             align-items: center;
-            gap: 2rem;
-            padding: 14px 20px 22px 20px;
-            background: rgba(8, 5, 22, 0.55);
-            backdrop-filter: blur(16px);
+            padding: 14px 30px 22px 30px;
+            background: transparent !important; /* 彻底去掉黑边 */
+            backdrop-filter: none;
             border-top: none;
             z-index: 20;
             pointer-events: auto;
+        }
+
+        /* 左右键组：左下角 */
+        .left-buttons {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        /* 跳跃键：右下角 */
+        .right-button {
+            display: flex;
         }
 
         /* 半透明玻璃按钮，无文字跳跃提示，只有箭头符号 */
@@ -134,7 +143,6 @@
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
-            background: rgba(255, 210, 160, 0.7);
         }
 
         .ctrl-btn:active {
@@ -152,17 +160,17 @@
         /* 适配不同横屏宽度，按钮稍缩放但保持手感 */
         @media (max-width: 850px) and (orientation: landscape) {
             .ctrl-btn { width: 68px; height: 68px; font-size: 2.6rem; }
-            .bottom-controls { gap: 1.5rem; padding: 10px 16px 18px; }
+            .bottom-controls { gap: 1.5rem; padding: 10px 24px 18px 24px; }
         }
 
         @media (max-width: 700px) and (orientation: landscape) {
             .ctrl-btn { width: 62px; height: 62px; font-size: 2.3rem; }
-            .bottom-controls { gap: 1.2rem; padding: 8px 12px 16px; }
+            .bottom-controls { gap: 1.2rem; padding: 8px 20px 16px 20px; }
         }
 
         @media (max-width: 550px) and (orientation: landscape) {
             .ctrl-btn { width: 54px; height: 54px; font-size: 2rem; }
-            .bottom-controls { gap: 1rem; padding: 6px 12px 14px; }
+            .bottom-controls { gap: 1rem; padding: 6px 16px 14px 16px; }
         }
 
         /* 旋转提示优雅弹窗 */
@@ -215,26 +223,7 @@
             }
         }
 
-        /* 游戏内提示浮层，无圆角更干净 */
-        .info-tip {
-            position: absolute;
-            bottom: 90px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: #FFFAD0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            padding: 5px 12px;
-            width: fit-content;
-            margin: 0 auto;
-            pointer-events: none;
-            z-index: 15;
-            border-radius: 30px;
-            letter-spacing: 1px;
-        }
+        /* 彻底删除info-tip样式，不再渲染提示条 */
     </style>
 </head>
 <body>
@@ -245,12 +234,17 @@
         <div class="start-sub">全屏横屏 · 收集星辉 · 火箭归乡</div>
         <button class="start-btn" id="startBtn">逃离月球</button>
     </div>
+    <!-- 按钮布局修改：左右键左下角，跳跃键右下角 -->
     <div class="bottom-controls">
-        <button class="ctrl-btn left-btn">←</button>
-        <button class="ctrl-btn right-btn">→</button>
-        <button class="ctrl-btn jump-btn">↑</button>
+        <div class="left-buttons">
+            <button class="ctrl-btn left-btn">←</button>
+            <button class="ctrl-btn right-btn">→</button>
+        </div>
+        <div class="right-button">
+            <button class="ctrl-btn jump-btn">↑</button>
+        </div>
     </div>
-    <div class="info-tip">⭐ 收集星光 · 躲避尖刺与鬼火 · 触碰火箭胜利 ⭐</div>
+    <!-- 彻底删除info-tip元素 -->
 </div>
 <div class="rotate-tip" id="rotateTip">
     <div class="rotate-icon">📱🔄</div>
@@ -276,11 +270,10 @@
         function resizeCanvas() {
             const container = canvas.parentElement;
             const rect = container.getBoundingClientRect();
-            // 让canvas实际像素匹配设备，但绘图始终基于LOGIC_W/LOGIC_H逻辑坐标
             canvas.width = LOGIC_W;
             canvas.height = LOGIC_H;
             canvas.style.width = '100%';
-            canvas.style.height = '100%';
+            canvas.style.height = 'calc(100% - 110px)'; // 同步高度，画面上移
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
