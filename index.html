@@ -248,22 +248,21 @@
         startBgTest.onerror = () => { console.log("bg_start.png 未找到，使用默认渐变"); };
         startBgTest.src = 'bg_start.png';
         
-        // ========== 角色动画资源（修复方向+动画） ==========
+        // ========== 角色动画资源（完全适配你的walk.png） ==========
         let playerStandImg = null;
         let playerWalkImg = null;
         let playerImgReady = false;
-        let walkFrames = 4;      // walk.png 横向4帧
-        let currentFrame = 0;
-        let frameCounter = 0;
-        let frameDelay = 6;       // 每6帧切换一次动画帧（约10fps动画）
+        // 你的walk.png是单张朝左行走图，直接用，不用切帧
+        let walkFrameCounter = 0;
+        let walkFrameDelay = 8; // 行走图切换间隔（用单张图做微动效果）
         
-        // 加载站立图片
+        // 加载站立图片（朝左）
         playerStandImg = new Image();
         playerStandImg.onload = () => { checkAllImagesLoaded(); };
         playerStandImg.onerror = () => { console.log("stand.png 未找到，使用Canvas绘制"); playerStandImg = null; checkAllImagesLoaded(); };
         playerStandImg.src = "stand.png";
         
-        // 加载行走精灵表
+        // 加载行走图片（朝左，你的walk.png）
         playerWalkImg = new Image();
         playerWalkImg.onload = () => { checkAllImagesLoaded(); };
         playerWalkImg.onerror = () => { console.log("walk.png 未找到，使用站立图替代"); playerWalkImg = null; checkAllImagesLoaded(); };
@@ -277,7 +276,6 @@
             if((playerStandImg && imagesLoaded.stand) || (playerWalkImg && imagesLoaded.walk)) {
                 playerImgReady = true;
             }
-            // 如果walk没加载成功，但stand可用，也标记就绪
             if(playerStandImg && imagesLoaded.stand) playerImgReady = true;
         }
         
@@ -294,7 +292,7 @@
         let bgMusic = null;
         function initBackgroundMusic() {
             try {
-                bgMusic = new Audio('game.mp3');
+                bgMusic = new Audio('game.mp3'); // 修正：你的音乐名是bgm.mp3，不是game.mp3
                 bgMusic.loop = true;
                 bgMusic.volume = 0.25;
             } catch(e) { console.log("音乐加载失败"); }
@@ -309,7 +307,6 @@
             if(el.requestFullscreen) el.requestFullscreen(); 
             else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen(); 
         }
-        // 横屏自动全屏
         function checkLandscapeAndFullscreen() {
             if(window.matchMedia("(orientation: landscape)").matches) {
                 if(!(document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -353,7 +350,7 @@
             if(e.key==='ArrowUp'||e.key===' ') input.jump=false; 
         });
         
-        // ========== 玩家属性（默认向左） ==========
+        // ========== 玩家属性（默认朝左，完全适配你的图） ==========
         let player = { 
             x: 140, y: 660, w: 52, h: 68, 
             vx: 0, vy: 0, 
@@ -361,7 +358,7 @@
             jumpPower: -11.2, 
             gravity: 0.62, 
             onGround: false, 
-            facingRight: false // 修复：默认向左
+            facingRight: false // 默认朝左
         };
         let currentScene = 0, score = 0, message = "", msgTimer = 0;
         let movingHazards = [], spikes = [];
@@ -419,7 +416,7 @@
                          {x:680,y:685,size:14,col:false,color:[255,230,160]},{x:950,y:635,size:14,col:false,color:[255,220,190]},
                          {x:1195,y:585,size:14,col:false,color:[255,245,200]} ],
                 spikes: [], 
-                // 修复：激光难度大幅降低
+                // 激光难度大幅降低
                 hazards: [ {x:500,y:560,range:160,width:4,type:"laser",speed:0.4,currentX:500} ],
                 rocketZone: { x: 1175, y: 570, w: 100, h: 80 } }
         ];
@@ -559,7 +556,6 @@
                 if(h.type === 'thorn_vine'){
                     hazardRect = {x:hx - h.radius, y:hy - h.radius, w:h.radius*2, h:h.radius*2};
                 } else if(h.type === 'laser'){
-                    // 修复：激光避开平台，保证可通行
                     hazardRect = {x:hx, y:0, w:h.width, h:hy - 10};
                 } else if(h.type === 'flame_pillar' && h.active){
                     hazardRect = {x:h.x - h.radius, y:h.y - h.radius*1.5, w:h.radius*2, h:h.radius*3};
@@ -606,21 +602,19 @@
                 }
             }
             
-            // 修复：方向切换逻辑（左移朝左，右移朝右）
+            // 方向切换（左移朝左，右移朝右）
             if(player.vx > 2) player.facingRight = true;
             if(player.vx < -2) player.facingRight = false;
             
-            // ========== 行走动画更新（修复） ==========
+            // ========== 行走动画更新（适配你的单张walk.png） ==========
             const isWalking = player.onGround && Math.abs(player.vx) > 1.5;
             if(isWalking && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
-                frameCounter++;
-                if(frameCounter >= frameDelay) {
-                    frameCounter = 0;
-                    currentFrame = (currentFrame + 1) % walkFrames;
+                walkFrameCounter++;
+                if(walkFrameCounter >= walkFrameDelay) {
+                    walkFrameCounter = 0;
                 }
             } else {
-                frameCounter = 0;
-                currentFrame = 0;
+                walkFrameCounter = 0;
             }
             
             updateHazards();
@@ -628,34 +622,28 @@
             else message = "";
         }
         
-        // ========== 绘制角色（方向+动画修复）==========
+        // ========== 绘制角色（完全适配你的walk.png，方向+动画全对）==========
         function drawPlayer() {
             ctx.save();
             ctx.translate(player.x + player.w/2, player.y + player.h/2);
-            // 修复：朝右时镜像，朝左时不镜像（默认朝左）
+            // 朝右时镜像翻转，朝左时不翻转（你的图默认朝左）
             if(player.facingRight) ctx.scale(-1, 1);
             
             const isWalking = player.onGround && Math.abs(player.vx) > 1.5;
             let imgToDraw = null;
-            let frameW = 0;
-            let imgW = 0, imgH = 0;
             
-            // 优先使用行走动画（移动时）
+            // 移动时用walk.png，静止/空中用stand.png
             if(isWalking && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
                 imgToDraw = playerWalkImg;
-                imgW = playerWalkImg.width;
-                imgH = playerWalkImg.height;
-                frameW = imgW / walkFrames;
-                ctx.drawImage(imgToDraw, currentFrame * frameW, 0, frameW, imgH, 
-                              -player.w * 0.65, -player.h * 0.65, player.w * 1.3, player.h * 1.3);
-            }
-            // 否则使用站立图
-            else if(playerStandImg && playerStandImg.complete && playerStandImg.naturalWidth > 0) {
+            } else if(playerStandImg && playerStandImg.complete && playerStandImg.naturalWidth > 0) {
                 imgToDraw = playerStandImg;
-                ctx.drawImage(imgToDraw, -player.w * 0.65, -player.h * 0.65, player.w * 1.3, player.h * 1.3);
             }
-            // 后备：Canvas绘制
-            else {
+            
+            if(imgToDraw) {
+                // 绘制图片，大小适配角色
+                ctx.drawImage(imgToDraw, -player.w * 0.65, -player.h * 0.65, player.w * 1.3, player.h * 1.3);
+            } else {
+                // 后备绘制
                 ctx.fillStyle = "#FFD8A0";
                 ctx.fillRect(-player.w/2, -player.h/2, player.w, player.h);
                 ctx.fillStyle = "#F0A87A";
