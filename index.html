@@ -218,7 +218,7 @@
         <div class="left-buttons"><button class="ctrl-btn left-btn">←</button><button class="ctrl-btn right-btn">→</button></div>
         <div class="right-button"><button class="ctrl-btn jump-btn">↑</button></div>
     </div>
-    <div class="fullscreen-tip" id="fullscreenTip">✨ 点击画面全屏 · 横屏沉浸体验 ✨</div>
+    <div class="fullscreen-tip" id="fullscreenTip">✨ 横屏自动全屏 · 沉浸体验 ✨</div>
 </div>
 <div class="rotate-tip" id="rotateTip"><div class="rotate-icon">📱🔄</div><div class="rotate-text">请打开「自动旋转」<br>横屏获得最佳体验</div></div>
 
@@ -245,9 +245,10 @@
             startOverlay.style.backgroundSize = 'cover';
             startOverlay.style.backgroundPosition = 'center';
         };
+        startBgTest.onerror = () => { console.log("bg_start.png 未找到，使用默认渐变"); };
         startBgTest.src = 'bg_start.png';
         
-        // ========== 角色动画资源 ==========
+        // ========== 角色动画资源（修复方向+动画） ==========
         let playerStandImg = null;
         let playerWalkImg = null;
         let playerImgReady = false;
@@ -285,6 +286,7 @@
         for(let i=0;i<5;i++){ 
             let img = new Image(); 
             img.src = `bg_scene${i}.png`; 
+            img.onerror = () => { console.log(`bg_scene${i}.png 未找到，使用默认渐变`); };
             bgImages[i]=img;
         }
         
@@ -295,18 +297,32 @@
                 bgMusic = new Audio('game.mp3');
                 bgMusic.loop = true;
                 bgMusic.volume = 0.25;
-            } catch(e) { }
+            } catch(e) { console.log("音乐加载失败"); }
         }
         function startBackgroundMusic() {
-            if(bgMusic && bgMusic.paused && gameRunning) bgMusic.play().catch(e => {});
+            if(bgMusic && bgMusic.paused && gameRunning) bgMusic.play().catch(e => console.log("音乐播放失败"));
         }
         
-        // 全屏
+        // 全屏（横屏自动触发）
         function requestFullscreen() { 
             const el = gameContainer; 
             if(el.requestFullscreen) el.requestFullscreen(); 
             else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen(); 
         }
+        // 横屏自动全屏
+        function checkLandscapeAndFullscreen() {
+            if(window.matchMedia("(orientation: landscape)").matches) {
+                if(!(document.fullscreenElement || document.webkitFullscreenElement)) {
+                    requestFullscreen();
+                }
+                fullscreenTip.classList.add('fade-out');
+                setTimeout(() => fullscreenTip.style.display = 'none', 500);
+            } else {
+                fullscreenTip.classList.remove('fade-out');
+                fullscreenTip.style.display = 'block';
+            }
+        }
+        setInterval(checkLandscapeAndFullscreen, 300);
         canvas.addEventListener('click', () => { 
             if(!(document.fullscreenElement || document.webkitFullscreenElement)) requestFullscreen(); 
         });
@@ -337,7 +353,7 @@
             if(e.key==='ArrowUp'||e.key===' ') input.jump=false; 
         });
         
-        // 玩家属性
+        // ========== 玩家属性（默认向左） ==========
         let player = { 
             x: 140, y: 660, w: 52, h: 68, 
             vx: 0, vy: 0, 
@@ -345,12 +361,12 @@
             jumpPower: -11.2, 
             gravity: 0.62, 
             onGround: false, 
-            facingRight: true
+            facingRight: false // 修复：默认向左
         };
         let currentScene = 0, score = 0, message = "", msgTimer = 0;
         let movingHazards = [], spikes = [];
         
-        // ========== 场景数据（已降低难度）==========
+        // ========== 场景数据（激光关卡难度大幅降低）==========
         const scenes = [
             { name:"🌙 月之森", 
                 platforms: [ {x:0,y:750,w:480,h:28,type:"ground"},{x:540,y:750,w:900,h:28,type:"ground"},
@@ -402,7 +418,9 @@
                 stars: [ {x:150,y:685,size:14,col:false,color:[255,220,180]},{x:410,y:635,size:14,col:false,color:[220,200,255]},
                          {x:680,y:685,size:14,col:false,color:[255,230,160]},{x:950,y:635,size:14,col:false,color:[255,220,190]},
                          {x:1195,y:585,size:14,col:false,color:[255,245,200]} ],
-                spikes: [], hazards: [ {x:500,y:560,range:220,width:8,type:"laser",speed:0.8,currentX:500} ],
+                spikes: [], 
+                // 修复：激光难度大幅降低
+                hazards: [ {x:500,y:560,range:160,width:4,type:"laser",speed:0.4,currentX:500} ],
                 rocketZone: { x: 1175, y: 570, w: 100, h: 80 } }
         ];
         
@@ -434,7 +452,7 @@
             player.vy = 0;
             player.vx = 0;
             player.onGround = true;
-            player.facingRight = true;
+            player.facingRight = false; // 场景切换后默认向左
             if(newIdx===4) message="🚀 触碰火箭，逃离月球！🚀";
             else message="✨ 收集星辉 躲避灾厄 ✨";
             msgTimer=90;
@@ -458,7 +476,7 @@
             player.vy = 0;
             player.vx = 0;
             player.onGround = true;
-            player.facingRight = true;
+            player.facingRight = false; // 重置后默认向左
             gameRunning = true;
             gameVictory = false;
             message = "逃离月球 · 启程！";
@@ -541,7 +559,8 @@
                 if(h.type === 'thorn_vine'){
                     hazardRect = {x:hx - h.radius, y:hy - h.radius, w:h.radius*2, h:h.radius*2};
                 } else if(h.type === 'laser'){
-                    hazardRect = {x:hx, y:0, w:h.width, h:LOGIC_H};
+                    // 修复：激光避开平台，保证可通行
+                    hazardRect = {x:hx, y:0, w:h.width, h:hy - 10};
                 } else if(h.type === 'flame_pillar' && h.active){
                     hazardRect = {x:h.x - h.radius, y:h.y - h.radius*1.5, w:h.radius*2, h:h.radius*3};
                 } else continue;
@@ -587,12 +606,11 @@
                 }
             }
             
-            // 方向
+            // 修复：方向切换逻辑（左移朝左，右移朝右）
             if(player.vx > 2) player.facingRight = true;
             if(player.vx < -2) player.facingRight = false;
             
-            // ========== 行走动画更新 ==========
-            // 只有在地面且水平移动速度足够大时才播放行走动画
+            // ========== 行走动画更新（修复） ==========
             const isWalking = player.onGround && Math.abs(player.vx) > 1.5;
             if(isWalking && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
                 frameCounter++;
@@ -601,7 +619,6 @@
                     currentFrame = (currentFrame + 1) % walkFrames;
                 }
             } else {
-                // 静止或空中时重置动画帧
                 frameCounter = 0;
                 currentFrame = 0;
             }
@@ -611,24 +628,24 @@
             else message = "";
         }
         
-        // ========== 绘制角色（带动画）==========
+        // ========== 绘制角色（方向+动画修复）==========
         function drawPlayer() {
             ctx.save();
             ctx.translate(player.x + player.w/2, player.y + player.h/2);
-            if(!player.facingRight) ctx.scale(-1, 1);
+            // 修复：朝右时镜像，朝左时不镜像（默认朝左）
+            if(player.facingRight) ctx.scale(-1, 1);
             
             const isWalking = player.onGround && Math.abs(player.vx) > 1.5;
             let imgToDraw = null;
             let frameW = 0;
             let imgW = 0, imgH = 0;
             
-            // 优先使用行走动画（如果在移动）
+            // 优先使用行走动画（移动时）
             if(isWalking && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
                 imgToDraw = playerWalkImg;
                 imgW = playerWalkImg.width;
                 imgH = playerWalkImg.height;
                 frameW = imgW / walkFrames;
-                // 从精灵表中截取当前帧
                 ctx.drawImage(imgToDraw, currentFrame * frameW, 0, frameW, imgH, 
                               -player.w * 0.65, -player.h * 0.65, player.w * 1.3, player.h * 1.3);
             }
@@ -750,9 +767,9 @@
                     }
                 } else if(h.type === 'laser'){
                     ctx.fillStyle = "rgba(255,100,80,0.6)";
-                    ctx.fillRect(h.currentX, 0, h.width, LOGIC_H);
+                    ctx.fillRect(h.currentX, 0, h.width, h.y - 10);
                     ctx.fillStyle = "rgba(255,200,100,0.8)";
-                    ctx.fillRect(h.currentX + 2, 0, h.width - 4, LOGIC_H);
+                    ctx.fillRect(h.currentX + 1, 0, h.width - 2, h.y - 10);
                 } else if(h.type === 'flame_pillar' && h.active){
                     ctx.fillStyle = "#FF5A2A";
                     ctx.shadowBlur = 14;
@@ -840,7 +857,7 @@
             gameVictory = false;
             initBackgroundMusic();
             startBackgroundMusic();
-            setTimeout(() => requestFullscreen(), 200);
+            setTimeout(() => checkLandscapeAndFullscreen(), 200);
         });
         
         function checkRestart(){ 
