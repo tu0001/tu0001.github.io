@@ -54,7 +54,7 @@
             display: block;
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover; /* 改为cover，实现真正全屏，无黑边 */
             background: #0b0822;
         }
 
@@ -118,13 +118,12 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 28px calc(12px + env(safe-area-inset-bottom, 0));
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(20px);
+            background: rgba(0, 0, 0, 0.2); /* 80%透明，仅20%不透明度 */
+            backdrop-filter: blur(8px);
             z-index: 20;
             pointer-events: auto;
             min-height: 95px;
-            border-top: 1px solid rgba(255, 220, 160, 0.3);
-            /* 初始隐藏，点击开始后显示 */
+            border-top: 1px solid rgba(255, 220, 160, 0.2);
             display: none;
         }
 
@@ -135,13 +134,13 @@
             width: 80px;
             height: 80px;
             border-radius: 60px;
-            background: rgba(255, 245, 225, 0.9);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 210, 140, 0.8);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 245, 225, 0.2); /* 80%透明按钮 */
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 210, 140, 0.3);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
             font-size: 3.2rem;
             font-weight: bold;
-            color: #3a2a2a;
+            color: rgba(58, 42, 42, 0.9);
             cursor: pointer;
             transition: 0.05s linear;
             display: flex;
@@ -149,26 +148,26 @@
             justify-content: center;
             touch-action: manipulation;
         }
-        .ctrl-btn:active { transform: scale(0.93); background: rgba(255, 210, 160, 0.96); }
-        .jump-btn { background: rgba(255, 200, 220, 0.9); border-color: rgba(255, 150, 190, 0.8); }
+        .ctrl-btn:active { transform: scale(0.93); background: rgba(255, 210, 160, 0.3); }
+        .jump-btn { background: rgba(255, 200, 220, 0.2); border-color: rgba(255, 150, 190, 0.3); }
 
-        /* 音乐开关按钮样式 */
+        /* 缩小版音乐开关按钮 */
         .music-toggle-btn {
             position: fixed;
-            top: 16px;
-            left: 16px;
-            width: 56px;
-            height: 56px;
+            top: 8px;
+            left: 8px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,220,160,0.5);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,220,160,0.4);
             z-index: 40;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 18px;
             transition: 0.1s linear;
         }
         .music-toggle-btn:active { transform: scale(0.92); }
@@ -177,12 +176,12 @@
             .ctrl-btn { width: 70px; height: 70px; font-size: 2.8rem; }
             .bottom-controls { padding: 8px 20px calc(8px + env(safe-area-inset-bottom,0)); min-height: 85px; }
             .left-buttons { gap: 1.2rem; }
-            .music-toggle-btn { width: 50px; height: 50px; font-size: 24px; top: 12px; left: 12px; }
+            .music-toggle-btn { width: 32px; height: 32px; font-size: 16px; top: 6px; left: 6px; }
         }
         @media (max-width: 650px) and (orientation: landscape) {
             .ctrl-btn { width: 62px; height: 62px; font-size: 2.4rem; }
             .bottom-controls { padding: 6px 16px calc(6px + env(safe-area-inset-bottom,0)); min-height: 78px; }
-            .music-toggle-btn { width: 46px; height: 46px; font-size: 22px; top: 10px; left: 10px; }
+            .music-toggle-btn { width: 28px; height: 28px; font-size: 14px; top: 4px; left: 4px; }
         }
 
         .fullscreen-tip {
@@ -265,7 +264,7 @@
         
         let gameRunning = false;
         let gameVictory = false;
-        let musicMuted = false; // 音乐静音状态
+        let musicMuted = false;
         
         // 加载启动背景图
         const startBgTest = new Image();
@@ -277,20 +276,18 @@
         startBgTest.onerror = () => { console.log("bg_start.png 未找到，使用默认渐变"); };
         startBgTest.src = 'bg_start.png';
         
-        // ========== 角色动画资源（适配你的walk.png） ==========
+        // 角色动画资源
         let playerStandImg = null;
         let playerWalkImg = null;
         let playerImgReady = false;
         let walkFrameCounter = 0;
         let walkFrameDelay = 8;
         
-        // 加载站立图片（朝左）
         playerStandImg = new Image();
         playerStandImg.onload = () => { checkAllImagesLoaded(); };
         playerStandImg.onerror = () => { console.log("stand.png 未找到，使用Canvas绘制"); playerStandImg = null; checkAllImagesLoaded(); };
         playerStandImg.src = "stand.png";
         
-        // 加载行走图片（朝左，你的walk.png）
         playerWalkImg = new Image();
         playerWalkImg.onload = () => { checkAllImagesLoaded(); };
         playerWalkImg.onerror = () => { console.log("walk.png 未找到，使用站立图替代"); playerWalkImg = null; checkAllImagesLoaded(); };
@@ -315,11 +312,11 @@
             bgImages[i]=img;
         }
         
-        // 音乐（修正为你的bgm.mp3）
+        // 音乐名固定为game.mp3
         let bgMusic = null;
         function initBackgroundMusic() {
             try {
-                bgMusic = new Audio('bgm.mp3');
+                bgMusic = new Audio('game.mp3');
                 bgMusic.loop = true;
                 bgMusic.volume = 0.25;
                 bgMusic.muted = musicMuted;
@@ -330,7 +327,7 @@
             if(bgMusic && bgMusic.paused && gameRunning && !musicMuted) bgMusic.play().catch(e => console.log("音乐播放失败"));
         }
         
-        // 音乐开关按钮逻辑
+        // 音乐开关
         musicToggleBtn.addEventListener('click', () => {
             musicMuted = !musicMuted;
             if(bgMusic) {
@@ -340,7 +337,7 @@
             musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
         });
         
-        // 全屏（横屏自动触发，开始界面强制全屏）
+        // 全屏（强制横屏全屏）
         function requestFullscreen() { 
             const el = gameContainer; 
             if(el.requestFullscreen) el.requestFullscreen(); 
@@ -358,7 +355,6 @@
                 fullscreenTip.style.display = 'block';
             }
         }
-        // 页面加载时立即检查横屏并全屏
         checkLandscapeAndFullscreen();
         setInterval(checkLandscapeAndFullscreen, 300);
         canvas.addEventListener('click', () => { 
@@ -391,7 +387,7 @@
             if(e.key==='ArrowUp'||e.key===' ') input.jump=false; 
         });
         
-        // ========== 玩家属性（默认朝左） ==========
+        // 玩家属性
         let player = { 
             x: 140, y: 660, w: 52, h: 68, 
             vx: 0, vy: 0, 
@@ -404,7 +400,7 @@
         let currentScene = 0, score = 0, message = "", msgTimer = 0;
         let movingHazards = [], spikes = [];
         
-        // ========== 场景数据（激光关卡难度降低）==========
+        // 场景数据
         const scenes = [
             { name:"🌙 月之森", 
                 platforms: [ {x:0,y:750,w:480,h:28,type:"ground"},{x:540,y:750,w:900,h:28,type:"ground"},
@@ -646,15 +642,14 @@
             if(player.vx > 2) player.facingRight = true;
             if(player.vx < -2) player.facingRight = false;
             
-            // ========== 行走动画更新（核心修改：跳跃不重置，仅站定切站立） ==========
-            const isMoving = Math.abs(player.vx) > 1.5; // 只要有水平移动就保持跑步动画
+            // 行走动画逻辑（跳跃不重置，仅站定切站立）
+            const isMoving = Math.abs(player.vx) > 1.5;
             if(isMoving && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
                 walkFrameCounter++;
                 if(walkFrameCounter >= walkFrameDelay) {
                     walkFrameCounter = 0;
                 }
             } else if(!player.onGround) {
-                // 空中但有移动，继续保持跑步动画，不重置
                 if(playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
                     walkFrameCounter++;
                     if(walkFrameCounter >= walkFrameDelay) {
@@ -662,7 +657,6 @@
                     }
                 }
             } else {
-                // 只有站在地面且完全静止，才切回站立动画
                 walkFrameCounter = 0;
             }
             
@@ -671,7 +665,7 @@
             else message = "";
         }
         
-        // ========== 绘制角色 ==========
+        // 绘制角色
         function drawPlayer() {
             ctx.save();
             ctx.translate(player.x + player.w/2, player.y + player.h/2);
@@ -680,11 +674,9 @@
             const isMoving = Math.abs(player.vx) > 1.5;
             let imgToDraw = null;
             
-            // 只要有移动（包括跳跃中移动），就用walk.png；仅站定用stand.png
             if(isMoving && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
                 imgToDraw = playerWalkImg;
             } else if(!player.onGround && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
-                // 空中无移动，也保持walk.png
                 imgToDraw = playerWalkImg;
             } else if(playerStandImg && playerStandImg.complete && playerStandImg.naturalWidth > 0) {
                 imgToDraw = playerStandImg;
@@ -887,11 +879,10 @@
             requestAnimationFrame(gameLoop);
         }
         
-        // 开始按钮逻辑：点击后显示操作按钮
         startBtn.addEventListener('click', () => { 
             fullReset(); 
             startOverlay.style.display = 'none'; 
-            bottomControls.style.display = 'flex'; // 显示操作按钮
+            bottomControls.style.display = 'flex';
             gameRunning = true;
             gameVictory = false;
             initBackgroundMusic();
@@ -902,7 +893,7 @@
         function checkRestart(){ 
             if((gameVictory || (!gameRunning && startOverlay.style.display !== 'flex')) && startOverlay.style.display !== 'flex' && !gameRunning) {
                 startOverlay.style.display = 'flex';
-                bottomControls.style.display = 'none'; // 重启时隐藏操作按钮
+                bottomControls.style.display = 'none';
             }
         }
         setInterval(checkRestart, 200);
