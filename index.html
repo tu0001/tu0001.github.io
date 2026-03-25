@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
-    <title>辉夜姬·逃离月球 | 真全屏版</title>
+    <title>辉夜姬·五境传说 | 月华归乡·火箭终章</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 彻底移除所有边距，让内容真正占满 */
         html, body {
             width: 100%;
             height: 100%;
@@ -21,13 +20,11 @@
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: #000000;
+            background: #000;
         }
 
         body {
-            font-family: 'Segoe UI', 'Courier New', monospace;
+            font-family: 'Segoe UI', 'Noto Sans CJK SC', 'Courier New', monospace;
         }
 
         .game-container {
@@ -38,13 +35,11 @@
             bottom: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(ellipse at 30% 40%, #0f0a2a, #020008);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Canvas 区域：动态计算剩余高度 */
         .canvas-area {
             flex: 1;
             position: relative;
@@ -57,158 +52,137 @@
 
         #gameCanvas {
             display: block;
-            width: auto;
+            width: 100%;
             height: 100%;
-            max-width: 100%;
             object-fit: contain;
             background: #0b0822;
         }
 
-        /* 启动界面覆盖层 */
+        /* 启动界面 - 支持背景图 */
         .start-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(18, 10, 45, 0.98), rgba(6, 3, 20, 0.98));
-            backdrop-filter: blur(10px);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 30;
+            backdrop-filter: brightness(0.7) blur(2px);
         }
 
         .start-title {
-            font-size: clamp(32px, 8vw, 70px);
+            font-size: clamp(36px, 10vw, 80px);
             font-weight: bold;
             color: #FFF5E0;
-            text-shadow: 0 0 25px #ffaacc, 0 0 45px #b87eff;
+            text-shadow: 0 0 30px #ff88aa, 0 0 50px #b56eff, 0 5px 15px rgba(0,0,0,0.5);
             margin-bottom: 20px;
-            letter-spacing: 6px;
+            letter-spacing: 12px;
+            font-family: 'Noto Sans CJK SC', monospace;
         }
 
         .start-sub {
-            font-size: clamp(14px, 4vw, 22px);
-            color: #ffdfb3;
-            margin-bottom: 40px;
+            font-size: clamp(16px, 5vw, 24px);
+            color: #ffefc0;
+            margin-bottom: 50px;
             text-align: center;
             padding: 0 24px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            letter-spacing: 2px;
         }
 
         .start-btn {
-            background: radial-gradient(circle at 30% 30%, #ffc0dc, #ff5f8f);
+            background: linear-gradient(135deg, #ffb7c5, #ff6f9f);
             border: none;
-            padding: 12px 48px;
-            font-size: clamp(24px, 5vw, 40px);
+            padding: 14px 56px;
+            font-size: clamp(26px, 6vw, 44px);
             font-weight: bold;
             color: #2a1422;
-            border-radius: 80px;
+            border-radius: 60px;
             cursor: pointer;
-            box-shadow: 0 10px 0 #8b3a5a;
-            transition: 0.06s linear;
+            box-shadow: 0 12px 0 #8b3a5a;
+            transition: 0.08s linear;
             font-family: monospace;
+            letter-spacing: 4px;
         }
 
         .start-btn:active {
-            transform: translateY(5px);
-            box-shadow: 0 4px 0 #8b3a5a;
+            transform: translateY(6px);
+            box-shadow: 0 5px 0 #8b3a5a;
         }
 
-        /* 底部按钮栏：使用安全区域，确保不被遮挡 */
+        /* 底部按钮栏 */
         .bottom-controls {
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0));
-            background: transparent;
+            padding: 10px 28px calc(12px + env(safe-area-inset-bottom, 0));
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
             z-index: 20;
             pointer-events: auto;
-            /* 确保在可视区域内 */
-            min-height: 90px;
+            min-height: 95px;
+            border-top: 1px solid rgba(255, 220, 160, 0.3);
         }
 
-        .left-buttons {
-            display: flex;
-            gap: 1.2rem;
-        }
-
-        .right-button {
-            display: flex;
-        }
+        .left-buttons { display: flex; gap: 1.5rem; }
+        .right-button { display: flex; }
 
         .ctrl-btn {
-            width: 75px;
-            height: 75px;
-            border-radius: 50px;
-            background: rgba(255, 235, 205, 0.92);
+            width: 80px;
+            height: 80px;
+            border-radius: 60px;
+            background: rgba(255, 245, 225, 0.88);
             backdrop-filter: blur(8px);
-            border: 2px solid rgba(255, 220, 150, 0.9);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-            font-size: 3rem;
+            border: 1px solid rgba(255, 210, 140, 0.8);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+            font-size: 3.2rem;
             font-weight: bold;
-            color: #2a1a2e;
+            color: #3a2a2a;
             cursor: pointer;
             transition: 0.05s linear;
             display: flex;
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
         }
+        .ctrl-btn:active { transform: scale(0.93); background: rgba(255, 210, 160, 0.96); }
+        .jump-btn { background: rgba(255, 200, 220, 0.9); border-color: rgba(255, 150, 190, 0.8); }
 
-        .ctrl-btn:active {
-            transform: scale(0.94);
-            background: rgba(255, 200, 140, 0.98);
-        }
-
-        .jump-btn {
-            background: rgba(255, 180, 210, 0.92);
-            border-color: rgba(255, 140, 180, 0.8);
-        }
-
-        /* 响应式按钮尺寸 */
         @media (max-width: 850px) and (orientation: landscape) {
-            .ctrl-btn { width: 68px; height: 68px; font-size: 2.6rem; }
-            .bottom-controls { padding: 10px 18px calc(10px + env(safe-area-inset-bottom, 0)); min-height: 80px; }
-            .left-buttons { gap: 1rem; }
+            .ctrl-btn { width: 70px; height: 70px; font-size: 2.8rem; }
+            .bottom-controls { padding: 8px 20px calc(8px + env(safe-area-inset-bottom,0)); min-height: 85px; }
+            .left-buttons { gap: 1.2rem; }
         }
-
-        @media (max-width: 700px) and (orientation: landscape) {
+        @media (max-width: 650px) and (orientation: landscape) {
             .ctrl-btn { width: 62px; height: 62px; font-size: 2.4rem; }
-            .bottom-controls { padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0)); min-height: 75px; }
+            .bottom-controls { padding: 6px 16px calc(6px + env(safe-area-inset-bottom,0)); min-height: 78px; }
         }
 
-        @media (max-width: 600px) and (orientation: landscape) {
-            .ctrl-btn { width: 56px; height: 56px; font-size: 2.2rem; }
-            .bottom-controls { padding: 6px 14px calc(6px + env(safe-area-inset-bottom, 0)); min-height: 70px; }
-        }
-
-        /* 全屏提示 */
         .fullscreen-tip {
             position: fixed;
             bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.6);
             backdrop-filter: blur(8px);
-            padding: 8px 20px;
+            padding: 6px 18px;
             border-radius: 40px;
-            color: #ffdd99;
-            font-size: 14px;
+            color: #ffddbb;
+            font-size: 12px;
             z-index: 25;
             pointer-events: none;
             white-space: nowrap;
-            font-family: monospace;
             transition: opacity 0.5s;
         }
-        .fullscreen-tip.fade-out {
-            opacity: 0;
-        }
+        .fullscreen-tip.fade-out { opacity: 0; }
 
-        /* 旋转提示 */
         .rotate-tip {
             position: fixed;
             top: 0;
@@ -224,64 +198,34 @@
             align-items: center;
             color: #ffecb3;
             font-size: 26px;
-            font-weight: bold;
             text-align: center;
             font-family: monospace;
             pointer-events: none;
         }
-        .rotate-tip.hidden {
-            display: none;
-        }
-        .rotate-icon {
-            font-size: 90px;
-            margin-bottom: 20px;
-            animation: rotateHint 1.4s infinite ease;
-        }
-        .rotate-text {
-            background: rgba(0,0,0,0.7);
-            padding: 12px 32px;
-            border-radius: 60px;
-            font-size: 20px;
-            border: 1px solid #ffcc88;
-        }
-        @keyframes rotateHint {
-            0%,100%{ transform: rotate(0deg); }
-            40%{ transform: rotate(90deg); }
-            80%{ transform: rotate(90deg); }
-        }
-
-        @media (orientation: landscape) {
-            .rotate-tip {
-                display: none;
-            }
-        }
+        .rotate-tip.hidden { display: none; }
+        .rotate-icon { font-size: 90px; margin-bottom: 20px; animation: rotateHint 1.4s infinite ease; }
+        .rotate-text { background: rgba(0,0,0,0.7); padding: 12px 32px; border-radius: 60px; font-size: 20px; border: 1px solid #ffcc88; }
+        @keyframes rotateHint { 0%,100%{ transform: rotate(0deg); } 40%{ transform: rotate(90deg); } 80%{ transform: rotate(90deg); } }
+        @media (orientation: landscape) { .rotate-tip { display: none; } }
     </style>
 </head>
 <body>
 <div class="game-container" id="gameContainer">
     <div class="canvas-area">
         <canvas id="gameCanvas"></canvas>
-        <div class="start-overlay" id="startOverlay">
-            <div class="start-title">✨ 辉夜姬 ✨</div>
-            <div class="start-sub">全屏横屏 · 收集星辉 · 火箭归乡</div>
-            <button class="start-btn" id="startBtn">逃离月球</button>
+        <div class="start-overlay" id="startOverlay" style="background-image: url('bg_start.png'); background-size: cover; background-position: center;">
+            <div class="start-title">✨ 輝夜姬 ✨</div>
+            <div class="start-sub">五境传说 · 乘火箭归乡</div>
+            <button class="start-btn" id="startBtn">月 华 启 程</button>
         </div>
     </div>
     <div class="bottom-controls">
-        <div class="left-buttons">
-            <button class="ctrl-btn left-btn">←</button>
-            <button class="ctrl-btn right-btn">→</button>
-        </div>
-        <div class="right-button">
-            <button class="ctrl-btn jump-btn">↑</button>
-        </div>
+        <div class="left-buttons"><button class="ctrl-btn left-btn">←</button><button class="ctrl-btn right-btn">→</button></div>
+        <div class="right-button"><button class="ctrl-btn jump-btn">↑</button></div>
     </div>
-    <div class="fullscreen-tip" id="fullscreenTip">⚡ 点击游戏画面可全屏 ⚡</div>
+    <div class="fullscreen-tip" id="fullscreenTip">✨ 点击画面全屏 · 横屏沉浸体验 ✨</div>
 </div>
-<div class="rotate-tip" id="rotateTip">
-    <div class="rotate-icon">📱🔄</div>
-    <div class="rotate-text">请打开「自动旋转」<br>并将手机横屏以获得最佳体验</div>
-</div>
+<div class="rotate-tip" id="rotateTip"><div class="rotate-icon">📱🔄</div><div class="rotate-text">请打开「自动旋转」<br>横屏获得最佳体验</div></div>
 
 <script>
     (function(){
@@ -293,122 +237,64 @@
         const gameContainer = document.getElementById('gameContainer');
         const fullscreenTip = document.getElementById('fullscreenTip');
         
-        // 逻辑分辨率
-        const LOGIC_W = 1280;
-        const LOGIC_H = 720;
+        // 逻辑分辨率 1440x810 (画面更大，减少留白)
+        const LOGIC_W = 1440;
+        const LOGIC_H = 810;
         
         let gameRunning = false;
         let gameVictory = false;
         
-        // 全屏功能
-        function requestFullscreen() {
-            const element = gameContainer;
-            if (element.requestFullscreen) {
-                element.requestFullscreen();
-            } else if (element.webkitRequestFullscreen) {
-                element.webkitRequestFullscreen();
-            } else if (element.msRequestFullscreen) {
-                element.msRequestFullscreen();
+        // ========== 背景音乐 ==========
+        let bgMusic = null;
+        function initBackgroundMusic() {
+            try {
+                bgMusic = new Audio('game.mp3');
+                bgMusic.loop = true;
+                bgMusic.volume = 0.35; // 音量35%，轻柔背景
+                bgMusic.preload = 'auto';
+            } catch(e) { console.log("音乐加载失败", e); }
+        }
+        function startBackgroundMusic() {
+            if(bgMusic && bgMusic.paused) {
+                bgMusic.play().catch(e => console.log("音乐自动播放被阻止，需要用户交互"));
+            }
+        }
+        function stopBackgroundMusic() {
+            if(bgMusic && !bgMusic.paused) {
+                bgMusic.pause();
+                bgMusic.currentTime = 0;
             }
         }
         
-        // 退出全屏
-        function exitFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            }
-        }
-        
-        // 监听全屏变化，更新提示
-        document.addEventListener('fullscreenchange', updateFullscreenTip);
-        document.addEventListener('webkitfullscreenchange', updateFullscreenTip);
+        // 全屏API
+        function requestFullscreen() { const el = gameContainer; if(el.requestFullscreen) el.requestFullscreen(); else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen(); }
+        canvas.addEventListener('click', () => { if(!(document.fullscreenElement || document.webkitFullscreenElement)) requestFullscreen(); });
         
         function updateFullscreenTip() {
             const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
-            if (isFull) {
-                fullscreenTip.style.opacity = '0';
-                setTimeout(() => fullscreenTip.style.display = 'none', 500);
-            } else {
-                fullscreenTip.style.display = 'block';
-                fullscreenTip.style.opacity = '1';
-                fullscreenTip.classList.remove('fade-out');
-                // 5秒后淡出
-                setTimeout(() => {
-                    if (fullscreenTip.style.display !== 'none') {
-                        fullscreenTip.classList.add('fade-out');
-                    }
-                }, 5000);
-            }
+            if(isFull) { fullscreenTip.style.opacity='0'; setTimeout(()=>fullscreenTip.style.display='none',500); }
+            else { fullscreenTip.style.display='block'; fullscreenTip.classList.remove('fade-out'); setTimeout(()=>fullscreenTip.classList.add('fade-out'),4000); }
         }
+        document.addEventListener('fullscreenchange', updateFullscreenTip);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenTip);
+        setTimeout(()=>fullscreenTip.classList.add('fade-out'),4000);
         
-        // 点击canvas区域请求全屏（便于用户操作）
-        canvas.addEventListener('click', () => {
-            if (!(document.fullscreenElement || document.webkitFullscreenElement)) {
-                requestFullscreen();
-            }
-        });
+        function resizeCanvas() { canvas.width = LOGIC_W; canvas.height = LOGIC_H; }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
         
-        // 自动淡出提示
-        setTimeout(() => {
-            if (fullscreenTip.style.display !== 'none') {
-                fullscreenTip.classList.add('fade-out');
-            }
-        }, 5000);
+        // 背景图片 (各关卡独立)
+        const bgImages = [null, null, null, null, null];
+        const startBgImg = new Image();
+        startBgImg.src = "bg_start.png";
+        for(let i=0;i<5;i++){ let img = new Image(); img.src = `bg_scene${i}.png`; bgImages[i]=img; }
         
-        function resizeCanvas() {
-            canvas.width = LOGIC_W;
-            canvas.height = LOGIC_H;
-            // 动态调整canvas区域，确保不被浏览器UI遮挡
-            const container = document.querySelector('.canvas-area');
-            if (container) {
-                // 获取实际可用高度
-                const availableHeight = window.innerHeight - 90; // 预留按钮区域
-                const containerHeight = Math.max(availableHeight, 400);
-                container.style.height = `${containerHeight}px`;
-            }
-        }
-        
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-            // 重新计算布局
-            setTimeout(() => {
-                const btnArea = document.querySelector('.bottom-controls');
-                if (btnArea) {
-                    const btnHeight = btnArea.offsetHeight;
-                    const canvasArea = document.querySelector('.canvas-area');
-                    if (canvasArea) {
-                        canvasArea.style.height = `calc(100vh - ${btnHeight}px)`;
-                    }
-                }
-            }, 100);
-        });
-        
-        // 初始化布局
-        function initLayout() {
-            const btnArea = document.querySelector('.bottom-controls');
-            if (btnArea) {
-                const btnHeight = btnArea.offsetHeight;
-                const canvasArea = document.querySelector('.canvas-area');
-                if (canvasArea) {
-                    canvasArea.style.height = `calc(100vh - ${btnHeight}px)`;
-                }
-            }
-            resizeCanvas();
-        }
-        
-        setTimeout(initLayout, 100);
-        window.addEventListener('load', initLayout);
-        
-        // ========== 音效 ==========
+        // 音效
         let audioCtx = null;
         function initAudio() { if(!audioCtx) try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
         function playSound(type, vol=0.25) {
             if(!audioCtx || audioCtx.state !== 'running') return;
-            const now = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const now = audioCtx.currentTime, osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             if(type === 'jump') { osc.frequency.value=880; gain.gain.setValueAtTime(vol,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.25); osc.start(); osc.stop(now+0.22); }
             else if(type === 'collect') { osc.frequency.value=1568; gain.gain.setValueAtTime(vol,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.18); osc.start(); osc.stop(now+0.16);
@@ -419,65 +305,60 @@
         }
         function enableAudio() { if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); else if(!audioCtx) initAudio(); }
         
-        // ========== 按键 ==========
+        // 按键
         let input = { left: false, right: false, jump: false };
-        const leftBtn = document.querySelector('.left-btn'), rightBtn = document.querySelector('.right-btn'), jumpBtn = document.querySelector('.jump-btn');
-        function attach(btn, key) {
-            btn.addEventListener('touchstart',(e)=>{ e.preventDefault(); input[key]=true; enableAudio(); },{passive:false});
-            btn.addEventListener('touchend',(e)=>{ e.preventDefault(); input[key]=false; });
-            btn.addEventListener('mousedown',(e)=>{ e.preventDefault(); input[key]=true; enableAudio(); });
-            btn.addEventListener('mouseup',()=>{ input[key]=false; });
-            btn.addEventListener('mouseleave',()=>{ input[key]=false; });
-        }
+        const leftBtn=document.querySelector('.left-btn'), rightBtn=document.querySelector('.right-btn'), jumpBtn=document.querySelector('.jump-btn');
+        function attach(btn,key){ btn.addEventListener('touchstart',(e)=>{ e.preventDefault(); input[key]=true; enableAudio(); },{passive:false}); btn.addEventListener('touchend',(e)=>{ e.preventDefault(); input[key]=false; }); btn.addEventListener('mousedown',()=>{ input[key]=true; enableAudio(); }); btn.addEventListener('mouseup',()=>{ input[key]=false; }); btn.addEventListener('mouseleave',()=>{ input[key]=false; }); }
         attach(leftBtn,'left'); attach(rightBtn,'right'); attach(jumpBtn,'jump');
         window.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft'){ input.left=true; e.preventDefault(); enableAudio(); } if(e.key==='ArrowRight'){ input.right=true; e.preventDefault(); } if(e.key==='ArrowUp'||e.key===' '){ input.jump=true; e.preventDefault(); enableAudio(); } });
         window.addEventListener('keyup',(e)=>{ if(e.key==='ArrowLeft') input.left=false; if(e.key==='ArrowRight') input.right=false; if(e.key==='ArrowUp'||e.key===' ') input.jump=false; });
         
-        // ========== 玩家属性 ==========
-        let player = {
-            x: 120, y: 590, w: 48, h: 64, vx: 0, vy: 0,
-            speed: 5.8, jumpPower: -12.0, gravity: 0.74,
-            onGround: false, facingRight: false
-        };
-        let currentScene = 0;
-        let score = 0;
-        let message = "";
-        let msgTimer = 0;
-        let movingHazards = [];   
-        let spikes = [];           
+        // 玩家
+        let player = { x: 160, y: 660, w: 54, h: 70, vx:0, vy:0, speed: 6.2, jumpPower: -12.4, gravity: 0.76, onGround: false, facingRight: false };
+        let currentScene = 0, score = 0, message = "", msgTimer = 0;
+        let movingHazards = [], spikes = [];
         
-        const playerStandImg = new Image();
-        const playerMoveImg = new Image();
-        playerStandImg.src = "stand.png";  
-        playerMoveImg.src = "walk.png";   
-        let imagesReady = false;
-        playerStandImg.onload = () => { if(playerMoveImg.complete) imagesReady=true; };
-        playerMoveImg.onload = () => { if(playerStandImg.complete) imagesReady=true; };
-        setTimeout(()=>{ if(playerStandImg.complete && playerMoveImg.complete) imagesReady=true; }, 600);
+        // 角色立绘
+        const playerImg = new Image(); playerImg.src = "stand.png";
+        let playerImgReady = false; playerImg.onload = ()=> playerImgReady=true;
         
-        // ========== 5个场景 ==========
+        // ========== 五境 · 独立风格 + 全新障碍物 (画面放大版) ==========
         const scenes = [
-            { name:"月之森", bgTop:[38,28,78], bgMid:[70,52,112], bgBottom:[112,88,158],
-                platforms:[ {x:0,y:660,w:420,h:28,type:"ground"}, {x:480,y:660,w:800,h:28,type:"ground"}, {x:80,y:610,w:80,h:20,type:"questionBlock"}, {x:240,y:560,w:80,h:20,type:"questionBlock"}, {x:420,y:515,w:80,h:20,type:"questionBlock"}, {x:600,y:470,w:80,h:20,type:"questionBlock"}, {x:780,y:425,w:80,h:20,type:"questionBlock"}, {x:960,y:380,w:80,h:20,type:"questionBlock"}, {x:1140,y:340,w:80,h:20,type:"questionBlock"} ],
-                stars:[ {x:120,y:575,size:12,col:false,color:[255,210,120]}, {x:280,y:525,size:13,col:false,color:[255,190,255]}, {x:460,y:480,size:12,col:false,color:[200,210,255]}, {x:640,y:435,size:12,col:false,color:[255,230,150]}, {x:820,y:390,size:13,col:false,color:[255,220,180]}, {x:1000,y:345,size:12,col:false,color:[255,245,170]}, {x:1175,y:305,size:11,col:false,color:[255,200,200]} ],
-                spikes:[], hazards:[] },
-            { name:"尖刺回廊", bgTop:[62,38,85], bgMid:[98,68,132], bgBottom:[138,100,168],
-                platforms:[ {x:0,y:670,w:200,h:28,type:"ground"}, {x:500,y:670,w:220,h:28,type:"ground"}, {x:1000,y:670,w:280,h:28,type:"ground"}, {x:90,y:615,w:80,h:20,type:"questionBlock"}, {x:280,y:565,w:80,h:20,type:"questionBlock"}, {x:470,y:515,w:80,h:20,type:"questionBlock"}, {x:670,y:465,w:80,h:20,type:"questionBlock"}, {x:870,y:420,w:80,h:20,type:"questionBlock"}, {x:1070,y:375,w:80,h:20,type:"questionBlock"} ],
-                stars:[ {x:130,y:580,size:12,col:false,color:[255,200,150]}, {x:320,y:530,size:12,col:false,color:[255,190,210]}, {x:510,y:480,size:12,col:false,color:[180,210,255]}, {x:710,y:430,size:13,col:false,color:[255,220,100]}, {x:910,y:385,size:12,col:false,color:[240,170,255]}, {x:1110,y:340,size:12,col:false,color:[255,210,150]} ],
-                spikes:[ {x:250,y:635,w:55,h:26}, {x:680,y:635,w:55,h:26}, {x:1120,y:635,w:55,h:26} ], hazards:[] },
-            { name:"火焰峡谷", bgTop:[88,40,60], bgMid:[130,68,95], bgBottom:[170,98,125],
-                platforms:[ {x:0,y:670,w:210,h:28,type:"ground"}, {x:530,y:670,w:240,h:28,type:"ground"}, {x:980,y:670,w:300,h:28,type:"ground"}, {x:60,y:620,w:80,h:20,type:"questionBlock"}, {x:220,y:570,w:80,h:20,type:"questionBlock"}, {x:390,y:520,w:80,h:20,type:"questionBlock"}, {x:560,y:470,w:80,h:20,type:"questionBlock"}, {x:730,y:425,w:80,h:20,type:"questionBlock"}, {x:900,y:380,w:80,h:20,type:"questionBlock"}, {x:1070,y:340,w:80,h:20,type:"questionBlock"} ],
-                stars:[ {x:100,y:585,size:12,col:false,color:[255,200,130]}, {x:260,y:535,size:12,col:false,color:[255,180,210]}, {x:430,y:485,size:12,col:false,color:[200,200,255]}, {x:600,y:435,size:12,col:false,color:[255,210,100]}, {x:770,y:390,size:13,col:false,color:[230,160,255]}, {x:940,y:345,size:12,col:false,color:[255,190,150]}, {x:1110,y:305,size:12,col:false,color:[255,225,130]} ],
-                spikes:[ {x:820,y:635,w:60,h:26} ],
-                hazards:[ {x:180,y:560,dir:1,range:170,radius:11,type:"flame",moveX:true,speed:1.0}, {x:520,y:480,dir:-1,range:150,radius:10,type:"willowisp",moveX:true,speed:0.95}, {x:880,y:420,dir:1,range:130,radius:10,type:"flame",moveX:true,speed:1.1} ] },
-            { name:"荆棘月台", bgTop:[52,32,78], bgMid:[85,60,115], bgBottom:[128,95,152],
-                platforms:[ {x:0,y:670,w:180,h:28,type:"ground"}, {x:440,y:670,w:220,h:28,type:"ground"}, {x:880,y:670,w:400,h:28,type:"ground"}, {x:60,y:620,w:80,h:20,type:"questionBlock"}, {x:210,y:570,w:80,h:20,type:"questionBlock"}, {x:360,y:525,w:80,h:20,type:"questionBlock"}, {x:520,y:480,w:80,h:20,type:"questionBlock"}, {x:680,y:435,w:80,h:20,type:"questionBlock"}, {x:840,y:390,w:80,h:20,type:"questionBlock"}, {x:1000,y:350,w:80,h:20,type:"questionBlock"}, {x:1160,y:310,w:80,h:20,type:"questionBlock"} ],
-                stars:[ {x:100,y:585,size:12,col:false,color:[255,210,140]}, {x:250,y:535,size:12,col:false,color:[255,200,220]}, {x:400,y:490,size:12,col:false,color:[210,200,255]}, {x:560,y:445,size:12,col:false,color:[255,210,110]}, {x:720,y:400,size:13,col:false,color:[230,180,255]}, {x:880,y:355,size:12,col:false,color:[255,190,180]}, {x:1040,y:315,size:12,col:false,color:[255,225,160]}, {x:1195,y:275,size:11,col:false,color:[255,200,200]} ],
-                spikes:[ {x:140,y:635,w:55,h:26}, {x:540,y:635,w:60,h:26}, {x:780,y:585,w:52,h:26}, {x:1060,y:535,w:52,h:26} ], hazards:[] },
-            { name:"火箭码头", bgTop:[28,20,58], bgMid:[48,40,90], bgBottom:[82,68,115],
-                platforms:[ {x:0,y:690,w:1280,h:14,type:"water"}, {x:90,y:640,w:130,h:28,type:"ground"}, {x:320,y:590,w:100,h:22,type:"questionBlock"}, {x:560,y:640,w:150,h:28,type:"ground"}, {x:820,y:590,w:130,h:28,type:"ground"}, {x:1080,y:540,w:100,h:24,type:"rocketPad"} ],
-                stars:[ {x:140,y:605,size:12,col:false,color:[255,210,170]}, {x:370,y:555,size:12,col:false,color:[210,190,255]}, {x:620,y:605,size:12,col:false,color:[255,220,150]}, {x:870,y:555,size:12,col:false,color:[255,210,180]}, {x:1120,y:505,size:13,col:false,color:[255,240,200]} ],
-                spikes:[], hazards:[], rocketZone: { x: 1090, y: 480, w: 80, h: 76 } }
+            { // 0 月之森：飘浮幽灵
+                name:"🌙 月之森", 
+                platforms: [ {x:0,y:750,w:480,h:32,type:"ground"},{x:540,y:750,w:900,h:32,type:"ground"},{x:90,y:700,w:88,h:24,type:"questionBlock"},{x:280,y:650,w:88,h:24,type:"questionBlock"},{x:480,y:600,w:88,h:24,type:"questionBlock"},{x:690,y:550,w:88,h:24,type:"questionBlock"},{x:900,y:500,w:88,h:24,type:"questionBlock"},{x:1110,y:450,w:88,h:24,type:"questionBlock"},{x:1320,y:410,w:88,h:24,type:"questionBlock"} ],
+                stars: [ {x:130,y:665,size:15,col:false,color:[230,200,255]},{x:320,y:615,size:15,col:false,color:[255,210,170]},{x:520,y:565,size:15,col:false,color:[210,190,255]},{x:730,y:515,size:15,col:false,color:[255,230,170]},{x:940,y:465,size:16,col:false,color:[200,220,255]},{x:1150,y:415,size:15,col:false,color:[255,200,210]},{x:1355,y:375,size:14,col:false,color:[255,245,180]} ],
+                spikes: [], 
+                hazards: [ {x:420,y:620,range:80,radius:18,type:"ghost",speed:0.7,baseY:620,dir:1}, {x:830,y:530,range:90,radius:18,type:"ghost",speed:0.75,baseY:530,dir:1}, {x:1180,y:460,range:85,radius:17,type:"ghost",speed:0.7,baseY:460,dir:1} ]
+            },
+            { // 1 尖刺回廊：旋转刀刃
+                name:"⚔️ 尖刺回廊",
+                platforms: [ {x:0,y:760,w:300,h:32,type:"ground"},{x:580,y:760,w:320,h:32,type:"ground"},{x:1160,y:760,w:280,h:32,type:"ground"},{x:110,y:700,w:88,h:24,type:"questionBlock"},{x:340,y:640,w:88,h:24,type:"questionBlock"},{x:570,y:580,w:88,h:24,type:"questionBlock"},{x:800,y:520,w:88,h:24,type:"questionBlock"},{x:1030,y:460,w:88,h:24,type:"questionBlock"},{x:1260,y:410,w:88,h:24,type:"questionBlock"} ],
+                stars: [ {x:150,y:665,size:15,col:false,color:[255,200,150]},{x:380,y:605,size:15,col:false,color:[255,190,210]},{x:610,y:545,size:15,col:false,color:[200,190,255]},{x:840,y:485,size:16,col:false,color:[255,220,110]},{x:1070,y:425,size:15,col:false,color:[240,170,255]},{x:1295,y:375,size:15,col:false,color:[255,210,140]} ],
+                spikes: [ {x:220,y:725,w:68,h:28},{x:700,y:725,w:68,h:28},{x:1290,y:725,w:68,h:28} ],
+                hazards: [ {x:480,y:600,range:240,radius:16,type:"blade",speed:1.3,dir:1,currentX:480}, {x:920,y:500,range:220,radius:16,type:"blade",speed:1.2,dir:-1,currentX:920} ]
+            },
+            { // 2 火焰峡谷：间歇喷发火焰柱
+                name:"🔥 火焰峡谷",
+                platforms: [ {x:0,y:760,w:300,h:32,type:"ground"},{x:600,y:760,w:320,h:32,type:"ground"},{x:1180,y:760,w:260,h:32,type:"ground"},{x:80,y:700,w:88,h:24,type:"questionBlock"},{x:280,y:640,w:88,h:24,type:"questionBlock"},{x:480,y:580,w:88,h:24,type:"questionBlock"},{x:690,y:520,w:88,h:24,type:"questionBlock"},{x:900,y:460,w:88,h:24,type:"questionBlock"},{x:1110,y:410,w:88,h:24,type:"questionBlock"},{x:1310,y:370,w:88,h:24,type:"questionBlock"} ],
+                stars: [ {x:120,y:665,size:15,col:false,color:[255,210,130]},{x:320,y:605,size:15,col:false,color:[255,190,200]},{x:520,y:545,size:15,col:false,color:[200,210,255]},{x:730,y:485,size:15,col:false,color:[255,210,110]},{x:940,y:425,size:16,col:false,color:[230,170,255]},{x:1150,y:375,size:15,col:false,color:[255,190,150]},{x:1345,y:335,size:14,col:false,color:[255,225,140]} ],
+                spikes: [ {x:500,y:725,w:70,h:28} ],
+                hazards: [ {x:340,y:620,interval:70,radius:19,type:"flame_pillar",active:false,timer:0}, {x:760,y:540,interval:80,radius:19,type:"flame_pillar",active:false,timer:0}, {x:1170,y:460,interval:65,radius:19,type:"flame_pillar",active:false,timer:0} ]
+            },
+            { // 3 荆棘月台：移动荆棘藤蔓+毒雾区域
+                name:"🌿 荆棘月台",
+                platforms: [ {x:0,y:760,w:280,h:32,type:"ground"},{x:520,y:760,w:300,h:32,type:"ground"},{x:1080,y:760,w:360,h:32,type:"ground"},{x:70,y:700,w:88,h:24,type:"questionBlock"},{x:250,y:650,w:88,h:24,type:"questionBlock"},{x:440,y:600,w:88,h:24,type:"questionBlock"},{x:630,y:550,w:88,h:24,type:"questionBlock"},{x:820,y:500,w:88,h:24,type:"questionBlock"},{x:1010,y:450,w:88,h:24,type:"questionBlock"},{x:1200,y:410,w:88,h:24,type:"questionBlock"} ],
+                stars: [ {x:110,y:665,size:15,col:false,color:[180,210,140]},{x:290,y:615,size:15,col:false,color:[210,180,220]},{x:480,y:565,size:15,col:false,color:[200,190,210]},{x:670,y:515,size:16,col:false,color:[230,200,110]},{x:860,y:465,size:15,col:false,color:[200,170,240]},{x:1050,y:415,size:15,col:false,color:[210,160,180]},{x:1240,y:375,size:14,col:false,color:[180,220,140]} ],
+                spikes: [ {x:160,y:725,w:65,h:28},{x:580,y:725,w:65,h:28},{x:840,y:675,w:60,h:28},{x:1130,y:625,w:60,h:28} ],
+                hazards: [ {x:420,y:610,range:140,radius:14,type:"thorn_vine",speed:1.0,dir:1,currentX:420}, {x:950,y:540,range:130,radius:14,type:"thorn_vine",speed:1.1,dir:-1,currentX:950} ]
+            },
+            { // 4 火箭码头：移动激光扫描线
+                name:"🚀 火箭码头",
+                platforms: [ {x:0,y:770,w:1280,h:12,type:"water"},{x:100,y:720,w:140,h:32,type:"ground"},{x:360,y:670,w:110,h:26,type:"questionBlock"},{x:620,y:720,w:170,h:32,type:"ground"},{x:900,y:670,w:150,h:32,type:"ground"},{x:1180,y:620,w:120,h:28,type:"rocketPad"} ],
+                stars: [ {x:150,y:685,size:15,col:false,color:[255,210,170]},{x:410,y:635,size:15,col:false,color:[210,190,255]},{x:690,y:685,size:15,col:false,color:[255,220,150]},{x:970,y:635,size:16,col:false,color:[255,210,180]},{x:1220,y:585,size:15,col:false,color:[255,240,200]} ],
+                spikes: [], hazards: [ {x:500,y:550,range:300,width:8,type:"laser",speed:1.2,dir:1,currentX:500} ],
+                rocketZone: { x: 1195, y: 560, w: 90, h: 85 }
+            }
         ];
         
         let currentPlat = [], currentStars = [];
@@ -487,29 +368,39 @@
             currentPlat = sc.platforms.map(p=>({...p}));
             currentStars = sc.stars.map(s=>({...s,col:false}));
             spikes = sc.spikes ? sc.spikes.map(sp=>({...sp})) : [];
-            movingHazards = sc.hazards ? sc.hazards.map(h=>({...h, currentX:h.x, angle:Math.random()*Math.PI*2})) : [];
+            // 初始化动态障碍物
+            movingHazards = [];
+            if(sc.hazards){
+                for(let h of sc.hazards){
+                    let copy = {...h};
+                    if(copy.type === 'ghost') copy.currentY = copy.baseY;
+                    if(copy.type === 'blade') copy.currentX = copy.x;
+                    if(copy.type === 'thorn_vine') copy.currentX = copy.x;
+                    if(copy.type === 'laser') copy.currentX = copy.x;
+                    if(copy.type === 'flame_pillar') { copy.timer = 0; copy.active = false; }
+                    movingHazards.push(copy);
+                }
+            }
         }
         
         function changeScene(newIdx){
             if(newIdx === currentScene) return;
             currentScene = newIdx;
             reloadScene(currentScene);
-            player.x = 100;
-            player.y = 600;
-            player.vy = 0; player.vx = 0; player.onGround = true;
+            player.x = 120; player.y = 660; player.vy = 0; player.vx = 0; player.onGround = true;
             player.facingRight = false;
             if(newIdx===4) message="🚀 触碰火箭，逃离月球！🚀";
-            else message="⭐ 收集星辉 小心尖刺 ⭐";
+            else message="✨ 收集星辉 躲避灾厄 ✨";
             msgTimer=90;
         }
         
         function winGame(finalScore){
             if(gameVictory) return;
-            gameRunning = false;
-            gameVictory = true;
+            gameRunning = false; gameVictory = true;
             playSound('victory',0.45);
-            message = `✨ 胜利！ 辉夜姬乘火箭归乡 ✨  得分: ${Math.floor(finalScore)}`;
+            message = `✨ 胜利！辉夜姬乘火箭归乡 ✨  星辉: ${Math.floor(finalScore)}`;
             msgTimer = 200;
+            stopBackgroundMusic();
         }
         
         function failAndReset(){
@@ -521,36 +412,48 @@
         }
         
         function fullReset(){
-            score = 0;
-            currentScene = 0;
-            reloadScene(0);
-            player.x = 100; player.y = 600;
-            player.vy = 0; player.vx = 0; player.onGround = true;
-            player.facingRight = false;
-            gameRunning = true;
-            gameVictory = false;
-            message = "逃离月球 · 启程！";
-            msgTimer = 80;
+            score = 0; currentScene = 0; reloadScene(0);
+            player.x = 120; player.y = 660; player.vy = 0; player.vx = 0; player.onGround = true;
+            player.facingRight = false; gameRunning = true; gameVictory = false;
+            message = "逃离月球 · 启程！"; msgTimer = 80;
+            if(bgMusic && bgMusic.paused) startBackgroundMusic();
         }
         
         function collide(r1,r2){ return !(r2.x>r1.x+r1.w || r2.x+r2.w<r1.x || r2.y>r1.y+r1.h || r2.y+r2.h<r1.y); }
         
         function updateHazards(){
+            const now = Date.now();
             for(let h of movingHazards){
-                if(h.moveX){ h.angle += h.speed*0.05; h.currentX = h.x + Math.sin(h.angle)*h.range; }
-                else h.currentX = h.x;
-                h.currentY = h.y + Math.sin(Date.now()/380)*5;
+                if(h.type === 'ghost'){
+                    h.currentY = h.baseY + Math.sin(now * 0.003 * h.speed) * h.range;
+                }
+                else if(h.type === 'blade'){
+                    h.currentX = h.x + Math.sin(now * 0.004 * h.speed) * h.range;
+                }
+                else if(h.type === 'thorn_vine'){
+                    h.currentX = h.x + Math.sin(now * 0.0035 * h.speed) * h.range;
+                }
+                else if(h.type === 'laser'){
+                    h.currentX = h.x + Math.sin(now * 0.003 * h.speed) * h.range;
+                }
+                else if(h.type === 'flame_pillar'){
+                    h.timer += 1/60;
+                    if(h.timer >= h.interval){
+                        h.timer = 0;
+                        h.active = true;
+                        setTimeout(()=>{ if(h) h.active = false; }, 200);
+                    }
+                }
             }
         }
         
         function updateGame(){
             if(!gameRunning) return;
-            
             let move = (input.left ? -1 : 0) + (input.right ? 1 : 0);
             player.vx = move * player.speed;
             player.x += player.vx;
-            if(player.x<8) player.x=8;
-            if(player.x+player.w>LOGIC_W-8) player.x=LOGIC_W-player.w-8;
+            if(player.x<10) player.x=10;
+            if(player.x+player.w>LOGIC_W-10) player.x=LOGIC_W-player.w-10;
             
             player.vy += player.gravity;
             player.y += player.vy;
@@ -562,11 +465,9 @@
                 if(collide(pRect,platRect)){
                     if(player.vy>=0 && (player.y+player.h - plat.y <= plat.h+12)){
                         player.y = plat.y - player.h;
-                        player.vy = 0;
-                        player.onGround = true;
+                        player.vy = 0; player.onGround = true;
                     } else if(player.vy<0 && (plat.y+plat.h - player.y <=12)){
-                        player.y = plat.y + plat.h;
-                        player.vy = 0;
+                        player.y = plat.y + plat.h; player.vy = 0;
                     } else {
                         if(player.x+player.w/2 < plat.x+plat.w/2) player.x = plat.x - player.w;
                         else player.x = plat.x + plat.w;
@@ -575,26 +476,22 @@
             }
             
             for(let sp of spikes){
-                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:sp.x,y:sp.y,w:sp.w,h:sp.h})){
-                    failAndReset(); return;
-                }
+                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:sp.x,y:sp.y,w:sp.w,h:sp.h})){ failAndReset(); return; }
             }
             for(let h of movingHazards){
-                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:h.currentX-h.radius, y:h.currentY-h.radius, w:h.radius*2, h:h.radius*2})){
-                    failAndReset(); return;
-                }
+                let hx=h.currentX!==undefined?h.currentX:h.x, hy=h.currentY!==undefined?h.currentY:h.y;
+                if(h.type==='ghost' && collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:hx-h.radius, y:hy-h.radius, w:h.radius*2, h:h.radius*2})){ failAndReset(); return; }
+                if(h.type==='blade' && collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:hx-h.radius, y:hy-h.radius, w:h.radius*2, h:h.radius*2})){ failAndReset(); return; }
+                if(h.type==='thorn_vine' && collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:hx-h.radius, y:hy-h.radius, w:h.radius*2, h:h.radius*2})){ failAndReset(); return; }
+                if(h.type==='laser' && collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:hx, y:hy, w:h.width, h:LOGIC_H})){ failAndReset(); return; }
+                if(h.type==='flame_pillar' && h.active && collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:h.x-h.radius, y:h.y-h.radius, w:h.radius*2, h:h.radius*2})){ failAndReset(); return; }
             }
             
             const waterPlat = currentPlat.find(p=>p.type==='water');
             if(waterPlat && player.y+player.h >= waterPlat.y){ fullReset(); return; }
             if(player.y+player.h > LOGIC_H){ fullReset(); return; }
             
-            if(input.jump && player.onGround){
-                player.vy = player.jumpPower;
-                player.onGround = false;
-                input.jump = false;
-                playSound('jump',0.22);
-            }
+            if(input.jump && player.onGround){ player.vy = player.jumpPower; player.onGround = false; input.jump = false; playSound('jump',0.22); }
             
             for(let s of currentStars){
                 if(!s.col){
@@ -609,11 +506,10 @@
             if(currentScene===0 && player.x+player.w > LOGIC_W-15) { changeScene(1); player.x=30; }
             else if(currentScene===1 && player.x+player.w > LOGIC_W-15) { changeScene(2); player.x=30; }
             else if(currentScene===2 && player.x+player.w > LOGIC_W-15) { changeScene(3); player.x=30; }
-            else if(currentScene===3 && player.x+player.w > LOGIC_W-15) { changeScene(4); player.x=80; player.y=600; }
+            else if(currentScene===3 && player.x+player.w > LOGIC_W-15) { changeScene(4); player.x=80; player.y=660; }
             
-            if(currentScene === 4 && !gameVictory){
-                const rocketRect = scenes[4].rocketZone;
-                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, rocketRect)) winGame(score);
+            if(currentScene === 4 && !gameVictory && scenes[4].rocketZone){
+                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].rocketZone)) winGame(score);
             }
             
             if(player.vx>0) player.facingRight=true;
@@ -622,40 +518,54 @@
             if(msgTimer>0) msgTimer--; else message="";
         }
         
-        function drawRichBackground(){
-            const sc = scenes[currentScene];
-            const grad = ctx.createLinearGradient(0,0,0,LOGIC_H);
-            grad.addColorStop(0,`rgb(${sc.bgTop[0]},${sc.bgTop[1]},${sc.bgTop[2]})`);
-            grad.addColorStop(0.55,`rgb(${sc.bgMid[0]},${sc.bgMid[1]},${sc.bgMid[2]})`);
-            grad.addColorStop(1,`rgb(${sc.bgBottom[0]},${sc.bgBottom[1]},${sc.bgBottom[2]})`);
-            ctx.fillStyle=grad; ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
-            for(let i=0;i<140;i++){ ctx.fillStyle=`rgba(255,240,190,${0.2+Math.sin(Date.now()*0.0006+i)*0.1})`; ctx.fillRect((i*137)%LOGIC_W, (i*61)%LOGIC_H, 1.5,1.5); }
-            ctx.fillStyle="rgba(210,190,230,0.2)"; for(let i=0;i<14;i++){ ctx.beginPath(); ctx.ellipse( (Date.now()*0.025 + i*130)%(LOGIC_W+200)-100, 70+ i*48, 75, 38, 0, 0, Math.PI*2); ctx.fill(); }
-            ctx.fillStyle="rgba(180,150,210,0.2)"; for(let i=0;i<10;i++){ ctx.beginPath(); ctx.ellipse( (Date.now()*0.018 + i*190)%(LOGIC_W+280)-140, LOGIC_H-100 + i*28, 95, 42, 0, 0, Math.PI*2); ctx.fill(); }
+        // 绘制背景 (优先使用图片)
+        function drawBackground(){
+            const bgImg = bgImages[currentScene];
+            if(bgImg && bgImg.complete && bgImg.naturalWidth>0){
+                ctx.drawImage(bgImg, 0, 0, LOGIC_W, LOGIC_H);
+            } else {
+                const sc = scenes[currentScene];
+                const grad = ctx.createLinearGradient(0,0,0,LOGIC_H);
+                grad.addColorStop(0,`rgb(${sc.bgTop?.[0]||68},${sc.bgTop?.[1]||48},${sc.bgTop?.[2]||118})`);
+                grad.addColorStop(0.6,`rgb(${sc.bgMid?.[0]||100},${sc.bgMid?.[1]||82},${sc.bgMid?.[2]||152})`);
+                grad.addColorStop(1,`rgb(${sc.bgBottom?.[0]||142},${sc.bgBottom?.[1]||118},${sc.bgBottom?.[2]||188})`);
+                ctx.fillStyle=grad; ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
+            }
+            // 动态粒子
+            for(let i=0;i<80;i++){ ctx.fillStyle=`rgba(255,240,200,${0.15+Math.sin(Date.now()*0.002+i)*0.08})`; ctx.fillRect((i*173)%LOGIC_W, (i*89+Date.now()*0.2)%LOGIC_H, 2,2); }
         }
         
         function drawQuestionBlock(x,y,w,h){
-            ctx.fillStyle="#FFDE88"; ctx.fillRect(x,y,w,h);
+            ctx.fillStyle="#FFE8A0"; ctx.fillRect(x,y,w,h);
             ctx.fillStyle="#C97E2A"; ctx.strokeRect(x+2,y+2,w-4,h-4);
-            ctx.font=`bold ${Math.floor(h*0.55)}px monospace`; ctx.fillStyle="#3D2B1A"; ctx.textAlign="center"; ctx.fillText("?",x+w/2,y+h/2+4); ctx.textAlign="left";
+            ctx.font=`bold ${Math.floor(h*0.55)}px "Segoe UI"`; ctx.fillStyle="#4A2A1A"; ctx.textAlign="center"; ctx.fillText("?",x+w/2,y+h/2+6); ctx.textAlign="left";
         }
-        function drawPlatforms(){ for(let plat of currentPlat){ if(plat.type==='questionBlock') drawQuestionBlock(plat.x,plat.y,plat.w,plat.h); else if(plat.type==='rocketPad'){ ctx.fillStyle="#B48C60"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); ctx.fillStyle="#D9B48B"; ctx.fillRect(plat.x+5,plat.y-6,plat.w-10,6); } else if(plat.type==='water'){ ctx.fillStyle="rgba(70,130,210,0.65)"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); } else{ ctx.fillStyle="#E7C294"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); ctx.fillStyle="#FFE2B5"; ctx.fillRect(plat.x+5,plat.y-5,plat.w-10,5); } } }
-        function drawSpikes(){ for(let sp of spikes){ ctx.fillStyle="#5a4a2e"; ctx.fillRect(sp.x,sp.y,sp.w,sp.h); ctx.fillStyle="#b87c48"; for(let i=0;i<4;i++){ ctx.beginPath(); ctx.moveTo(sp.x+i*(sp.w/4),sp.y); ctx.lineTo(sp.x+i*(sp.w/4)+sp.w/8,sp.y-14); ctx.lineTo(sp.x+i*(sp.w/4)+sp.w/4,sp.y); ctx.fill(); } } }
-        function drawHazards(){ for(let h of movingHazards){ if(h.type==='willowisp'){ ctx.fillStyle="rgba(255,130,210,0.85)"; ctx.beginPath(); ctx.arc(h.currentX,h.currentY,h.radius,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#FFF2AA"; ctx.beginPath(); ctx.arc(h.currentX-2,h.currentY-2,3,0,Math.PI*2); ctx.fill(); } else{ ctx.fillStyle="#FF7F55"; ctx.beginPath(); ctx.ellipse(h.currentX,h.currentY,h.radius,h.radius*1.2,0,0,Math.PI*2); ctx.fill(); } } }
-        function drawStars(){ for(let s of currentStars){ if(!s.col){ ctx.fillStyle=`rgb(${s.color[0]},${s.color[1]},${s.color[2]})`; ctx.shadowBlur=6; ctx.beginPath(); for(let i=0;i<5;i++){ let ang=(i*72-36)*Math.PI/180,x1=s.x+Math.cos(ang)*s.size/2,y1=s.y+Math.sin(ang)*s.size/2,ang2=(i*72)*Math.PI/180,x2=s.x+Math.cos(ang2)*s.size/3,y2=s.y+Math.sin(ang2)*s.size/3; if(i===0) ctx.moveTo(x1,y1); else ctx.lineTo(x1,y1); ctx.lineTo(x2,y2); } ctx.fill(); } } ctx.shadowBlur=0; }
-        function drawRocket(){ if(currentScene!==4) return; const r=scenes[4].rocketZone; ctx.fillStyle="#B8C0F0"; ctx.fillRect(r.x+14,r.y-38,52,38); ctx.fillStyle="#FF6A6A"; ctx.beginPath(); ctx.moveTo(r.x+r.w/2,r.y-58); ctx.lineTo(r.x+r.w/2+22,r.y-32); ctx.lineTo(r.x+r.w/2-22,r.y-32); ctx.fill(); ctx.fillStyle="#F9D48C"; ctx.fillRect(r.x+18,r.y-28,44,20); ctx.fillStyle="#2F2F4A"; ctx.fillRect(r.x+32,r.y-12,16,30); ctx.font="bold 32px monospace"; ctx.fillStyle="#FFF7CF"; ctx.fillText("🚀",r.x+r.w/2-16,r.y+8); }
-        function drawPlayer(){ if(imagesReady && playerStandImg.complete){ ctx.save(); ctx.translate(player.x+player.w/2,player.y+player.h/2); if(player.facingRight) ctx.scale(-1,1); let img=(player.vx===0 && player.onGround)?playerStandImg:playerMoveImg; ctx.drawImage(img,-player.w*0.7,-player.h*0.68,player.w*1.4,player.h*1.38); ctx.restore(); } else{ ctx.fillStyle="#FFE0B0"; ctx.fillRect(player.x,player.y,player.w,player.h); ctx.fillStyle="#F0A87A"; ctx.fillRect(player.x+6,player.y-8,player.w-12,12); ctx.fillStyle="#2C1A12"; ctx.fillRect(player.x+8,player.y+15,6,10); ctx.fillRect(player.x+player.w-14,player.y+15,6,10); } }
-        function drawUI(){ ctx.font="bold 30px monospace"; ctx.fillStyle="#FFF2E0"; ctx.fillRect(LOGIC_W-150,16,138,44); ctx.fillStyle="#4A2E62"; ctx.fillText(`${Math.floor(score)}`,LOGIC_W-128,52); if(message){ ctx.font="bold 16px monospace"; ctx.fillStyle="#FFFAD0"; ctx.fillText(message,LOGIC_W/2-ctx.measureText(message).width/2,LOGIC_H-28); } let q=currentScene===0?"🌙 月之森 →":currentScene===1?"⚔️ 尖刺回廊 →":currentScene===2?"🔥 火焰峡谷 →":currentScene===3?"🌵 荆棘月台 →":"🚀 火箭码头"; ctx.font="14px monospace"; ctx.fillStyle="#FFF0BF"; ctx.fillText(q,18,LOGIC_H-16); if(gameVictory){ ctx.fillStyle="rgba(0,0,0,0.85)"; ctx.fillRect(0,0,LOGIC_W,LOGIC_H); ctx.font="bold 48px monospace"; ctx.fillStyle="#FFE78F"; ctx.fillText("✨ 胜利 ✨",LOGIC_W/2-120,LOGIC_H/2-50); ctx.font="36px monospace"; ctx.fillStyle="#FFD87A"; ctx.fillText(`最终星辉 ${Math.floor(score)}`,LOGIC_W/2-140,LOGIC_H/2+40); ctx.font="20px monospace"; ctx.fillText("点击「逃离月球」再冒险",LOGIC_W/2-160,LOGIC_H-100); } }
+        function drawPlatforms(){ for(let plat of currentPlat){ if(plat.type==='questionBlock') drawQuestionBlock(plat.x,plat.y,plat.w,plat.h); else if(plat.type==='rocketPad'){ ctx.fillStyle="#B87C54"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); ctx.fillStyle="#E8C084"; ctx.fillRect(plat.x+5,plat.y-6,plat.w-10,8); } else if(plat.type==='water'){ ctx.fillStyle="rgba(70,130,210,0.55)"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); } else{ ctx.fillStyle="#D8B87C"; ctx.fillRect(plat.x,plat.y,plat.w,plat.h); ctx.fillStyle="#FAD896"; ctx.fillRect(plat.x+5,plat.y-5,plat.w-10,6); } } }
+        function drawSpikes(){ for(let sp of spikes){ ctx.fillStyle="#6A4A2A"; ctx.fillRect(sp.x,sp.y,sp.w,sp.h); ctx.fillStyle="#C88C54"; for(let i=0;i<4;i++){ ctx.beginPath(); ctx.moveTo(sp.x+i*(sp.w/4),sp.y); ctx.lineTo(sp.x+i*(sp.w/4)+sp.w/8,sp.y-14); ctx.lineTo(sp.x+i*(sp.w/4)+sp.w/4,sp.y); ctx.fill(); } } }
+        function drawHazards(){
+            for(let h of movingHazards){
+                if(h.type==='ghost'){ ctx.fillStyle="rgba(200,160,255,0.85)"; ctx.shadowBlur=12; ctx.beginPath(); ctx.arc(h.currentX, h.currentY, h.radius,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#FFFFFF"; ctx.beginPath(); ctx.arc(h.currentX-4,h.currentY-4,4,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#000000"; ctx.beginPath(); ctx.arc(h.currentX-5,h.currentY-5,2,0,Math.PI*2); ctx.fill(); }
+                else if(h.type==='blade'){ ctx.fillStyle="#C0A060"; ctx.shadowBlur=8; ctx.save(); ctx.translate(h.currentX,h.y); ctx.rotate(Date.now()*0.01); ctx.fillRect(-h.radius,-h.radius/2,h.radius*2,h.radius); ctx.restore(); }
+                else if(h.type==='thorn_vine'){ ctx.fillStyle="#5C8C3A"; ctx.beginPath(); ctx.ellipse(h.currentX,h.y, h.radius, h.radius*1.5,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#3A6A1A"; for(let i=0;i<5;i++){ ctx.beginPath(); ctx.moveTo(h.currentX+Math.sin(i)*8, h.y-5); ctx.lineTo(h.currentX+Math.sin(i+0.5)*12, h.y+8); ctx.lineTo(h.currentX+Math.sin(i-0.5)*12, h.y+8); ctx.fill(); } }
+                else if(h.type==='laser'){ ctx.fillStyle="rgba(255,80,80,0.7)"; ctx.fillRect(h.currentX, 0, h.width, LOGIC_H); ctx.fillStyle="rgba(255,200,100,0.9)"; ctx.fillRect(h.currentX+2, 0, h.width-4, LOGIC_H); }
+                else if(h.type==='flame_pillar' && h.active){ ctx.fillStyle="#FF5A2A"; ctx.shadowBlur=12; ctx.beginPath(); ctx.ellipse(h.x,h.y-h.radius/2, h.radius, h.radius*2,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#FFAA40"; ctx.beginPath(); ctx.ellipse(h.x,h.y-h.radius/3, h.radius-4, h.radius-4,0,0,Math.PI*2); ctx.fill(); }
+            }
+            ctx.shadowBlur=0;
+        }
+        function drawStars(){ for(let s of currentStars){ if(!s.col){ ctx.fillStyle=`rgb(${s.color[0]},${s.color[1]},${s.color[2]})`; ctx.shadowBlur=8; ctx.beginPath(); for(let i=0;i<5;i++){ let ang=(i*72-36)*Math.PI/180,x1=s.x+Math.cos(ang)*s.size/2,y1=s.y+Math.sin(ang)*s.size/2,ang2=(i*72)*Math.PI/180,x2=s.x+Math.cos(ang2)*s.size/3,y2=s.y+Math.sin(ang2)*s.size/3; if(i===0) ctx.moveTo(x1,y1); else ctx.lineTo(x1,y1); ctx.lineTo(x2,y2); } ctx.fill(); } } ctx.shadowBlur=0; }
+        function drawRocket(){ if(currentScene!==4) return; const r=scenes[4].rocketZone; ctx.fillStyle="#C8D0F0"; ctx.fillRect(r.x+16,r.y-42,58,42); ctx.fillStyle="#FF6A6A"; ctx.beginPath(); ctx.moveTo(r.x+r.w/2,r.y-64); ctx.lineTo(r.x+r.w/2+26,r.y-36); ctx.lineTo(r.x+r.w/2-26,r.y-36); ctx.fill(); ctx.fillStyle="#FAD87A"; ctx.fillRect(r.x+22,r.y-32,48,24); ctx.fillStyle="#2F2F5A"; ctx.fillRect(r.x+38,r.y-14,20,38); ctx.font="bold 38px monospace"; ctx.fillStyle="#FFF8D0"; ctx.fillText("🚀",r.x+r.w/2-18,r.y+12); }
+        function drawPlayer(){ if(playerImgReady && playerImg.complete){ ctx.save(); ctx.translate(player.x+player.w/2,player.y+player.h/2); if(player.facingRight) ctx.scale(-1,1); ctx.drawImage(playerImg,-player.w*0.7,-player.h*0.68,player.w*1.4,player.h*1.4); ctx.restore(); } else{ ctx.fillStyle="#FFD8A0"; ctx.fillRect(player.x,player.y,player.w,player.h); ctx.fillStyle="#F0A87A"; ctx.fillRect(player.x+6,player.y-8,player.w-12,12); } }
+        function drawUI(){ ctx.font="bold 32px monospace"; ctx.fillStyle="#FFF2E0"; ctx.fillRect(LOGIC_W-160,18,148,46); ctx.fillStyle="#4A2E62"; ctx.fillText(`${Math.floor(score)}`,LOGIC_W-138,54); if(message){ ctx.font="bold 18px monospace"; ctx.fillStyle="#FFFAD0"; ctx.fillText(message,LOGIC_W/2-ctx.measureText(message).width/2,LOGIC_H-24); } let q=scenes[currentScene].name; ctx.font="16px monospace"; ctx.fillStyle="#FFF0BF"; ctx.fillText(q + " →",20,LOGIC_H-16); if(gameVictory){ ctx.fillStyle="rgba(0,0,0,0.85)"; ctx.fillRect(0,0,LOGIC_W,LOGIC_H); ctx.font="bold 52px monospace"; ctx.fillStyle="#FFE78F"; ctx.fillText("✨ 胜利 ✨",LOGIC_W/2-130,LOGIC_H/2-50); ctx.font="38px monospace"; ctx.fillStyle="#FFD87A"; ctx.fillText(`星辉 ${Math.floor(score)}`,LOGIC_W/2-110,LOGIC_H/2+40); ctx.font="22px monospace"; ctx.fillText("点击「月华启程」再冒险",LOGIC_W/2-150,LOGIC_H-90); } }
         
-        function gameLoop(){ updateGame(); drawRichBackground(); drawPlatforms(); drawSpikes(); drawStars(); drawHazards(); drawRocket(); drawPlayer(); drawUI(); requestAnimationFrame(gameLoop); }
+        function gameLoop(){ updateGame(); drawBackground(); drawPlatforms(); drawSpikes(); drawStars(); drawHazards(); drawRocket(); drawPlayer(); drawUI(); requestAnimationFrame(gameLoop); }
         
         startBtn.addEventListener('click',()=>{ 
             enableAudio(); 
             fullReset(); 
             startOverlay.style.display = 'none'; 
-            gameRunning=true; 
-            gameVictory=false;
-            // 点击开始后自动请求全屏
+            gameRunning=true; gameVictory=false;
+            initBackgroundMusic();
+            startBackgroundMusic();
             setTimeout(() => requestFullscreen(), 200);
         });
         
@@ -663,12 +573,7 @@
         setInterval(checkRestart,200);
         reloadScene(0);
         gameLoop();
-        
         setInterval(()=>{ if(window.matchMedia("(orientation: landscape)").matches) rotateTip.classList.add('hidden'); else rotateTip.classList.remove('hidden'); }, 300);
-        
-        // 监听全屏变化，重新布局
-        document.addEventListener('fullscreenchange', () => setTimeout(initLayout, 100));
-        document.addEventListener('webkitfullscreenchange', () => setTimeout(initLayout, 100));
     })();
 </script>
 </body>
