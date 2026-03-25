@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>辉夜姬·逃离月球 | 完美全屏横屏版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
+    <title>辉夜姬·逃离月球 | 真全屏版</title>
     <style>
         * {
             margin: 0;
@@ -13,20 +13,29 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
-            background: #000000;
-            width: 100vw;
-            height: 100vh;
+        /* 彻底移除所有边距，让内容真正占满 */
+        html, body {
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-            font-family: 'Segoe UI', 'Courier New', monospace;
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000000;
         }
 
-        /* 游戏容器：flex列布局，确保按钮区域完全可见 */
+        body {
+            font-family: 'Segoe UI', 'Courier New', monospace;
+        }
+
         .game-container {
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
             height: 100%;
             background: radial-gradient(ellipse at 30% 40%, #0f0a2a, #020008);
@@ -35,7 +44,7 @@
             overflow: hidden;
         }
 
-        /* Canvas 区域：自动占据剩余空间，但给按钮留出足够空间 */
+        /* Canvas 区域：动态计算剩余高度 */
         .canvas-area {
             flex: 1;
             position: relative;
@@ -43,8 +52,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* 给底部留一点安全间距，确保按钮不重叠 */
-            margin-bottom: 0;
+            background: #0a0620;
         }
 
         #gameCanvas {
@@ -108,39 +116,38 @@
             box-shadow: 0 4px 0 #8b3a5a;
         }
 
-        /* 底部按钮栏：固定高度，完全可见，使用安全区域 */
+        /* 底部按钮栏：使用安全区域，确保不被遮挡 */
         .bottom-controls {
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 30px 24px 30px;
+            padding: 12px 20px calc(12px + env(safe-area-inset-bottom, 0));
             background: transparent;
             z-index: 20;
             pointer-events: auto;
-            /* 确保在安全区域内 */
-            margin-bottom: env(safe-area-inset-bottom, 0);
+            /* 确保在可视区域内 */
+            min-height: 90px;
         }
 
         .left-buttons {
             display: flex;
-            gap: 1.5rem;
+            gap: 1.2rem;
         }
 
         .right-button {
             display: flex;
         }
 
-        /* 按钮样式：更大更明显，完全可点击 */
         .ctrl-btn {
-            width: 80px;
-            height: 80px;
+            width: 75px;
+            height: 75px;
             border-radius: 50px;
-            background: rgba(255, 235, 205, 0.9);
+            background: rgba(255, 235, 205, 0.92);
             backdrop-filter: blur(8px);
             border: 2px solid rgba(255, 220, 150, 0.9);
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-            font-size: 3.2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            font-size: 3rem;
             font-weight: bold;
             color: #2a1a2e;
             cursor: pointer;
@@ -149,44 +156,56 @@
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
-            /* 增加点击区域 */
             -webkit-tap-highlight-color: transparent;
         }
 
         .ctrl-btn:active {
             transform: scale(0.94);
-            background: rgba(255, 200, 140, 0.95);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            background: rgba(255, 200, 140, 0.98);
         }
 
         .jump-btn {
-            background: rgba(255, 180, 210, 0.9);
+            background: rgba(255, 180, 210, 0.92);
             border-color: rgba(255, 140, 180, 0.8);
         }
 
-        /* 不同屏幕适配，确保按钮始终够大且可见 */
-        @media (max-width: 900px) and (orientation: landscape) {
-            .ctrl-btn { width: 72px; height: 72px; font-size: 2.8rem; }
-            .bottom-controls { padding: 12px 24px 20px 24px; }
-            .left-buttons { gap: 1.2rem; }
-        }
-
-        @media (max-width: 750px) and (orientation: landscape) {
-            .ctrl-btn { width: 66px; height: 66px; font-size: 2.5rem; }
-            .bottom-controls { padding: 10px 20px 18px 20px; }
+        /* 响应式按钮尺寸 */
+        @media (max-width: 850px) and (orientation: landscape) {
+            .ctrl-btn { width: 68px; height: 68px; font-size: 2.6rem; }
+            .bottom-controls { padding: 10px 18px calc(10px + env(safe-area-inset-bottom, 0)); min-height: 80px; }
             .left-buttons { gap: 1rem; }
         }
 
-        @media (max-width: 650px) and (orientation: landscape) {
-            .ctrl-btn { width: 60px; height: 60px; font-size: 2.2rem; }
-            .bottom-controls { padding: 8px 18px 16px 18px; }
-            .left-buttons { gap: 0.9rem; }
+        @media (max-width: 700px) and (orientation: landscape) {
+            .ctrl-btn { width: 62px; height: 62px; font-size: 2.4rem; }
+            .bottom-controls { padding: 8px 16px calc(8px + env(safe-area-inset-bottom, 0)); min-height: 75px; }
         }
 
-        @media (max-width: 550px) and (orientation: landscape) {
-            .ctrl-btn { width: 55px; height: 55px; font-size: 2rem; }
-            .bottom-controls { padding: 6px 16px 14px 16px; }
-            .left-buttons { gap: 0.8rem; }
+        @media (max-width: 600px) and (orientation: landscape) {
+            .ctrl-btn { width: 56px; height: 56px; font-size: 2.2rem; }
+            .bottom-controls { padding: 6px 14px calc(6px + env(safe-area-inset-bottom, 0)); min-height: 70px; }
+        }
+
+        /* 全屏提示 */
+        .fullscreen-tip {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: #ffdd99;
+            font-size: 14px;
+            z-index: 25;
+            pointer-events: none;
+            white-space: nowrap;
+            font-family: monospace;
+            transition: opacity 0.5s;
+        }
+        .fullscreen-tip.fade-out {
+            opacity: 0;
         }
 
         /* 旋转提示 */
@@ -196,7 +215,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000000dd;
+            background: #000000ee;
             backdrop-filter: blur(14px);
             z-index: 9999;
             display: flex;
@@ -239,7 +258,7 @@
     </style>
 </head>
 <body>
-<div class="game-container">
+<div class="game-container" id="gameContainer">
     <div class="canvas-area">
         <canvas id="gameCanvas"></canvas>
         <div class="start-overlay" id="startOverlay">
@@ -248,7 +267,6 @@
             <button class="start-btn" id="startBtn">逃离月球</button>
         </div>
     </div>
-    <!-- 按钮区域：完全可见，左右分开布局 -->
     <div class="bottom-controls">
         <div class="left-buttons">
             <button class="ctrl-btn left-btn">←</button>
@@ -258,6 +276,7 @@
             <button class="ctrl-btn jump-btn">↑</button>
         </div>
     </div>
+    <div class="fullscreen-tip" id="fullscreenTip">⚡ 点击游戏画面可全屏 ⚡</div>
 </div>
 <div class="rotate-tip" id="rotateTip">
     <div class="rotate-icon">📱🔄</div>
@@ -271,20 +290,116 @@
         const startOverlay = document.getElementById('startOverlay');
         const startBtn = document.getElementById('startBtn');
         const rotateTip = document.getElementById('rotateTip');
+        const gameContainer = document.getElementById('gameContainer');
+        const fullscreenTip = document.getElementById('fullscreenTip');
         
-        // 逻辑分辨率 16:9
+        // 逻辑分辨率
         const LOGIC_W = 1280;
         const LOGIC_H = 720;
         
         let gameRunning = false;
-        let gameVictory = false;      
+        let gameVictory = false;
+        
+        // 全屏功能
+        function requestFullscreen() {
+            const element = gameContainer;
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+                element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
+            }
+        }
+        
+        // 退出全屏
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+        
+        // 监听全屏变化，更新提示
+        document.addEventListener('fullscreenchange', updateFullscreenTip);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenTip);
+        
+        function updateFullscreenTip() {
+            const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            if (isFull) {
+                fullscreenTip.style.opacity = '0';
+                setTimeout(() => fullscreenTip.style.display = 'none', 500);
+            } else {
+                fullscreenTip.style.display = 'block';
+                fullscreenTip.style.opacity = '1';
+                fullscreenTip.classList.remove('fade-out');
+                // 5秒后淡出
+                setTimeout(() => {
+                    if (fullscreenTip.style.display !== 'none') {
+                        fullscreenTip.classList.add('fade-out');
+                    }
+                }, 5000);
+            }
+        }
+        
+        // 点击canvas区域请求全屏（便于用户操作）
+        canvas.addEventListener('click', () => {
+            if (!(document.fullscreenElement || document.webkitFullscreenElement)) {
+                requestFullscreen();
+            }
+        });
+        
+        // 自动淡出提示
+        setTimeout(() => {
+            if (fullscreenTip.style.display !== 'none') {
+                fullscreenTip.classList.add('fade-out');
+            }
+        }, 5000);
         
         function resizeCanvas() {
             canvas.width = LOGIC_W;
             canvas.height = LOGIC_H;
+            // 动态调整canvas区域，确保不被浏览器UI遮挡
+            const container = document.querySelector('.canvas-area');
+            if (container) {
+                // 获取实际可用高度
+                const availableHeight = window.innerHeight - 90; // 预留按钮区域
+                const containerHeight = Math.max(availableHeight, 400);
+                container.style.height = `${containerHeight}px`;
+            }
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // 重新计算布局
+            setTimeout(() => {
+                const btnArea = document.querySelector('.bottom-controls');
+                if (btnArea) {
+                    const btnHeight = btnArea.offsetHeight;
+                    const canvasArea = document.querySelector('.canvas-area');
+                    if (canvasArea) {
+                        canvasArea.style.height = `calc(100vh - ${btnHeight}px)`;
+                    }
+                }
+            }, 100);
+        });
+        
+        // 初始化布局
+        function initLayout() {
+            const btnArea = document.querySelector('.bottom-controls');
+            if (btnArea) {
+                const btnHeight = btnArea.offsetHeight;
+                const canvasArea = document.querySelector('.canvas-area');
+                if (canvasArea) {
+                    canvasArea.style.height = `calc(100vh - ${btnHeight}px)`;
+                }
+            }
+            resizeCanvas();
+        }
+        
+        setTimeout(initLayout, 100);
+        window.addEventListener('load', initLayout);
         
         // ========== 音效 ==========
         let audioCtx = null;
@@ -331,7 +446,6 @@
         let movingHazards = [];   
         let spikes = [];           
         
-        // 立绘图片
         const playerStandImg = new Image();
         const playerMoveImg = new Image();
         playerStandImg.src = "stand.png";  
@@ -343,54 +457,27 @@
         
         // ========== 5个场景 ==========
         const scenes = [
-            {
-                name:"月之森", bgTop:[38,28,78], bgMid:[70,52,112], bgBottom:[112,88,158],
+            { name:"月之森", bgTop:[38,28,78], bgMid:[70,52,112], bgBottom:[112,88,158],
                 platforms:[ {x:0,y:660,w:420,h:28,type:"ground"}, {x:480,y:660,w:800,h:28,type:"ground"}, {x:80,y:610,w:80,h:20,type:"questionBlock"}, {x:240,y:560,w:80,h:20,type:"questionBlock"}, {x:420,y:515,w:80,h:20,type:"questionBlock"}, {x:600,y:470,w:80,h:20,type:"questionBlock"}, {x:780,y:425,w:80,h:20,type:"questionBlock"}, {x:960,y:380,w:80,h:20,type:"questionBlock"}, {x:1140,y:340,w:80,h:20,type:"questionBlock"} ],
                 stars:[ {x:120,y:575,size:12,col:false,color:[255,210,120]}, {x:280,y:525,size:13,col:false,color:[255,190,255]}, {x:460,y:480,size:12,col:false,color:[200,210,255]}, {x:640,y:435,size:12,col:false,color:[255,230,150]}, {x:820,y:390,size:13,col:false,color:[255,220,180]}, {x:1000,y:345,size:12,col:false,color:[255,245,170]}, {x:1175,y:305,size:11,col:false,color:[255,200,200]} ],
-                spikes:[], hazards:[]
-            },
-            {
-                name:"尖刺回廊", bgTop:[62,38,85], bgMid:[98,68,132], bgBottom:[138,100,168],
+                spikes:[], hazards:[] },
+            { name:"尖刺回廊", bgTop:[62,38,85], bgMid:[98,68,132], bgBottom:[138,100,168],
                 platforms:[ {x:0,y:670,w:200,h:28,type:"ground"}, {x:500,y:670,w:220,h:28,type:"ground"}, {x:1000,y:670,w:280,h:28,type:"ground"}, {x:90,y:615,w:80,h:20,type:"questionBlock"}, {x:280,y:565,w:80,h:20,type:"questionBlock"}, {x:470,y:515,w:80,h:20,type:"questionBlock"}, {x:670,y:465,w:80,h:20,type:"questionBlock"}, {x:870,y:420,w:80,h:20,type:"questionBlock"}, {x:1070,y:375,w:80,h:20,type:"questionBlock"} ],
                 stars:[ {x:130,y:580,size:12,col:false,color:[255,200,150]}, {x:320,y:530,size:12,col:false,color:[255,190,210]}, {x:510,y:480,size:12,col:false,color:[180,210,255]}, {x:710,y:430,size:13,col:false,color:[255,220,100]}, {x:910,y:385,size:12,col:false,color:[240,170,255]}, {x:1110,y:340,size:12,col:false,color:[255,210,150]} ],
-                spikes:[ {x:250,y:635,w:55,h:26}, {x:680,y:635,w:55,h:26}, {x:1120,y:635,w:55,h:26} ],
-                hazards:[]
-            },
-            {
-                name:"火焰峡谷", bgTop:[88,40,60], bgMid:[130,68,95], bgBottom:[170,98,125],
+                spikes:[ {x:250,y:635,w:55,h:26}, {x:680,y:635,w:55,h:26}, {x:1120,y:635,w:55,h:26} ], hazards:[] },
+            { name:"火焰峡谷", bgTop:[88,40,60], bgMid:[130,68,95], bgBottom:[170,98,125],
                 platforms:[ {x:0,y:670,w:210,h:28,type:"ground"}, {x:530,y:670,w:240,h:28,type:"ground"}, {x:980,y:670,w:300,h:28,type:"ground"}, {x:60,y:620,w:80,h:20,type:"questionBlock"}, {x:220,y:570,w:80,h:20,type:"questionBlock"}, {x:390,y:520,w:80,h:20,type:"questionBlock"}, {x:560,y:470,w:80,h:20,type:"questionBlock"}, {x:730,y:425,w:80,h:20,type:"questionBlock"}, {x:900,y:380,w:80,h:20,type:"questionBlock"}, {x:1070,y:340,w:80,h:20,type:"questionBlock"} ],
                 stars:[ {x:100,y:585,size:12,col:false,color:[255,200,130]}, {x:260,y:535,size:12,col:false,color:[255,180,210]}, {x:430,y:485,size:12,col:false,color:[200,200,255]}, {x:600,y:435,size:12,col:false,color:[255,210,100]}, {x:770,y:390,size:13,col:false,color:[230,160,255]}, {x:940,y:345,size:12,col:false,color:[255,190,150]}, {x:1110,y:305,size:12,col:false,color:[255,225,130]} ],
                 spikes:[ {x:820,y:635,w:60,h:26} ],
-                hazards:[ {x:180,y:560,dir:1,range:170,radius:11,type:"flame",moveX:true,speed:1.0}, {x:520,y:480,dir:-1,range:150,radius:10,type:"willowisp",moveX:true,speed:0.95}, {x:880,y:420,dir:1,range:130,radius:10,type:"flame",moveX:true,speed:1.1} ]
-            },
-            {
-                name:"荆棘月台", bgTop:[52,32,78], bgMid:[85,60,115], bgBottom:[128,95,152],
+                hazards:[ {x:180,y:560,dir:1,range:170,radius:11,type:"flame",moveX:true,speed:1.0}, {x:520,y:480,dir:-1,range:150,radius:10,type:"willowisp",moveX:true,speed:0.95}, {x:880,y:420,dir:1,range:130,radius:10,type:"flame",moveX:true,speed:1.1} ] },
+            { name:"荆棘月台", bgTop:[52,32,78], bgMid:[85,60,115], bgBottom:[128,95,152],
                 platforms:[ {x:0,y:670,w:180,h:28,type:"ground"}, {x:440,y:670,w:220,h:28,type:"ground"}, {x:880,y:670,w:400,h:28,type:"ground"}, {x:60,y:620,w:80,h:20,type:"questionBlock"}, {x:210,y:570,w:80,h:20,type:"questionBlock"}, {x:360,y:525,w:80,h:20,type:"questionBlock"}, {x:520,y:480,w:80,h:20,type:"questionBlock"}, {x:680,y:435,w:80,h:20,type:"questionBlock"}, {x:840,y:390,w:80,h:20,type:"questionBlock"}, {x:1000,y:350,w:80,h:20,type:"questionBlock"}, {x:1160,y:310,w:80,h:20,type:"questionBlock"} ],
                 stars:[ {x:100,y:585,size:12,col:false,color:[255,210,140]}, {x:250,y:535,size:12,col:false,color:[255,200,220]}, {x:400,y:490,size:12,col:false,color:[210,200,255]}, {x:560,y:445,size:12,col:false,color:[255,210,110]}, {x:720,y:400,size:13,col:false,color:[230,180,255]}, {x:880,y:355,size:12,col:false,color:[255,190,180]}, {x:1040,y:315,size:12,col:false,color:[255,225,160]}, {x:1195,y:275,size:11,col:false,color:[255,200,200]} ],
-                spikes:[ {x:140,y:635,w:55,h:26}, {x:540,y:635,w:60,h:26}, {x:780,y:585,w:52,h:26}, {x:1060,y:535,w:52,h:26} ],
-                hazards:[]
-            },
-            {
-                name:"火箭码头", bgTop:[28,20,58], bgMid:[48,40,90], bgBottom:[82,68,115],
-                platforms:[ 
-                    {x:0,y:690,w:1280,h:14,type:"water"},
-                    {x:90,y:640,w:130,h:28,type:"ground"},
-                    {x:320,y:590,w:100,h:22,type:"questionBlock"},
-                    {x:560,y:640,w:150,h:28,type:"ground"},
-                    {x:820,y:590,w:130,h:28,type:"ground"},
-                    {x:1080,y:540,w:100,h:24,type:"rocketPad"}  
-                ],
-                stars:[ 
-                    {x:140,y:605,size:12,col:false,color:[255,210,170]},
-                    {x:370,y:555,size:12,col:false,color:[210,190,255]},
-                    {x:620,y:605,size:12,col:false,color:[255,220,150]},
-                    {x:870,y:555,size:12,col:false,color:[255,210,180]},
-                    {x:1120,y:505,size:13,col:false,color:[255,240,200]}
-                ],
-                spikes:[], 
-                hazards:[],
-                rocketZone: { x: 1090, y: 480, w: 80, h: 76 }
-            }
+                spikes:[ {x:140,y:635,w:55,h:26}, {x:540,y:635,w:60,h:26}, {x:780,y:585,w:52,h:26}, {x:1060,y:535,w:52,h:26} ], hazards:[] },
+            { name:"火箭码头", bgTop:[28,20,58], bgMid:[48,40,90], bgBottom:[82,68,115],
+                platforms:[ {x:0,y:690,w:1280,h:14,type:"water"}, {x:90,y:640,w:130,h:28,type:"ground"}, {x:320,y:590,w:100,h:22,type:"questionBlock"}, {x:560,y:640,w:150,h:28,type:"ground"}, {x:820,y:590,w:130,h:28,type:"ground"}, {x:1080,y:540,w:100,h:24,type:"rocketPad"} ],
+                stars:[ {x:140,y:605,size:12,col:false,color:[255,210,170]}, {x:370,y:555,size:12,col:false,color:[210,190,255]}, {x:620,y:605,size:12,col:false,color:[255,220,150]}, {x:870,y:555,size:12,col:false,color:[255,210,180]}, {x:1120,y:505,size:13,col:false,color:[255,240,200]} ],
+                spikes:[], hazards:[], rocketZone: { x: 1090, y: 480, w: 80, h: 76 } }
         ];
         
         let currentPlat = [], currentStars = [];
@@ -562,13 +649,26 @@
         
         function gameLoop(){ updateGame(); drawRichBackground(); drawPlatforms(); drawSpikes(); drawStars(); drawHazards(); drawRocket(); drawPlayer(); drawUI(); requestAnimationFrame(gameLoop); }
         
-        startBtn.addEventListener('click',()=>{ enableAudio(); fullReset(); startOverlay.style.display = 'none'; gameRunning=true; gameVictory=false; });
+        startBtn.addEventListener('click',()=>{ 
+            enableAudio(); 
+            fullReset(); 
+            startOverlay.style.display = 'none'; 
+            gameRunning=true; 
+            gameVictory=false;
+            // 点击开始后自动请求全屏
+            setTimeout(() => requestFullscreen(), 200);
+        });
+        
         function checkRestart(){ if((gameVictory || (!gameRunning && startOverlay.style.display!=='flex')) && startOverlay.style.display!=='flex' && !gameRunning) startOverlay.style.display='flex'; }
         setInterval(checkRestart,200);
         reloadScene(0);
         gameLoop();
         
         setInterval(()=>{ if(window.matchMedia("(orientation: landscape)").matches) rotateTip.classList.add('hidden'); else rotateTip.classList.remove('hidden'); }, 300);
+        
+        // 监听全屏变化，重新布局
+        document.addEventListener('fullscreenchange', () => setTimeout(initLayout, 100));
+        document.addEventListener('webkitfullscreenchange', () => setTimeout(initLayout, 100));
     })();
 </script>
 </body>
