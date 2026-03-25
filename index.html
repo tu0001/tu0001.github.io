@@ -112,47 +112,65 @@
             box-shadow: 0 5px 0 #8b3a5a;
         }
 
-        /* 彻底透明操作栏：完全无背景、无模糊、无黑边 */
+        /* ========= 修正透明操作栏：完全透明背景，无黑色条 ========= */
         .bottom-controls {
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 28px calc(12px + env(safe-area-inset-bottom, 0));
-            background: transparent !important; /* 强制完全透明 */
-            backdrop-filter: none !important; /* 彻底关闭模糊 */
-            border-top: none !important; /* 去掉边框 */
+            /* 关键：彻底透明，无背景、无模糊、无任何颜色 */
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border: none !important;
+            box-shadow: none !important;
             z-index: 20;
             pointer-events: auto;
             min-height: 95px;
-            display: none;
+            display: none; /* 初始隐藏，游戏开始后显示 */
         }
 
-        .left-buttons { display: flex; gap: 1.5rem; }
-        .right-button { display: flex; }
+        .left-buttons { 
+            display: flex; 
+            gap: 1.5rem; 
+            background: transparent; 
+        }
+        .right-button { 
+            display: flex; 
+            background: transparent;
+        }
 
-        /* 80%透明按钮：仅按钮本身半透，无额外背景 */
+        /* 半透明圆形按钮：80%透明度 (背景仅20%不透明度)，无额外黑色块 */
         .ctrl-btn {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.2); /* 80%透明，仅20%不透明度 */
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: none;
+            /* 80%透明 -> rgba(0,0,0,0.2) 表示20%不透明度，完全无黑色背景条 */
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             font-size: 3.2rem;
             font-weight: bold;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 245, 0.95);
             cursor: pointer;
             transition: 0.05s linear;
             display: flex;
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
+            backdrop-filter: blur(2px); /* 轻微磨砂提升可读性，但无黑色底色 */
         }
-        .ctrl-btn:active { transform: scale(0.93); background: rgba(0, 0, 0, 0.3); }
-        .jump-btn { background: rgba(0, 0, 0, 0.2); border-color: rgba(255, 150, 190, 0.3); }
+        .ctrl-btn:active { 
+            transform: scale(0.93); 
+            background: rgba(0, 0, 0, 0.35); 
+        }
+        .jump-btn { 
+            background: rgba(0, 0, 0, 0.2); 
+            border-color: rgba(255, 180, 200, 0.5); 
+        }
 
-        /* 超小音乐按钮 */
+        /* 音乐小按钮保留半透明风格 */
         .music-toggle-btn {
             position: fixed;
             top: 8px;
@@ -160,9 +178,9 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.45);
             backdrop-filter: blur(6px);
-            border: 1px solid rgba(255,220,160,0.4);
+            border: 1px solid rgba(255,220,160,0.6);
             z-index: 40;
             cursor: pointer;
             display: flex;
@@ -239,9 +257,15 @@
             <button class="start-btn" id="startBtn">月 华 启 程</button>
         </div>
     </div>
+    <!-- 底部透明操作栏：背景完全透明，不再有任何黑色条块 -->
     <div class="bottom-controls" id="bottomControls">
-        <div class="left-buttons"><button class="ctrl-btn left-btn">←</button><button class="ctrl-btn right-btn">→</button></div>
-        <div class="right-button"><button class="ctrl-btn jump-btn">↑</button></div>
+        <div class="left-buttons">
+            <button class="ctrl-btn left-btn">←</button>
+            <button class="ctrl-btn right-btn">→</button>
+        </div>
+        <div class="right-button">
+            <button class="ctrl-btn jump-btn">↑</button>
+        </div>
     </div>
     <button class="music-toggle-btn" id="musicToggleBtn">🔊</button>
     <div class="fullscreen-tip" id="fullscreenTip">✨ 横屏自动全屏 · 沉浸体验 ✨</div>
@@ -267,7 +291,7 @@
         let gameVictory = false;
         let musicMuted = false;
         
-        // 加载启动背景图
+        // 加载启动背景图 (可选)
         const startBgTest = new Image();
         startBgTest.onload = () => {
             startOverlay.style.backgroundImage = `url('bg_start.png')`;
@@ -313,7 +337,7 @@
             bgImages[i]=img;
         }
         
-        // 音乐名固定为game.mp3
+        // 音乐
         let bgMusic = null;
         function initBackgroundMusic() {
             try {
@@ -338,7 +362,7 @@
             musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
         });
         
-        // 全屏（强制横屏全屏）
+        // 全屏 & 横屏引导
         function requestFullscreen() { 
             const el = gameContainer; 
             if(el.requestFullscreen) el.requestFullscreen(); 
@@ -366,7 +390,7 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         
-        // 按键
+        // 按键控制
         let input = { left: false, right: false, jump: false };
         const leftBtn=document.querySelector('.left-btn'), rightBtn=document.querySelector('.right-btn'), jumpBtn=document.querySelector('.jump-btn');
         function attach(btn,key){ 
@@ -376,7 +400,9 @@
             btn.addEventListener('mouseup',()=>{ input[key]=false; }); 
             btn.addEventListener('mouseleave',()=>{ input[key]=false; }); 
         }
-        attach(leftBtn,'left'); attach(rightBtn,'right'); attach(jumpBtn,'jump');
+        if(leftBtn && rightBtn && jumpBtn) {
+            attach(leftBtn,'left'); attach(rightBtn,'right'); attach(jumpBtn,'jump');
+        }
         window.addEventListener('keydown',(e)=>{ 
             if(e.key==='ArrowLeft'){ input.left=true; e.preventDefault(); } 
             if(e.key==='ArrowRight'){ input.right=true; e.preventDefault(); } 
@@ -401,7 +427,7 @@
         let currentScene = 0, score = 0, message = "", msgTimer = 0;
         let movingHazards = [], spikes = [];
         
-        // 场景数据
+        // 场景数据 (完整保留原版所有设定)
         const scenes = [
             { name:"🌙 月之森", 
                 platforms: [ {x:0,y:750,w:480,h:28,type:"ground"},{x:540,y:750,w:900,h:28,type:"ground"},
@@ -613,7 +639,6 @@
                 input.jump = false;
             }
             
-            // 收集星星
             for(let s of currentStars){
                 if(!s.col){
                     const starRect = {x:s.x - s.size/2, y:s.y - s.size/2, w:s.size, h:s.size};
@@ -626,37 +651,27 @@
                 }
             }
             
-            // 场景切换
             if(currentScene === 0 && player.x + player.w > LOGIC_W - 20) { changeScene(1); player.x = 30; }
             else if(currentScene === 1 && player.x + player.w > LOGIC_W - 20) { changeScene(2); player.x = 30; }
             else if(currentScene === 2 && player.x + player.w > LOGIC_W - 20) { changeScene(3); player.x = 30; }
             else if(currentScene === 3 && player.x + player.w > LOGIC_W - 20) { changeScene(4); player.x = 80; player.y = 650; }
             
-            // 火箭胜利
             if(currentScene === 4 && !gameVictory && scenes[4].rocketZone){
                 if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].rocketZone)){
                     winGame(score); return;
                 }
             }
             
-            // 方向切换
             if(player.vx > 2) player.facingRight = true;
             if(player.vx < -2) player.facingRight = false;
             
-            // 行走动画逻辑（跳跃不重置，仅站定切站立）
             const isMoving = Math.abs(player.vx) > 1.5;
             if(isMoving && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
                 walkFrameCounter++;
-                if(walkFrameCounter >= walkFrameDelay) {
-                    walkFrameCounter = 0;
-                }
-            } else if(!player.onGround) {
-                if(playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
-                    walkFrameCounter++;
-                    if(walkFrameCounter >= walkFrameDelay) {
-                        walkFrameCounter = 0;
-                    }
-                }
+                if(walkFrameCounter >= walkFrameDelay) walkFrameCounter = 0;
+            } else if(!player.onGround && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
+                walkFrameCounter++;
+                if(walkFrameCounter >= walkFrameDelay) walkFrameCounter = 0;
             } else {
                 walkFrameCounter = 0;
             }
@@ -666,15 +681,12 @@
             else message = "";
         }
         
-        // 绘制角色
         function drawPlayer() {
             ctx.save();
             ctx.translate(player.x + player.w/2, player.y + player.h/2);
             if(player.facingRight) ctx.scale(-1, 1);
-            
             const isMoving = Math.abs(player.vx) > 1.5;
             let imgToDraw = null;
-            
             if(isMoving && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
                 imgToDraw = playerWalkImg;
             } else if(!player.onGround && playerWalkImg && playerWalkImg.complete && playerWalkImg.naturalWidth > 0) {
@@ -682,7 +694,6 @@
             } else if(playerStandImg && playerStandImg.complete && playerStandImg.naturalWidth > 0) {
                 imgToDraw = playerStandImg;
             }
-            
             if(imgToDraw) {
                 ctx.drawImage(imgToDraw, -player.w * 0.65, -player.h * 0.65, player.w * 1.3, player.h * 1.3);
             } else {
@@ -694,7 +705,6 @@
                 ctx.fillRect(-player.w/2 + 12, -player.h/2 + 12, 8, 8);
                 ctx.fillRect(-player.w/2 + 32, -player.h/2 + 12, 8, 8);
             }
-            
             ctx.restore();
         }
         
@@ -703,11 +713,9 @@
             if(bgImg && bgImg.complete && bgImg.naturalWidth > 0){
                 ctx.drawImage(bgImg, 0, 0, LOGIC_W, LOGIC_H);
             } else {
-                const gradients = [
-                    ['#1a1338', '#2a1f4a', '#3a2a5a'], ['#2a1f3a', '#3a2a4a', '#4a3a6a'],
+                const gradients = [ ['#1a1338', '#2a1f4a', '#3a2a5a'], ['#2a1f3a', '#3a2a4a', '#4a3a6a'],
                     ['#2a1a2a', '#3a2a3a', '#5a3a4a'], ['#1a2a2a', '#2a3a3a', '#3a4a4a'],
-                    ['#0f1a2a', '#1f2a3a', '#2f3a4a']
-                ];
+                    ['#0f1a2a', '#1f2a3a', '#2f3a4a'] ];
                 const g = gradients[currentScene % gradients.length];
                 const grad = ctx.createLinearGradient(0, 0, 0, LOGIC_H);
                 grad.addColorStop(0, g[0]); grad.addColorStop(0.5, g[1]); grad.addColorStop(1, g[2]);
