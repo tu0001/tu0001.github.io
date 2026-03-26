@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
-    <title>辉夜姬·五境传说 | 月华归乡·沙滩终章</title>
+    <title>超时空辉夜姬 | 五境传说·月华归乡·沙滩终章</title>
     <style>
         * {
             margin: 0;
@@ -56,7 +56,6 @@
             background: #0b0822;
         }
 
-        /* 加载界面样式 */
         .loading-overlay {
             position: absolute;
             top: 0;
@@ -119,12 +118,12 @@
         }
 
         .start-title {
-            font-size: clamp(36px, 10vw, 80px);
+            font-size: clamp(32px, 8vw, 70px);
             font-weight: bold;
             color: #FFF5E0;
             text-shadow: 0 0 30px #ff88aa, 0 0 50px #b56eff, 0 5px 15px rgba(0,0,0,0.5);
             margin-bottom: 20px;
-            letter-spacing: 12px;
+            letter-spacing: 6px;
             font-family: 'Noto Sans CJK SC', monospace;
         }
 
@@ -288,9 +287,8 @@
     <div class="canvas-area">
         <canvas id="gameCanvas"></canvas>
         
-        <!-- 加载界面 -->
         <div class="loading-overlay" id="loadingOverlay">
-            <div class="loading-title">✨ 月华加载中 ✨</div>
+            <div class="loading-title">✨ 超时空加载中 ✨</div>
             <div class="loading-bar-container">
                 <div class="loading-bar" id="loadingBar"></div>
             </div>
@@ -298,9 +296,9 @@
         </div>
         
         <div class="start-overlay" id="startOverlay" style="display: none;">
-            <div class="start-title">✨ 輝夜姬 ✨</div>
-            <div class="start-sub">五境传说 · 乘火箭归乡</div>
-            <button class="start-btn" id="startBtn">月 华 启 程</button>
+            <div class="start-title">✨ 超时空輝夜姬 ✨</div>
+            <div class="start-sub">五境传说 · 乘飞船归乡</div>
+            <button class="start-btn" id="startBtn">时 空 启 程</button>
         </div>
     </div>
     <div class="bottom-controls" id="bottomControls">
@@ -327,27 +325,31 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingBar = document.getElementById('loadingBar');
         const loadingText = document.getElementById('loadingText');
-        const rotateTip = document.getElementById('rotateTip');
         const gameContainer = document.getElementById('gameContainer');
         const fullscreenTip = document.getElementById('fullscreenTip');
         const bottomControls = document.getElementById('bottomControls');
         const musicToggleBtn = document.getElementById('musicToggleBtn');
         
-        // ---------- 固定逻辑尺寸 ----------
         const LOGIC_W = 1440;
         const LOGIC_H = 810;
         
-        // ---------- 游戏全局状态 ----------
         let gameRunning = false;
         let gameVictory = false;
         let musicMuted = false;
         let resourcesLoaded = false;
         
-        // ---------- 图片资源列表 ----------
+        // 飞船升空动画数据
+        let spaceshipImg = new Image();
+        spaceshipImg.src = "spaceship.png";
+        let spaceshipFlyAnim = false;
+        let spaceshipFlyY = 0;
+        let spaceshipFlyAlpha = 1;
+        
+        // 图片资源列表
         const imagesToLoad = [
             { name: 'playerStand', url: 'stand.png', img: null },
             { name: 'playerWalk', url: 'walk.png', img: null },
-            { name: 'rocket', url: 'rocket.png', img: null },
+            { name: 'spaceship', url: 'spaceship.png', img: null },
             { name: 'bg0', url: 'bg_scene0.png', img: null },
             { name: 'bg1', url: 'bg_scene1.png', img: null },
             { name: 'bg2', url: 'bg_scene2.png', img: null },
@@ -359,11 +361,10 @@
         let loadedCount = 0;
         let totalImages = imagesToLoad.length;
         
-        // 存储加载完成的图片对象
         const loadedImages = {
             playerStand: null,
             playerWalk: null,
-            rocket: null,
+            spaceship: null,
             bg0: null,
             bg1: null,
             bg2: null,
@@ -372,7 +373,6 @@
             bgStart: null
         };
         
-        // 更新加载进度
         function updateLoadingProgress() {
             const percent = (loadedCount / totalImages) * 100;
             loadingBar.style.width = percent + '%';
@@ -384,8 +384,6 @@
                     loadingOverlay.style.display = 'none';
                     startOverlay.style.display = 'flex';
                     resourcesLoaded = true;
-                    
-                    // 设置开始界面背景
                     if (loadedImages.bgStart && loadedImages.bgStart.complete && loadedImages.bgStart.naturalWidth > 0) {
                         startOverlay.style.backgroundImage = `url('${loadedImages.bgStart.src}')`;
                         startOverlay.style.backgroundSize = 'cover';
@@ -395,7 +393,6 @@
             }
         }
         
-        // 加载单个图片
         function loadImage(item, index) {
             const img = new Image();
             img.onload = () => {
@@ -405,7 +402,6 @@
             };
             img.onerror = () => {
                 console.warn(`图片加载失败，使用备用绘制: ${item.url}`);
-                // 即使加载失败也计数，避免卡死
                 loadedCount++;
                 updateLoadingProgress();
             };
@@ -413,14 +409,13 @@
             imagesToLoad[index].img = img;
         }
         
-        // 开始加载所有资源
         function loadAllResources() {
             for (let i = 0; i < imagesToLoad.length; i++) {
                 loadImage(imagesToLoad[i], i);
             }
         }
         
-        // ---------- 背景音乐 ----------
+        // 背景音乐
         let bgMusic = null;
         function initBackgroundMusic() {
             try {
@@ -446,7 +441,6 @@
             musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
         });
         
-        // 全屏 & 横屏引导
         function requestFullscreen() { 
             const el = gameContainer; 
             if(el.requestFullscreen) el.requestFullscreen(); 
@@ -472,7 +466,7 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         
-        // ---------- 输入控制 ----------
+        // 输入控制
         let input = { left: false, right: false, jump: false };
         const leftBtn = document.querySelector('.left-btn');
         const rightBtn = document.querySelector('.right-btn');
@@ -501,7 +495,7 @@
             if(e.key === 'ArrowUp' || e.key === ' ') input.jump=false; 
         });
         
-        // ---------- 玩家数据 ----------
+        // 玩家数据
         let player = { 
             x: 140, y: 660, w: 52, h: 68, 
             vx: 0, vy: 0, 
@@ -518,15 +512,24 @@
         let movingHazards = [];
         let spikes = [];
         
-        let rocketFlyAnim = false;
-        let rocketFlyY = 0;
-        let rocketFlyAlpha = 1;
-        
-        // 行走动画帧计数器
         let walkFrameCounter = 0;
         let walkFrameDelay = 8;
         
-        // ---------- 五境关卡完整数据 ----------
+        // 第4关钟摆机关数据
+        let pendulum = {
+            active: true,
+            angle: 0,           // 当前弧度
+            angularSpeed: 0.022, // 摆动速度
+            maxAngle: Math.PI / 3, // 60度 = π/3，总共120度范围
+            length: 280,        // 摆绳长度
+            centerX: LOGIC_W / 2, // 顶部中点 x=720
+            centerY: 20,        // 顶部起始点 y=20
+            lineWidth: 4,
+            glow: true
+        };
+        let pendulumTimer = 0;
+        
+        // 五境关卡完整数据（第4关改为钟摆机关）
         const scenes = [
             { name:"🌙 月之森·沙滩", 
                 platforms: [ 
@@ -591,11 +594,11 @@
                 ],
                 spikes: [{x:520,y:680,w:60,h:24}], 
                 hazards: [ 
-                    {x:280,y:620,interval:100,radius:20,type:"flame_pillar",active:false,timer:0},
-                    {x:600,y:530,interval:110,radius:20,type:"flame_pillar",active:false,timer:0},
-                    {x:920,y:440,interval:95,radius:20,type:"flame_pillar",active:false,timer:0}
+                    {x:280,y:620,interval:100,radius:28,type:"flame_pillar",active:false,timer:0},
+                    {x:600,y:530,interval:110,radius:28,type:"flame_pillar",active:false,timer:0},
+                    {x:920,y:440,interval:95,radius:28,type:"flame_pillar",active:false,timer:0}
                 ] },
-            { name:"🌿 荆棘月台·沙滩",
+            { name:"🌀 时空回廊·钟摆",
                 platforms: [ 
                     {x:0,y:720,w:200,h:40,type:"ground"},
                     {x:280,y:720,w:180,h:40,type:"ground"},
@@ -618,11 +621,9 @@
                     {x:480,y:680,w:55,h:24},
                     {x:740,y:680,w:55,h:24},
                 ],
-                hazards: [ 
-                    {x:300,y:600,range:100,radius:14,type:"thorn_vine",speed:0.65,currentX:300},
-                    {x:700,y:510,range:90,radius:14,type:"thorn_vine",speed:0.7,currentX:700}
-                ] },
-            { name:"🚀 火箭码头·沙滩",
+                hazards: [],  // 不使用旧版荆棘球，改用钟摆机关
+                hasPendulum: true },
+            { name:"🚀 飞船码头·沙滩",
                 platforms: [ 
                     {x:0,y:720,w:1440,h:40,type:"ground"},
                     {x:100,y:640,w:140,h:30,type:"ground"},
@@ -640,7 +641,7 @@
                 ],
                 spikes: [], 
                 hazards: [ {x:500,y:590,range:140,width:4,type:"laser",speed:0.4,currentX:500} ],
-                rocketZone: { x: 1140, y: 440, w: 120, h: 80 } }
+                spaceshipZone: { x: 1140, y: 440, w: 120, h: 80 } }
         ];
         
         let currentPlat = [];
@@ -655,12 +656,13 @@
             if(sc.hazards){
                 for(let h of sc.hazards){
                     let copy = {...h};
-                    if(copy.type === 'thorn_vine') copy.currentX = copy.x;
                     if(copy.type === 'laser') copy.currentX = copy.x;
                     if(copy.type === 'flame_pillar') { copy.timer = 0; copy.active = false; }
                     movingHazards.push(copy);
                 }
             }
+            // 重置钟摆角度
+            pendulum.angle = 0;
         }
         
         function changeScene(newIdx){
@@ -673,7 +675,8 @@
             player.vx = 0;
             player.onGround = true;
             player.facingRight = false;
-            if(newIdx === 4) message = "🚀 触碰火箭，逃离月球！🚀";
+            if(newIdx === 4) message = "🚀 触碰飞船，逃离月球！🚀";
+            else if(newIdx === 3) message = "🌀 躲避钟摆，穿越时空回廊 🌀";
             else message = "✨ 收集星辉 躲避灾厄 ✨";
             msgTimer = 90;
         }
@@ -682,9 +685,9 @@
             if(gameVictory) return;
             gameRunning = false;
             gameVictory = true;
-            rocketFlyAnim = true;
-            rocketFlyY = 0;
-            rocketFlyAlpha = 1;
+            spaceshipFlyAnim = true;
+            spaceshipFlyY = 0;
+            spaceshipFlyAlpha = 1;
             message = `✨ 胜利！星辉: ${Math.floor(finalScore)} ✨`;
             msgTimer = 9999;
             if(bgMusic) bgMusic.pause();
@@ -693,10 +696,11 @@
         function fullReset(){
             score = 0;
             currentScene = 0;
-            rocketFlyAnim = false;
-            rocketFlyY = 0;
-            rocketFlyAlpha = 1;
+            spaceshipFlyAnim = false;
+            spaceshipFlyY = 0;
+            spaceshipFlyAlpha = 1;
             reloadScene(0);
+            pendulum.angle = 0;
             player.x = 100;
             player.y = 660;
             player.vy = 0;
@@ -714,13 +718,44 @@
             return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y); 
         }
         
+        // 检测点是否在钟摆扫过的扇形区域内
+        function checkPendulumCollision(playerRect) {
+            if(currentScene !== 3) return false;
+            
+            // 计算钟摆末端的坐标
+            const endX = pendulum.centerX + Math.sin(pendulum.angle) * pendulum.length;
+            const endY = pendulum.centerY + Math.cos(pendulum.angle) * pendulum.length;
+            
+            // 简化碰撞：检测玩家矩形是否与线段（从顶部到末端）相交
+            // 更精确：检测玩家矩形中心点到线段的距离
+            const playerCenterX = playerRect.x + playerRect.w / 2;
+            const playerCenterY = playerRect.y + playerRect.h / 2;
+            
+            // 计算点到线段的距离
+            const ax = pendulum.centerX;
+            const ay = pendulum.centerY;
+            const bx = endX;
+            const by = endY;
+            const cx = playerCenterX;
+            const cy = playerCenterY;
+            
+            const abx = bx - ax;
+            const aby = by - ay;
+            const t = ((cx - ax) * abx + (cy - ay) * aby) / (abx * abx + aby * aby || 1);
+            const tClamped = Math.max(0, Math.min(1, t));
+            const closestX = ax + abx * tClamped;
+            const closestY = ay + aby * tClamped;
+            const dist = Math.hypot(cx - closestX, cy - closestY);
+            
+            // 碰撞半径（玩家半宽+线宽）
+            const collisionRadius = Math.max(playerRect.w, playerRect.h) / 2 + 8;
+            return dist < collisionRadius;
+        }
+        
         function updateHazards(){
             const now = Date.now();
             for(let h of movingHazards){
-                if(h.type === 'thorn_vine'){
-                    h.currentX = h.x + Math.sin(now * 0.0025 * h.speed) * h.range;
-                }
-                else if(h.type === 'laser'){
+                if(h.type === 'laser'){
                     h.currentX = h.x + Math.sin(now * 0.002 * h.speed) * h.range;
                 }
                 else if(h.type === 'flame_pillar'){
@@ -732,13 +767,26 @@
                     }
                 }
             }
+            
+            // 更新钟摆角度（仅第4关）
+            if(currentScene === 3) {
+                pendulum.angle += pendulum.angularSpeed;
+                // 在 -maxAngle 到 +maxAngle 之间来回摆动
+                if(pendulum.angle > pendulum.maxAngle) {
+                    pendulum.angle = pendulum.maxAngle;
+                    pendulum.angularSpeed = -pendulum.angularSpeed;
+                }
+                if(pendulum.angle < -pendulum.maxAngle) {
+                    pendulum.angle = -pendulum.maxAngle;
+                    pendulum.angularSpeed = -pendulum.angularSpeed;
+                }
+            }
         }
         
-        // ---------- 核心游戏更新逻辑 ----------
+        // 核心游戏更新逻辑
         function updateGame(){
             if(!gameRunning) return;
             
-            // 行走动画帧更新
             if(Math.abs(player.vx) > 1.5 && player.onGround) {
                 walkFrameCounter = (walkFrameCounter + 1) % (walkFrameDelay * 2);
             } else {
@@ -755,7 +803,6 @@
             player.y += player.vy;
             player.onGround = false;
             
-            // 平台碰撞
             for(let plat of currentPlat){
                 const platRect = {x:plat.x, y:plat.y, w:plat.w, h:plat.h};
                 const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
@@ -776,26 +823,29 @@
                 }
             }
             
-            // 尖刺碰撞
             for(let sp of spikes){
                 if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:sp.x,y:sp.y,w:sp.w,h:sp.h})){
                     fullReset(); return;
                 }
             }
             
-            // 动态机关伤害判定
             for(let h of movingHazards){
                 let hx = h.currentX !== undefined ? h.currentX : h.x;
                 let hy = h.y;
                 let hazardRect;
-                if(h.type === 'thorn_vine'){
-                    hazardRect = {x:hx - h.range, y:hy - h.range, w:h.range*2, h:h.range*2};
-                } else if(h.type === 'laser'){
+                if(h.type === 'laser'){
                     hazardRect = {x:hx, y:0, w:h.width, h:hy - 10};
                 } else if(h.type === 'flame_pillar' && h.active){
-                    hazardRect = {x:h.x - h.range, y:h.y - h.range*1.5, w:h.range*2, h:h.range*3};
+                    hazardRect = {x:h.x - h.radius, y:h.y - h.radius*1.5, w:h.radius*2, h:h.radius*3};
                 } else continue;
                 if(hazardRect && collide({x:player.x,y:player.y,w:player.w,h:player.h}, hazardRect)){
+                    fullReset(); return;
+                }
+            }
+            
+            // 第4关钟摆碰撞检测
+            if(currentScene === 3) {
+                if(checkPendulumCollision({x:player.x,y:player.y,w:player.w,h:player.h})) {
                     fullReset(); return;
                 }
             }
@@ -809,7 +859,6 @@
                 input.jump = false;
             }
             
-            // 星辉收集
             for(let s of currentStars){
                 if(!s.col){
                     const starRect = {x:s.x - s.size/2, y:s.y - s.size/2, w:s.size, h:s.size};
@@ -822,15 +871,13 @@
                 }
             }
             
-            // 场景切换边界
             if(currentScene === 0 && player.x + player.w > LOGIC_W - 20) { changeScene(1); player.x = 30; }
             else if(currentScene === 1 && player.x + player.w > LOGIC_W - 20) { changeScene(2); player.x = 30; }
             else if(currentScene === 2 && player.x + player.w > LOGIC_W - 20) { changeScene(3); player.x = 30; }
             else if(currentScene === 3 && player.x + player.w > LOGIC_W - 20) { changeScene(4); player.x = 80; player.y = 650; }
             
-            // 第五关火箭触碰胜利
-            if(currentScene === 4 && !gameVictory && scenes[4].rocketZone){
-                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].rocketZone)){
+            if(currentScene === 4 && !gameVictory && scenes[4].spaceshipZone){
+                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].spaceshipZone)){
                     winGame(score); return;
                 }
             }
@@ -843,7 +890,7 @@
             else message = "";
         }
         
-        // ---------- 绘图函数（沙滩白点静止、平台原样）----------
+        // 绘图函数
         function drawSandGround(x, y, w, h) {
             ctx.fillStyle = "#E8D4A8";
             ctx.fillRect(x, y, w, h);
@@ -877,8 +924,8 @@
                     ctx.textAlign = "left";
                 }
                 else if(plat.type === 'rocketPad'){
-                    ctx.fillStyle = "#B87C54"; ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-                    ctx.fillStyle = "#E8C084"; ctx.fillRect(plat.x + 5, plat.y - 6, plat.w - 10, 8);
+                    ctx.fillStyle = "#5A6A8C"; ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+                    ctx.fillStyle = "#8A9AC0"; ctx.fillRect(plat.x + 5, plat.y - 6, plat.w - 10, 8);
                 }
                 else {
                     drawSandGround(plat.x, plat.y, plat.w, plat.h);
@@ -943,78 +990,122 @@
         
         function drawHazards(){
             for(let h of movingHazards){
-                if(h.type === 'thorn_vine'){
-                    ctx.fillStyle = "#5C8C3A";
-                    ctx.beginPath();
-                    ctx.ellipse(h.currentX, h.y, h.range, h.range*1.4, 0,0,Math.PI*2);
-                    ctx.fill();
-                    ctx.fillStyle = "#3A6A1A";
-                    for(let i=0;i<6;i++){
-                        ctx.beginPath();
-                        ctx.moveTo(h.currentX+Math.sin(i)*6, h.y-4);
-                        ctx.lineTo(h.currentX+Math.sin(i+0.5)*10, h.y+6);
-                        ctx.lineTo(h.currentX+Math.sin(i-0.5)*10, h.y+6);
-                        ctx.fill();
-                    }
-                } else if(h.type === 'laser'){
+                if(h.type === 'laser'){
                     ctx.fillStyle = "rgba(255,100,80,0.6)";
                     ctx.fillRect(h.currentX,0,h.width,h.y-10);
                     ctx.fillStyle = "rgba(255,200,100,0.8)";
                     ctx.fillRect(h.currentX+1,0,h.width-2,h.y-10);
                 } else if(h.type === 'flame_pillar' && h.active){
                     ctx.fillStyle = "#FF5A2A";
-                    ctx.shadowBlur=14;
+                    ctx.shadowBlur=16;
                     ctx.beginPath();
-                    ctx.ellipse(h.x,h.y-h.range/2,h.range,h.range*2,0,0,Math.PI*2);
+                    ctx.ellipse(h.x, h.y - h.radius/2, h.radius, h.radius*2, 0, 0, Math.PI*2);
                     ctx.fill();
-                    ctx.fillStyle="#FFAA40";
+                    ctx.fillStyle = "#FFAA40";
                     ctx.beginPath();
-                    ctx.ellipse(h.x,h.y-h.range/3,h.range-5,h.range-5,0,0,Math.PI*2);
+                    ctx.ellipse(h.x, h.y - h.radius/3, h.radius-6, h.radius-6, 0, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = "#FFE080";
+                    ctx.beginPath();
+                    ctx.ellipse(h.x, h.y - h.radius/4, h.radius-12, h.radius-12, 0, 0, Math.PI*2);
                     ctx.fill();
                     ctx.shadowBlur=0;
                 }
             }
+            
+            // 绘制第4关钟摆
+            if(currentScene === 3) {
+                const endX = pendulum.centerX + Math.sin(pendulum.angle) * pendulum.length;
+                const endY = pendulum.centerY + Math.cos(pendulum.angle) * pendulum.length;
+                
+                // 绘制摆绳
+                ctx.beginPath();
+                ctx.moveTo(pendulum.centerX, pendulum.centerY);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = "#FF6688";
+                ctx.lineWidth = pendulum.lineWidth;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = "#FF3366";
+                ctx.stroke();
+                
+                // 绘制摆锤（细长刀刃造型）
+                ctx.fillStyle = "#FF3366";
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.moveTo(endX - 8, endY - 4);
+                ctx.lineTo(endX, endY + 16);
+                ctx.lineTo(endX + 8, endY - 4);
+                ctx.fill();
+                
+                ctx.fillStyle = "#FF88AA";
+                ctx.beginPath();
+                ctx.arc(endX, endY - 2, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.arc(endX - 2, endY - 4, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                
+                // 绘制摆动轨迹指示（半透明弧线）
+                ctx.beginPath();
+                ctx.arc(pendulum.centerX, pendulum.centerY, pendulum.length, pendulum.maxAngle * -0.8, pendulum.maxAngle * 0.8);
+                ctx.strokeStyle = "rgba(255,100,130,0.3)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
         }
         
-        function drawRocket(){
+        function drawSpaceship(){
             if(currentScene !== 4) return;
-            const r = scenes[4].rocketZone;
-            if(rocketFlyAnim) {
-                rocketFlyY -= 8;
-                if(rocketFlyAlpha > 0) rocketFlyAlpha -= 0.012;
-                ctx.globalAlpha = rocketFlyAlpha;
+            const r = scenes[4].spaceshipZone;
+            if(spaceshipFlyAnim) {
+                spaceshipFlyY -= 8;
+                if(spaceshipFlyAlpha > 0) spaceshipFlyAlpha -= 0.012;
+                ctx.globalAlpha = spaceshipFlyAlpha;
             }
-            const rocketImg = loadedImages.rocket;
-            if(rocketImg && rocketImg.complete && rocketImg.naturalWidth>0) {
-                ctx.drawImage(rocketImg, r.x, r.y + rocketFlyY, 120, 120);
+            const shipImg = loadedImages.spaceship;
+            if(shipImg && shipImg.complete && shipImg.naturalWidth > 0) {
+                ctx.drawImage(shipImg, r.x, r.y + spaceshipFlyY, 120, 120);
             } else {
-                ctx.fillStyle = "#C8D0F0";
-                ctx.fillRect(r.x+18, r.y-44+rocketFlyY, 64,44);
-                ctx.fillStyle = "#FF6A6A";
+                // 绘制飞船造型
+                ctx.fillStyle = "#5A8FCC";
                 ctx.beginPath();
-                ctx.moveTo(r.x+r.w/2, r.y-68+rocketFlyY);
-                ctx.lineTo(r.x+r.w/2+28, r.y-38+rocketFlyY);
-                ctx.lineTo(r.x+r.w/2-28, r.y-38+rocketFlyY);
+                ctx.moveTo(r.x + 60, r.y - 20 + spaceshipFlyY);
+                ctx.lineTo(r.x + 100, r.y + 40 + spaceshipFlyY);
+                ctx.lineTo(r.x + 80, r.y + 60 + spaceshipFlyY);
+                ctx.lineTo(r.x + 40, r.y + 60 + spaceshipFlyY);
+                ctx.lineTo(r.x + 20, r.y + 40 + spaceshipFlyY);
                 ctx.fill();
-                ctx.fillStyle = "#FAD87A";
-                ctx.fillRect(r.x+24, r.y-34+rocketFlyY,52,26);
-                ctx.fillStyle = "#2F2F5A";
-                ctx.fillRect(r.x+42, r.y-14+rocketFlyY,16,42);
-                ctx.font = "bold 42px monospace";
-                ctx.fillStyle = "#FFF8D0";
-                ctx.fillText("🚀", r.x+r.w/2-20, r.y+14+rocketFlyY);
+                ctx.fillStyle = "#8AC0FF";
+                ctx.fillRect(r.x + 40, r.y + 20 + spaceshipFlyY, 40, 30);
+                ctx.fillStyle = "#FFAA66";
+                ctx.beginPath();
+                ctx.moveTo(r.x + 60, r.y + 50 + spaceshipFlyY);
+                ctx.lineTo(r.x + 70, r.y + 80 + spaceshipFlyY);
+                ctx.lineTo(r.x + 50, r.y + 80 + spaceshipFlyY);
+                ctx.fill();
+                ctx.fillStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.arc(r.x + 80, r.y + 40 + spaceshipFlyY, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = "#2266AA";
+                ctx.beginPath();
+                ctx.arc(r.x + 78, r.y + 38 + spaceshipFlyY, 3, 0, Math.PI * 2);
+                ctx.fill();
             }
             ctx.globalAlpha = 1;
         }
         
         function drawPlayer() {
-            if(rocketFlyAnim) return;
+            if(spaceshipFlyAnim) return;
             ctx.save();
             ctx.translate(player.x + player.w/2, player.y + player.h/2);
             if(player.facingRight) ctx.scale(-1, 1);
             let imgToDraw = null;
             const isMoving = Math.abs(player.vx) > 1.5 && player.onGround;
-            // 行走动画：根据帧计数器切换效果
             if(isMoving && (walkFrameCounter < walkFrameDelay)) {
                 if(loadedImages.playerWalk && loadedImages.playerWalk.complete) imgToDraw = loadedImages.playerWalk;
                 else if(loadedImages.playerStand) imgToDraw = loadedImages.playerStand;
@@ -1067,11 +1158,10 @@
                 ctx.fillText(`星辉 ${Math.floor(score)}`, LOGIC_W/2-110, LOGIC_H/2+40);
                 ctx.font = "22px monospace";
                 ctx.fillStyle="#FFF";
-                ctx.fillText("点击「月华启程」重新冒险", LOGIC_W/2-180, LOGIC_H-90);
+                ctx.fillText("点击「时空启程」重新冒险", LOGIC_W/2-180, LOGIC_H-90);
             }
         }
         
-        // ---------- 动画循环 ----------
         function gameLoop(){
             updateGame();
             drawBackground();
@@ -1079,13 +1169,12 @@
             drawSpikes();
             drawStars();
             drawHazards();
-            drawRocket();
+            drawSpaceship();
             drawPlayer();
             drawUI();
             requestAnimationFrame(gameLoop);
         }
         
-        // 开始游戏
         startBtn.addEventListener('click', () => { 
             if(!resourcesLoaded) return;
             initBackgroundMusic();
@@ -1096,11 +1185,10 @@
             if(bgMusic && !musicMuted) startBackgroundMusic();
         });
         
-        // 启动资源加载和游戏循环
         loadAllResources();
         reloadScene(0);
         gameLoop();
     })();
 </script>
 </body>
-    </html>
+</html>
