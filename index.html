@@ -273,687 +273,455 @@
         
         const LOGIC_W = 1440;
         const LOGIC_H = 810;
-        
         const SCENE_OFFSET_Y = 0;
-        
+
         let gameRunning = false;
         let gameVictory = false;
         let musicMuted = false;
-        
+
         let rocketImg = new Image();
         rocketImg.src = "rocket.png";
-        
+
         let rocketFlyAnim = false;
         let rocketFlyY = 0;
         let rocketFlyAlpha = 1;
-        
+
         const startBgTest = new Image();
-        startBgTest.onload = () => {
-            startOverlay.style.backgroundImage = `url('bg_start.png')`;
-            startOverlay.style.backgroundSize = 'cover';
-            startOverlay.style.backgroundPosition = 'center';
-        };
-        startBgTest.onerror = () => { console.log("bg_start.png 未找到"); };
         startBgTest.src = 'bg_start.png';
-        
+
         let playerStandImg = new Image();
-        let playerWalkImg = new Image();
-        let walkFrameCounter = 0;
-        let walkFrameDelay = 8;
-        
+        let playerWalkImg = new Image;
         playerStandImg.src = "stand.png";
         playerWalkImg.src = "walk.png";
-        
-        let imagesLoaded = { stand: false, walk: false };
-        function checkAllImagesLoaded() {
-            imagesLoaded.stand = true;
-            imagesLoaded.walk = true;
+
+        const bgImages = [];
+        for(let i=0;i<5;i++){
+            let img = new Image();
+            img.src = `bg_scene${i}.png`;
+            bgImages.push(img);
         }
-        
-        const bgImages = [null, null, null, null, null];
-        for(let i=0;i<5;i++){ 
-            let img = new Image(); 
-            img.src = `bg_scene${i}.png`; 
-            bgImages[i]=img;
-        }
-        
+
         let bgMusic = null;
-        function initBackgroundMusic() {
-            try {
-                bgMusic = new Audio('game.mp3');
-                bgMusic.loop = true;
-                bgMusic.volume = 0.25;
-                bgMusic.muted = musicMuted;
-                musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
-            } catch(e) {}
+        function initBackgroundMusic(){
+            bgMusic = new Audio('game.mp3');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.25;
+            bgMusic.muted = musicMuted;
+            musicToggleBtn.textContent = musicMuted ? "🔇":"🔊";
         }
-        function startBackgroundMusic() {
-            if(bgMusic && bgMusic.paused && gameRunning && !musicMuted) bgMusic.play().catch(e => {});
+        function startBackgroundMusic(){
+            if(!bgMusic) return;
+            if(bgMusic.paused && !musicMuted) bgMusic.play().catch(e=>{});
         }
-        
-        musicToggleBtn.addEventListener('click', () => {
+        musicToggleBtn.onclick = ()=>{
             musicMuted = !musicMuted;
-            if(bgMusic) {
+            if(bgMusic){
                 bgMusic.muted = musicMuted;
-                if(!musicMuted && gameRunning && bgMusic.paused) bgMusic.play().catch(e => {});
+                if(!musicMuted && bgMusic.paused) startBackgroundMusic();
             }
-            musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
-        });
-        
-        function requestFullscreen() { 
-            const el = gameContainer; 
-            if(el.requestFullscreen) el.requestFullscreen(); 
-            else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen(); 
-        }
-        function checkLandscapeAndFullscreen() {
-            if(window.matchMedia("(orientation: landscape)").matches) {
-                if(!(document.fullscreenElement || document.webkitFullscreenElement)) requestFullscreen();
-                fullscreenTip.classList.add('fade-out');
-                setTimeout(() => fullscreenTip.style.display = 'none', 500);
-            } else {
-                fullscreenTip.classList.remove('fade-out');
-                fullscreenTip.style.display = 'block';
-            }
-        }
-        checkLandscapeAndFullscreen();
-        setInterval(checkLandscapeAndFullscreen, 300);
-        canvas.addEventListener('click', () => { 
-            if(!(document.fullscreenElement || document.webkitFullscreenElement)) requestFullscreen(); 
-        });
-        
-        function resizeCanvas() { canvas.width = LOGIC_W; canvas.height = LOGIC_H; }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        
-        let input = { left: false, right: false, jump: false };
-        const leftBtn=document.querySelector('.left-btn'), rightBtn=document.querySelector('.right-btn'), jumpBtn=document.querySelector('.jump-btn');
-        function attach(btn,key){ 
-            btn.addEventListener('touchstart',(e)=>{ e.preventDefault(); input[key]=true; },{passive:false}); 
-            btn.addEventListener('touchend',(e)=>{ e.preventDefault(); input[key]=false; }); 
-            btn.addEventListener('mousedown',()=>{ input[key]=true; }); 
-            btn.addEventListener('mouseup',()=>{ input[key]=false; }); 
-            btn.addEventListener('mouseleave',()=>{ input[key]=false; }); 
-        }
-        if(leftBtn && rightBtn && jumpBtn) {
-            attach(leftBtn,'left'); attach(rightBtn,'right'); attach(jumpBtn,'jump');
-        }
-        window.addEventListener('keydown',(e)=>{ 
-            if(e.key==='ArrowLeft'){ input.left=true; e.preventDefault(); } 
-            if(e.key==='ArrowRight'){ input.right=true; e.preventDefault(); } 
-            if(e.key==='ArrowUp'||e.key===' '){ input.jump=true; e.preventDefault(); } 
-        });
-        window.addEventListener('keyup',(e)=>{ 
-            if(e.key==='ArrowLeft') input.left=false; 
-            if(e.key==='ArrowRight') input.right=false; 
-            if(e.key==='ArrowUp'||e.key===' ') input.jump=false; 
-        });
-        
-        let player = { 
-            x: 140, y: 660, w: 52, h: 68, 
-            vx: 0, vy: 0, 
-            speed: 5.8, 
-            jumpPower: -11.2, 
-            gravity: 0.62, 
-            onGround: false, 
-            facingRight: false
+            musicToggleBtn.textContent = musicMuted?"🔇":"🔊";
         };
-        let currentScene = 0, score = 0, message = "", msgTimer = 0;
-        let movingHazards = [], spikes = [];
-        
-        function applyOffsetY(obj) { return obj.y; }
-        
-        const scenes = [
-            { name:"🌙 月之森·沙滩", 
-                platforms: [ 
-                    {x:0,y:720,w:320,h:40,type:"ground"},
-                    {x:400,y:720,w:300,h:40,type:"ground"},
-                    {x:760,y:720,w:340,h:40,type:"ground"},
-                    {x:1180,y:720,w:260,h:40,type:"ground"},
-                    {x:120,y:640,w:100,h:24,type:"questionBlock"},
-                    {x:340,y:570,w:100,h:24,type:"questionBlock"},
-                    {x:560,y:500,w:100,h:24,type:"questionBlock"},
-                    {x:820,y:430,w:100,h:24,type:"questionBlock"},
-                    {x:1080,y:360,w:100,h:24,type:"questionBlock"},
+
+        function requestFullscreen(){
+            if(gameContainer.requestFullscreen) gameContainer.requestFullscreen();
+            else if(gameContainer.webkitRequestFullscreen) gameContainer.webkitRequestFullscreen();
+        }
+        function checkLandscape(){
+            if(window.matchMedia("(orientation:landscape)").matches){
+                if(!document.fullscreenElement) requestFullscreen();
+                fullscreenTip.classList.add("fade-out");
+            }else fullscreenTip.classList.remove("fade-out");
+        }
+        setInterval(checkLandscape,300);
+
+        function resizeCanvas(){canvas.width=LOGIC_W;canvas.height=LOGIC_H;}
+        resizeCanvas();window.onresize=resizeCanvas;
+
+        let input={left:false,right:false,jump:false};
+        const leftBtn=document.querySelector(".left-btn");
+        const rightBtn=document.querySelector(".right-btn");
+        const jumpBtn=document.querySelector(".jump-btn");
+        function bindBtn(btn,key){
+            btn.addEventListener("touchstart",e=>{e.preventDefault();input[key]=true;},{passive:false});
+            btn.addEventListener("touchend",e=>{e.preventDefault();input[key]=false;});
+            btn.onmousedown=()=>input[key]=true;
+            btn.onmouseup=()=>input[key]=false;
+            btn.onmouseleave=()=>input[key]=false;
+        }
+        bindBtn(leftBtn,"left");bindBtn(rightBtn,"right");bindBtn(jumpBtn,"jump");
+        window.addEventListener("keydown",e=>{
+            if(e.key==="ArrowLeft")input.left=true;
+            if(e.key==="ArrowRight")input.right=true;
+            if(e.key==="ArrowUp"||e.key==" ")input.jump=true;
+        });
+        window.addEventListener("keyup",e=>{
+            if(e.key==="ArrowLeft")input.left=false;
+            if(e.key==="ArrowRight")input.right=false;
+            if(e.key==="ArrowUp"||e.key==" ")input.jump=false;
+        });
+
+        let player={
+            x:140,y:660,w:52,h:68,
+            vx:0,vy:0,speed:5.8,jumpPower:-11.2,gravity:0.62,
+            onGround:false,facingRight:false
+        };
+        let currentScene=0,score=0,message="",msgTimer=0;
+        let movingHazards=[],spikes=[];
+
+        const scenes=[
+            {
+                name:"🌙 月之森·沙滩",
+                platforms:[
+                    {x:0,y:720,w:360,h:40,type:"ground"},
+                    {x:420,y:680,w:260,h:36,type:"ground"},
+                    {x:760,y:640,w:280,h:36,type:"ground"},
+                    {x:1100,y:700,w:340,h:40,type:"ground"},
+                    {x:150,y:620,w:90,h:22,type:"questionBlock"},
+                    {x:400,y:550,w:90,h:22,type:"questionBlock"},
+                    {x:650,y:480,w:90,h:22,type:"questionBlock"},
+                    {x:920,y:410,w:90,h:22,type:"questionBlock"}
                 ],
-                stars: [ 
-                    {x:170,y:600,size:14,col:false,color:[255,220,140]},
-                    {x:390,y:530,size:14,col:false,color:[230,200,255]},
-                    {x:610,y:460,size:14,col:false,color:[255,200,180]},
-                    {x:870,y:390,size:14,col:false,color:[200,210,255]},
-                    {x:1130,y:320,size:14,col:false,color:[255,230,130]},
+                stars:[
+                    {x:190,y:580,size:14,col:false,color:[255,220,140]},
+                    {x:440,y:510,size:14,col:false,color:[230,200,255]},
+                    {x:690,y:440,size:14,col:false,color:[255,200,180]},
+                    {x:960,y:370,size:14,col:false,color:[200,210,255]}
                 ],
-                spikes: [], hazards: [] },
-            { name:"⚔️ 尖刺回廊·沙滩",
-                platforms: [ 
+                spikes:[],hazards:[]
+            },
+            {
+                name:"⚔️ 尖刺回廊·沙滩",
+                platforms:[
+                    {x:0,y:720,w:280,h:40,type:"ground"},
+                    {x:340,y:670,w:240,h:36,type:"ground"},
+                    {x:640,y:720,w:280,h:40,type:"ground"},
+                    {x:980,y:660,w:300,h:36,type:"ground"},
+                    {x:130,y:610,w:90,h:22,type:"questionBlock"},
+                    {x:390,y:540,w:90,h:22,type:"questionBlock"},
+                    {x:680,y:470,w:90,h:22,type:"questionBlock"}
+                ],
+                stars:[
+                    {x:175,y:570,size:14,col:false,color:[255,210,160]},
+                    {x:435,y:500,size:14,col:false,color:[255,200,200]},
+                    {x:720,y:430,size:14,col:false,color:[210,190,255]}
+                ],
+                spikes:[
+                    {x:290,y:680,w:55,h:24},
+                    {x:600,y:680,w:55,h:24}
+                ],hazards:[]
+            },
+            {
+                name:"🔥 火焰峡谷·沙滩",
+                platforms:[
                     {x:0,y:720,w:240,h:40,type:"ground"},
-                    {x:320,y:720,w:220,h:40,type:"ground"},
-                    {x:600,y:720,w:240,h:40,type:"ground"},
-                    {x:900,y:720,w:260,h:40,type:"ground"},
-                    {x:1240,y:720,w:200,h:40,type:"ground"},
-                    {x:100,y:630,w:90,h:22,type:"questionBlock"},
-                    {x:380,y:560,w:90,h:22,type:"questionBlock"},
-                    {x:660,y:490,w:90,h:22,type:"questionBlock"},
-                    {x:980,y:420,w:90,h:22,type:"questionBlock"},
+                    {x:300,y:660,w:220,h:36,type:"ground"},
+                    {x:580,y:720,w:260,h:40,type:"ground"},
+                    {x:900,y:650,w:320,h:36,type:"ground"},
+                    {x:110,y:600,w:90,h:22,type:"questionBlock"},
+                    {x:360,y:530,w:90,h:22,type:"questionBlock"},
+                    {x:630,y:460,w:90,h:22,type:"questionBlock"}
                 ],
-                stars: [ 
-                    {x:145,y:590,size:14,col:false,color:[255,210,160]},
-                    {x:425,y:520,size:14,col:false,color:[255,200,200]},
-                    {x:705,y:450,size:14,col:false,color:[210,190,255]},
-                    {x:1025,y:380,size:14,col:false,color:[255,220,120]},
+                stars:[
+                    {x:155,y:560,size:14,col:false,color:[255,220,140]},
+                    {x:405,y:490,size:14,col:false,color:[255,200,190]},
+                    {x:675,y:420,size:14,col:false,color:[210,210,255]}
                 ],
-                spikes: [ 
-                    {x:260,y:680,w:60,h:24},
-                    {x:560,y:680,w:60,h:24},
-                    {x:860,y:680,w:60,h:24},
-                ], hazards: [] },
-            { name:"🔥 火焰峡谷·沙滩",
-                platforms: [ 
+                spikes:[{x:540,y:680,w:60,h:24}],
+                hazards:[
+                    {x:260,y:610,interval:100,radius:20,type:"flame_pillar",active:false,timer:0},
+                    {x:620,y:520,interval:110,radius:20,type:"flame_pillar",active:false,timer:0}
+                ]
+            },
+            {
+                name:"🌿 荆棘月台·沙滩",
+                platforms:[
                     {x:0,y:720,w:220,h:40,type:"ground"},
-                    {x:300,y:720,w:200,h:40,type:"ground"},
-                    {x:560,y:720,w:220,h:40,type:"ground"},
-                    {x:840,y:720,w:240,h:40,type:"ground"},
-                    {x:1140,y:720,w:300,h:40,type:"ground"},
-                    {x:80,y:620,w:90,h:22,type:"questionBlock"},
-                    {x:340,y:550,w:90,h:22,type:"questionBlock"},
-                    {x:620,y:480,w:90,h:22,type:"questionBlock"},
-                    {x:940,y:410,w:90,h:22,type:"questionBlock"},
+                    {x:260,y:650,w:200,h:36,type:"ground"},
+                    {x:520,y:700,w:240,h:40,type:"ground"},
+                    {x:820,y:630,w:360,h:36,type:"ground"},
+                    {x:90,y:590,w:90,h:22,type:"questionBlock"},
+                    {x:340,y:520,w:90,h:22,type:"questionBlock"},
+                    {x:600,y:450,w:90,h:22,type:"questionBlock"}
                 ],
-                stars: [ 
-                    {x:125,y:580,size:14,col:false,color:[255,220,140]},
-                    {x:385,y:510,size:14,col:false,color:[255,200,190]},
-                    {x:665,y:440,size:14,col:false,color:[210,210,255]},
-                    {x:985,y:370,size:14,col:false,color:[255,220,120]},
+                stars:[
+                    {x:135,y:550,size:14,col:false,color:[200,220,150]},
+                    {x:385,y:480,size:14,col:false,color:[220,190,230]},
+                    {x:645,y:410,size:14,col:false,color:[210,200,220]}
                 ],
-                spikes: [{x:520,y:680,w:60,h:24}], 
-                hazards: [ 
-                    {x:280,y:620,interval:100,radius:20,type:"flame_pillar",active:false,timer:0},
-                    {x:600,y:530,interval:110,radius:20,type:"flame_pillar",active:false,timer:0},
-                    {x:920,y:440,interval:95,radius:20,type:"flame_pillar",active:false,timer:0}
-                ] },
-            { name:"🌿 荆棘月台·沙滩",
-                platforms: [ 
-                    {x:0,y:720,w:200,h:40,type:"ground"},
-                    {x:280,y:720,w:180,h:40,type:"ground"},
-                    {x:520,y:720,w:200,h:40,type:"ground"},
-                    {x:780,y:720,w:220,h:40,type:"ground"},
-                    {x:1060,y:720,w:380,h:40,type:"ground"},
-                    {x:60,y:610,w:90,h:22,type:"questionBlock"},
-                    {x:320,y:540,w:90,h:22,type:"questionBlock"},
-                    {x:580,y:470,w:90,h:22,type:"questionBlock"},
-                    {x:880,y:400,w:90,h:22,type:"questionBlock"},
+                spikes:[
+                    {x:230,y:680,w:55,h:24},
+                    {x:490,y:680,w:55,h:24}
                 ],
-                stars: [ 
-                    {x:105,y:570,size:14,col:false,color:[200,220,150]},
-                    {x:365,y:500,size:14,col:false,color:[220,190,230]},
-                    {x:625,y:430,size:14,col:false,color:[210,200,220]},
-                    {x:925,y:360,size:14,col:false,color:[240,210,130]},
+                hazards:[
+                    {x:320,y:590,range:90,radius:14,type:"thorn_vine",speed:0.65,currentX:320},
+                    {x:680,y:500,range:80,radius:14,type:"thorn_vine",speed:0.7,currentX:680}
+                ]
+            },
+            {
+                name:"🚀 火箭码头·沙滩",
+                platforms:[
+                    {x:0,y:720,w:1440,h:60,type:"ground"},
+                    {x:120,y:630,w:150,h:30,type:"ground"},
+                    {x:380,y:570,w:120,h:26,type:"questionBlock"},
+                    {x:620,y:630,w:180,h:30,type:"ground"},
+                    {x:900,y:560,w:160,h:30,type:"ground"},
+                    {x:1180,y:500,w:160,h:30,type:"rocketPad"}
                 ],
-                spikes: [ 
-                    {x:220,y:680,w:55,h:24},
-                    {x:480,y:680,w:55,h:24},
-                    {x:740,y:680,w:55,h:24},
+                stars:[
+                    {x:180,y:590,size:14,col:false,color:[255,220,180]},
+                    {x:430,y:530,size:14,col:false,color:[220,200,255]},
+                    {x:690,y:590,size:14,col:false,color:[255,230,160]},
+                    {x:950,y:520,size:14,col:false,color:[255,220,190]},
+                    {x:1240,y:460,size:14,col:false,color:[255,245,200]}
                 ],
-                hazards: [ 
-                    {x:300,y:600,range:100,radius:14,type:"thorn_vine",speed:0.65,currentX:300},
-                    {x:700,y:510,range:90,radius:14,type:"thorn_vine",speed:0.7,currentX:700}
-                ] },
-            { name:"🚀 火箭码头·沙滩",
-                platforms: [ 
-                    {x:0,y:720,w:1440,h:40,type:"ground"},
-                    {x:100,y:640,w:140,h:30,type:"ground"},
-                    {x:340,y:580,w:120,h:26,type:"questionBlock"},
-                    {x:580,y:640,w:160,h:30,type:"ground"},
-                    {x:820,y:580,w:140,h:30,type:"ground"},
-                    {x:1120,y:520,w:160,h:30,type:"rocketPad"}
-                ],
-                stars: [ 
-                    {x:170,y:600,size:14,col:false,color:[255,220,180]},
-                    {x:400,y:540,size:14,col:false,color:[220,200,255]},
-                    {x:660,y:600,size:14,col:false,color:[255,230,160]},
-                    {x:890,y:540,size:14,col:false,color:[255,220,190]},
-                    {x:1200,y:480,size:14,col:false,color:[255,245,200]}
-                ],
-                spikes: [], 
-                hazards: [ {x:500,y:590,range:140,width:4,type:"laser",speed:0.4,currentX:500} ],
-                rocketZone: { x: 1140, y: 440, w: 120, h: 80 } }
+                spikes:[],
+                hazards:[{x:520,y:580,range:130,width:4,type:"laser",speed:0.4,currentX:520}],
+                rocketZone:{x:1190,y:440,w:120,h:80}
+            }
         ];
-        
-        let currentPlat = [], currentStars = [];
-        
-        function reloadScene(sceneId){
-            const sc = scenes[sceneId];
-            currentPlat = sc.platforms.map(p=>({...p}));
-            currentStars = sc.stars.map(s=>({...s,col:false}));
-            spikes = sc.spikes ? sc.spikes.map(sp=>({...sp})) : [];
-            movingHazards = [];
-            if(sc.hazards){
-                for(let h of sc.hazards){
-                    let copy = {...h};
-                    if(copy.type === 'thorn_vine') copy.currentX = copy.x;
-                    if(copy.type === 'laser') copy.currentX = copy.x;
-                    if(copy.type === 'flame_pillar') { copy.timer = 0; copy.active = false; }
-                    movingHazards.push(copy);
-                }
+
+        let currentPlat=[],currentStars=[];
+        function reloadScene(id){
+            const s=scenes[id];
+            currentPlat=s.platforms.map(p=>({...p}));
+            currentStars=s.stars.map(t=>({...t,col:false}));
+            spikes=s.spikes?[...s.spikes]:[];
+            movingHazards=[];
+            if(s.hazards){
+                s.hazards.forEach(h=>{
+                    let c={...h};
+                    if(c.type==="thorn_vine"||c.type==="laser")c.currentX=c.x;
+                    if(c.type==="flame_pillar"){c.timer=0;c.active=false;}
+                    movingHazards.push(c);
+                });
             }
         }
-        
-        function changeScene(newIdx){
-            if(newIdx === currentScene) return;
-            currentScene = newIdx;
-            reloadScene(currentScene);
-            player.x = 100;
-            player.y = 660;
-            player.vy = 0;
-            player.vx = 0;
-            player.onGround = true;
-            player.facingRight = false;
-            if(newIdx===4) message="🚀 触碰火箭，逃离月球！🚀";
-            else message="✨ 收集星辉 躲避灾厄 ✨";
-            msgTimer=90;
+        function changeScene(idx){
+            currentScene=idx;reloadScene(idx);
+            player.x=80;player.y=660;player.vx=player.vy=0;player.onGround=true;
+            message=idx===4?"🚀触碰火箭返航！":"✨收集星辉前进";msgTimer=90;
         }
-        
         function winGame(finalScore){
-            if(gameVictory) return;
-            gameRunning = false;
-            gameVictory = true;
-            rocketFlyAnim = true;
-            rocketFlyY = 0;
-            rocketFlyAlpha = 1;
-            message = `✨ 胜利！星辉: ${Math.floor(finalScore)} ✨`;
-            msgTimer = 9999;
-            if(bgMusic) bgMusic.pause();
+            if(gameVictory)return;
+            gameVictory=true;gameRunning=false;
+            rocketFlyAnim=true;rocketFlyY=0;rocketFlyAlpha=1;
+            message=`最终星辉分数：${Math.floor(finalScore)}`;msgTimer=9999;
+            if(bgMusic)bgMusic.pause();
         }
-        
         function fullReset(){
-            score = 0;
-            currentScene = 0;
-            rocketFlyAnim = false;
-            rocketFlyY = 0;
-            rocketFlyAlpha = 1;
+            score=0;currentScene=0;rocketFlyAnim=false;
             reloadScene(0);
-            player.x = 100;
-            player.y = 660;
-            player.vy = 0;
-            player.vx = 0;
-            player.onGround = true;
-            player.facingRight = false;
-            gameRunning = true;
-            gameVictory = false;
-            message = "逃离月球 · 启程！";
-            msgTimer = 80;
-            if(bgMusic && bgMusic.paused && !musicMuted) startBackgroundMusic();
+            player.x=100;player.y=660;player.vx=player.vy=0;
+            gameRunning=true;gameVictory=false;message="启程出发！";msgTimer=80;
         }
-        
-        function collide(r1,r2){ 
-            return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y); 
+        function collide(a,b){
+            return !(a.x+a.w<b.x||b.x+b.w<a.x||a.y+a.h<b.y||b.y+b.h<a.y);
         }
-        
         function updateHazards(){
-            const now = Date.now();
-            for(let h of movingHazards){
-                if(h.type === 'thorn_vine'){
-                    h.currentX = h.x + Math.sin(now * 0.0025 * h.speed) * h.range;
+            let t=Date.now();
+            movingHazards.forEach(h=>{
+                if(h.type==="thorn_vine")h.currentX=h.x+Math.sin(t*0.0025*h.speed)*h.range;
+                if(h.type==="laser")h.currentX=h.x+Math.sin(t*0.002*h.speed)*h.range;
+                if(h.type==="flame_pillar"){
+                    h.timer+=1/60;
+                    if(h.timer>=h.interval){h.timer=0;h.active=true;setTimeout(()=>h.active=false,220);}
                 }
-                else if(h.type === 'laser'){
-                    h.currentX = h.x + Math.sin(now * 0.002 * h.speed) * h.range;
-                }
-                else if(h.type === 'flame_pillar'){
-                    h.timer += 1/60;
-                    if(h.timer >= h.interval){
-                        h.timer = 0;
-                        h.active = true;
-                        setTimeout(()=>{ if(h) h.active = false; }, 220);
-                    }
-                }
-            }
+            });
         }
-        
         function updateGame(){
-            if(!gameRunning) return;
-            
-            let move = (input.left ? -1 : 0) + (input.right ? 1 : 0);
-            player.vx = move * player.speed;
-            player.x += player.vx;
-            if(player.x < 8) player.x = 8;
-            if(player.x + player.w > LOGIC_W - 8) player.x = LOGIC_W - player.w - 8;
-            
-            player.vy += player.gravity;
-            player.y += player.vy;
-            player.onGround = false;
-            
-            for(let plat of currentPlat){
-                const platRect = {x:plat.x, y:plat.y, w:plat.w, h:plat.h};
-                const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
-                if(collide(pRect, platRect)){
-                    if(player.vy >= 0 && (player.y + player.h - plat.y <= plat.h + 8)){
-                        player.y = plat.y - player.h;
-                        player.vy = 0;
-                        player.onGround = true;
-                    }
-                    else if(player.vy < 0 && (plat.y + plat.h - player.y <= 12)){
-                        player.y = plat.y + plat.h;
-                        player.vy = 0;
-                    }
-                    else {
-                        if(player.x + player.w/2 < plat.x + plat.w/2) player.x = plat.x - player.w;
-                        else player.x = plat.x + plat.w;
+            if(!gameRunning)return;
+            let move=(input.left?-1:0)+(input.right?1:0);
+            player.vx=move*player.speed;player.x+=player.vx;
+            if(player.x<0)player.x=0;
+            if(player.x+player.w>LOGIC_W)player.x=LOGIC_W-player.w;
+
+            player.vy+=player.gravity;player.y+=player.vy;player.onGround=false;
+
+            currentPlat.forEach(p=>{
+                if(collide(player,p)){
+                    if(player.vy>=0&&player.y+player.h-p.y<=p.h+8){
+                        player.y=p.y-player.h;player.vy=0;player.onGround=true;
                     }
                 }
-            }
-            
-            for(let sp of spikes){
-                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:sp.x,y:sp.y,w:sp.w,h:sp.h})){
-                    fullReset(); return;
+            });
+            spikes.forEach(sp=>{if(collide(player,sp))fullReset();});
+            movingHazards.forEach(h=>{
+                let hr=null;
+                if(h.type==="thorn_vine")hr={x:h.currentX-h.range,y:h.y-h.range,w:h.range*2,h:h.range*2};
+                if(h.type==="laser")hr={x:h.currentX,y:0,w:h.width,h:h.y};
+                if(h.type==="flame_pillar"&&h.active)hr={x:h.x-h.range,y:h.y-h.range*1.5,w:h.range*2,h:h.range*3};
+                if(hr&&collide(player,hr))fullReset();
+            });
+            if(player.y>LOGIC_H)fullReset();
+
+            if(input.jump&&player.onGround){player.vy=player.jumpPower;player.onGround=false;input.jump=false;}
+
+            currentStars.forEach(st=>{
+                if(!st.col){
+                    let sRect={x:st.x-st.size/2,y:st.y-st.size/2,w:st.size,h:st.size};
+                    if(collide(player,sRect)){st.col=true;score+=100;message="+100星辉";msgTimer=25;}
                 }
-            }
-            
-            for(let h of movingHazards){
-                let hx = h.currentX !== undefined ? h.currentX : h.x;
-                let hy = h.y;
-                let hazardRect;
-                if(h.type === 'thorn_vine'){
-                    hazardRect = {x:hx - h.radius, y:hy - h.radius, w:h.radius*2, h:h.radius*2};
-                } else if(h.type === 'laser'){
-                    hazardRect = {x:hx, y:0, w:h.width, h:hy - 10};
-                } else if(h.type === 'flame_pillar' && h.active){
-                    hazardRect = {x:h.x - h.radius, y:h.y - h.radius*1.5, w:h.radius*2, h:h.radius*3};
-                } else continue;
-                if(hazardRect && collide({x:player.x,y:player.y,w:player.w,h:player.h}, hazardRect)){
-                    fullReset(); return;
-                }
-            }
-            
-            if(player.y + player.h > LOGIC_H + 50){ fullReset(); return; }
-            if(player.y < -80){ fullReset(); return; }
-            
-            if(input.jump && player.onGround){
-                player.vy = player.jumpPower;
-                player.onGround = false;
-                input.jump = false;
-            }
-            
-            for(let s of currentStars){
-                if(!s.col){
-                    const starRect = {x:s.x - s.size/2, y:s.y - s.size/2, w:s.size, h:s.size};
-                    if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, starRect)){
-                        s.col = true;
-                        score += 100;
-                        message = "⭐ +100 星辉 ⭐";
-                        msgTimer = 25;
-                    }
-                }
-            }
-            
-            if(currentScene === 0 && player.x + player.w > LOGIC_W - 20) { changeScene(1); player.x = 30; }
-            else if(currentScene === 1 && player.x + player.w > LOGIC_W - 20) { changeScene(2); player.x = 30; }
-            else if(currentScene === 2 && player.x + player.w > LOGIC_W - 20) { changeScene(3); player.x = 30; }
-            else if(currentScene === 3 && player.x + player.w > LOGIC_W - 20) { changeScene(4); player.x = 80; player.y = 650; }
-            
-            if(currentScene === 4 && !gameVictory && scenes[4].rocketZone){
-                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].rocketZone)){
-                    winGame(score); return;
-                }
-            }
-            
-            if(player.vx > 2) player.facingRight = true;
-            if(player.vx < -2) player.facingRight = false;
-            
+            });
+
+            if(currentScene===0&&player.x>LOGIC_W-60)changeScene(1);
+            if(currentScene===1&&player.x>LOGIC_W-60)changeScene(2);
+            if(currentScene===2&&player.x>LOGIC_W-60)changeScene(3);
+            if(currentScene===3&&player.x>LOGIC_W-60)changeScene(4);
+
+            if(currentScene===4&&collide(player,scenes[4].rocketZone))winGame(score);
+            if(msgTimer>0)msgTimer--;else message="";
             updateHazards();
-            if(msgTimer > 0) msgTimer--;
-            else message = "";
         }
-        
-        function drawSandGround(x, y, w, h) {
-            ctx.fillStyle = "#E8D4A8";
-            ctx.fillRect(x, y, w, h);
-            ctx.fillStyle = "#D4BC7A";
-            ctx.fillRect(x, y + h - 6, w, 6);
-            
-            ctx.fillStyle = "#FFF8E7";
-            const dotCount = Math.floor(w / 18);
-            for(let i = 0; i < dotCount; i++) {
-                const dotX = x + 12 + (i * 23) % (w - 20);
-                const dotY = y + h - 8 - (i % 12);
-                ctx.beginPath();
-                ctx.arc(dotX, dotY, 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            for(let i = 0; i < dotCount / 2; i++) {
-                ctx.fillStyle = "#FFF2CC";
-                ctx.beginPath();
-                ctx.arc(x + 8 + (i * 37) % (w - 16), y + h - 14 - (i % 3) * 3, 1.5, 0, Math.PI * 2);
-                ctx.fill();
+
+        // 固定沙地白点不流动 + 全屏底部铺满
+        function drawSandGround(x,y,w,h){
+            ctx.fillStyle="#E8D4A8";ctx.fillRect(x,y,w,h);
+            ctx.fillStyle="#D4BC7A";ctx.fillRect(x,y+h-4,w,4);
+            ctx.fillStyle="#FFF8E7";
+            let cnt=Math.floor(w/18);
+            for(let i=0;i<cnt;i++){
+                let dx=x+12+(i*23)%(w-20);
+                let dy=y+h-8-(i%12);
+                ctx.beginPath();ctx.arc(dx,dy,2,0,Math.PI*2);ctx.fill();
             }
         }
-        
-        function drawPlatforms(){
-            for(let plat of currentPlat){
-                if(plat.type === 'questionBlock'){
-                    ctx.fillStyle = "#FFE8A0"; ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-                    ctx.fillStyle = "#C97E2A"; ctx.strokeRect(plat.x+2, plat.y+2, plat.w-4, plat.h-4);
-                    ctx.font = `bold ${Math.floor(plat.h*0.55)}px "Segoe UI"`;
-                    ctx.fillStyle = "#4A2A1A"; ctx.textAlign = "center";
-                    ctx.fillText("?", plat.x + plat.w/2, plat.y + plat.h/2 + 6);
-                    ctx.textAlign = "left";
-                }
-                else if(plat.type === 'rocketPad'){
-                    ctx.fillStyle = "#B87C54"; ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-                    ctx.fillStyle = "#E8C084"; ctx.fillRect(plat.x + 5, plat.y - 6, plat.w - 10, 8);
-                }
-                else if(plat.type === 'water'){
-                    ctx.fillStyle = "rgba(70,130,210,0.55)"; ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
-                }
-                else {
-                    drawSandGround(plat.x, plat.y, plat.w, plat.h);
-                }
-            }
+        function fillWholeBottomSand(){
+            ctx.fillStyle="#E8D4A8";
+            ctx.fillRect(0,750,LOGIC_W,LOGIC_H-750);
         }
-        
-        function drawBackground(){
-            const bgImg = bgImages[currentScene];
-            if(bgImg && bgImg.complete && bgImg.naturalWidth > 0){
-                ctx.drawImage(bgImg, 0, 0, LOGIC_W, LOGIC_H);
-            } else {
-                const gradients = [ ['#1a1338','#2a1f4a','#3a2a5a'], ['#2a1f3a','#3a2a4a','#4a3a6a'],
-                    ['#2a1a2a','#3a2a3a','#5a3a4a'], ['#1a2a2a','#2a3a3a','#3a4a4a'],
-                    ['#0f1a2a','#1f2a3a','#2f3a4a'] ];
-                const g = gradients[currentScene % gradients.length];
-                const grad = ctx.createLinearGradient(0,0,0,LOGIC_H);
-                grad.addColorStop(0,g[0]);grad.addColorStop(0.5,g[1]);grad.addColorStop(1,g[2]);
-                ctx.fillStyle=grad;ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
+        function drawBg(){
+            fillWholeBottomSand();
+            let b=bgImages[currentScene];
+            if(b&&b.complete)ctx.drawImage(b,0,0,LOGIC_W,LOGIC_H);
+            else{
+                let g=ctx.createLinearGradient(0,0,0,LOGIC_H);
+                g.addColorStop(0,"#1a1338");g.addColorStop(1,"#0c0820");
+                ctx.fillStyle=g;ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
             }
-            for(let i=0;i<40;i++){
-                ctx.fillStyle = `rgba(255,240,200,${0.15})`;
-                ctx.fillRect((i*211)%LOGIC_W, (i*97)%LOGIC_H, 2,2);
-            }
+            ctx.fillStyle="rgba(255,240,200,0.15)";
+            for(let i=0;i<40;i++)ctx.fillRect((i*211)%LOGIC_W,(i*97)%700,2,2);
         }
-        
-        function drawSpikes(){
-            for(let sp of spikes){
-                ctx.fillStyle = "#6A4A2A"; ctx.fillRect(sp.x, sp.y, sp.w, sp.h);
-                ctx.fillStyle = "#C88C54";
+        function drawPlat(){
+            currentPlat.forEach(p=>{
+                if(p.type==="questionBlock"){
+                    ctx.fillStyle="#FFE8A0";ctx.fillRect(p.x,p.y,p.w,p.h);
+                    ctx.strokeStyle="#C97E2A";ctx.strokeRect(p.x+2,p.y+2,p.w-4,p.h-4);
+                    ctx.fillStyle="#4A2A1A";ctx.font="bold 20px sans-serif";
+                    ctx.textAlign="center";ctx.fillText("?",p.x+p.w/2,p.y+p.h/2+6);ctx.textAlign="left";
+                }else if(p.type==="rocketPad"){
+                    ctx.fillStyle="#B87C54";ctx.fillRect(p.x,p.y,p.w,p.h);
+                }else drawSandGround(p.x,p.y,p.w,p.h);
+            });
+        }
+        function drawSpike(){
+            spikes.forEach(s=>{
+                ctx.fillStyle="#6A4A2A";ctx.fillRect(s.x,s.y,s.w,s.h);
+                ctx.fillStyle="#C88C54";
                 for(let i=0;i<4;i++){
                     ctx.beginPath();
-                    ctx.moveTo(sp.x + i*(sp.w/4), sp.y);
-                    ctx.lineTo(sp.x + i*(sp.w/4) + sp.w/8, sp.y - 14);
-                    ctx.lineTo(sp.x + i*(sp.w/4) + sp.w/4, sp.y);
-                    ctx.fill();
+                    ctx.moveTo(s.x+i*(s.w/4),s.y);
+                    ctx.lineTo(s.x+i*(s.w/4)+s.w/8,s.y-14);
+                    ctx.lineTo(s.x+i*(s.w/4)+s.w/4,s.y);ctx.fill();
                 }
-            }
+            });
         }
-        
-        function drawStars(){
-            for(let s of currentStars){
-                if(!s.col){
-                    ctx.fillStyle = `rgb(${s.color[0]},${s.color[1]},${s.color[2]})`;
-                    ctx.shadowBlur = 6;
-                    ctx.beginPath();
-                    for(let i=0;i<5;i++){
-                        let ang = (i*72-36)*Math.PI/180;
-                        let x1 = s.x+Math.cos(ang)*s.size/2;
-                        let y1 = s.y+Math.sin(ang)*s.size/2;
-                        let ang2 = (i*72)*Math.PI/180;
-                        let x2 = s.x+Math.cos(ang2)*s.size/3;
-                        let y2 = s.y+Math.sin(ang2)*s.size/3;
-                        if(i===0) ctx.moveTo(x1,y1);
-                        else ctx.lineTo(x1,y1);
-                        ctx.lineTo(x2,y2);
-                    }
-                    ctx.fill();
+        function drawStar(){
+            currentStars.forEach(s=>{
+                if(s.col)return;
+                ctx.fillStyle=`rgb(${s.color[0]},${s.color[1]},${s.color[2]})`;
+                ctx.shadowBlur=8;ctx.beginPath();
+                for(let i=0;i<5;i++){
+                    let a1=(i*72-36)*Math.PI/180;
+                    let a2=(i*72)*Math.PI/180;
+                    let px=s.x+Math.cos(a1)*s.w/2;
+                    let py=s.y+Math.sin(a1)*s.w/2;
+                    let qx=s.x+Math.cos(a2)*s.w/3;
+                    let qy=s.y+Math.sin(a2)*s.w/3;
+                    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+                    ctx.lineTo(qx,qy);
                 }
-            }
-            ctx.shadowBlur = 0;
+                ctx.fill();ctx.shadowBlur=0;
+            });
         }
-        
-        function drawHazards(){
-            for(let h of movingHazards){
-                if(h.type === 'thorn_vine'){
-                    ctx.fillStyle = "#5C8C3A";
-                    ctx.beginPath();
-                    ctx.ellipse(h.currentX, h.y, h.radius, h.radius*1.4, 0,0,Math.PI*2);
-                    ctx.fill();
-                    ctx.fillStyle = "#3A6A1A";
-                    for(let i=0;i<6;i++){
-                        ctx.beginPath();
-                        ctx.moveTo(h.currentX+Math.sin(i)*6, h.y-4);
-                        ctx.lineTo(h.currentX+Math.sin(i+0.5)*10, h.y+6);
-                        ctx.lineTo(h.currentX+Math.sin(i-0.5)*10, h.y+6);
-                        ctx.fill();
-                    }
-                } else if(h.type === 'laser'){
-                    ctx.fillStyle = "rgba(255,100,80,0.6)";
-                    ctx.fillRect(h.currentX,0,h.width,h.y-10);
-                    ctx.fillStyle = "rgba(255,200,100,0.8)";
-                    ctx.fillRect(h.currentX+1,0,h.width-2,h.y-10);
-                } else if(h.type === 'flame_pillar' && h.active){
-                    ctx.fillStyle = "#FF5A2A";
-                    ctx.shadowBlur=14;
-                    ctx.beginPath();
-                    ctx.ellipse(h.x,h.y-h.radius/2,h.radius,h.radius*2,0,0,Math.PI*2);
-                    ctx.fill();
-                    ctx.fillStyle="#FFAA40";
-                    ctx.beginPath();
-                    ctx.ellipse(h.x,h.y-h.radius/3,h.radius-5,h.radius-5,0,0,Math.PI*2);
-                    ctx.fill();
+        function drawHaz(){
+            movingHazards.forEach(h=>{
+                if(h.type==="thorn_vine"){
+                    ctx.fillStyle="#5C8C3A";
+                    ctx.beginPath();ctx.ellipse(h.currentX,h.y,h.range,h.range*1.4,0,0,Math.PI*2);ctx.fill();
+                }
+                if(h.type==="laser"){
+                    ctx.fillStyle="rgba(255,100,80,0.6)";
+                    ctx.fillRect(h.currentX,0,h.width,h.y);
+                }
+                if(h.type==="flame_pillar"&&h.active){
+                    ctx.fillStyle="#FF5A2A";ctx.shadowBlur=20;
+                    ctx.beginPath();ctx.ellipse(h.x,h.y,h.range,h.range*2,0,0,Math.PI*2);ctx.fill();
                     ctx.shadowBlur=0;
                 }
-            }
+            });
         }
-        
-        function drawRocket(){
-            if(currentScene !== 4) return;
-            const r = scenes[4].rocketZone;
-            
-            if(rocketFlyAnim) {
-                rocketFlyY -= 8;
-                if(rocketFlyAlpha > 0) rocketFlyAlpha -= 0.012;
-                ctx.globalAlpha = rocketFlyAlpha;
+        function drawRocketFinal(){
+            if(currentScene!==4)return;
+            let r=scenes[4].rocketZone;
+            if(rocketFlyAnim){
+                rocketFlyY-=9;rocketFlyAlpha-=0.015;
+                ctx.globalAlpha=rocketFlyAlpha;
             }
-            
-            if(rocketImg && rocketImg.complete && rocketImg.naturalWidth>0) {
-                ctx.drawImage(rocketImg, r.x, r.y + rocketFlyY, 120, 120);
-            } else {
-                ctx.fillStyle = "#C8D0F0";
-                ctx.fillRect(r.x+18, r.y-44+rocketFlyY, 64,44);
-                ctx.fillStyle = "#FF6A6A";
-                ctx.beginPath();
-                ctx.moveTo(r.x+r.w/2, r.y-68+rocketFlyY);
-                ctx.lineTo(r.x+r.w/2+28, r.y-38+rocketFlyY);
-                ctx.lineTo(r.x+r.w/2-28, r.y-38+rocketFlyY);
-                ctx.fill();
-                ctx.fillStyle = "#FAD87A";
-                ctx.fillRect(r.x+24, r.y-34+rocketFlyY,52,26);
-                ctx.fillStyle = "#2F2F5A";
-                ctx.fillRect(r.x+42, r.y-14+rocketFlyY,16,42);
-                ctx.font = "bold 42px monospace";
-                ctx.fillStyle = "#FFF8D0";
-                ctx.fillText("🚀", r.x+r.w/2-20, r.y+14+rocketFlyY);
+            if(rocketImg.complete){
+                ctx.drawImage(rocketImg,r.x,r.y+rocketFlyY,120,120);
+            }else{
+                ctx.fillStyle="#eee";ctx.fillRect(r.x,r.y+rocketFlyY,100,80);
             }
-            
-            ctx.globalAlpha = 1;
+            ctx.globalAlpha=1;
         }
-        
-        function drawPlayer() {
-            if(rocketFlyAnim) return;
+        function drawPlayerChar(){
+            if(rocketFlyAnim)return;
             ctx.save();
-            ctx.translate(player.x + player.w/2, player.y + player.h/2);
-            if(player.facingRight) ctx.scale(-1, 1);
-            let imgToDraw = null;
-            const isMoving = Math.abs(player.vx) > 1.5;
-            if(isMoving && playerWalkImg && playerWalkImg.complete) imgToDraw = playerWalkImg;
-            else if(!player.onGround && playerWalkImg) imgToDraw = playerWalkImg;
-            else if(playerStandImg) imgToDraw = playerStandImg;
-            if(imgToDraw) {
-                ctx.drawImage(imgToDraw, -player.w*0.65, -player.h*0.65, player.w*1.3, player.h*1.3);
-            } else {
-                ctx.fillStyle = "#FFD8A0";
-                ctx.fillRect(-player.w/2,-player.h/2,player.w,player.h);
-                ctx.fillStyle = "#F0A87A";
-                ctx.fillRect(-player.w/2+8,-player.h/2-6,player.w-16,10);
-                ctx.fillStyle = "#4A2A1A";
-                ctx.fillRect(-player.w/2+12,-player.h/2+12,8,8);
-                ctx.fillRect(-player.w/2+32,-player.h/2+12,8,8);
+            ctx.translate(player.x+player.w/2,player.y+player.h/2);
+            if(player.facingRight)ctx.scale(-1,1);
+            let useImg=playerStandImg;
+            if(Math.abs(player.vx)>2)useImg=playerWalkImg;
+            if(useImg&&useImg.complete){
+                ctx.drawImage(useImg,-30,-40,60,80);
+            }else{
+                ctx.fillStyle="#FFD8A0";ctx.fillRect(-25,-35,50,70);
             }
             ctx.restore();
         }
-        
         function drawUI(){
-            ctx.font = "bold 32px monospace";
-            ctx.fillStyle = "#FFF2E0";
-            ctx.fillRect(LOGIC_W-160,18,148,46);
-            ctx.fillStyle = "#4A2E62";
-            ctx.fillText(`${Math.floor(score)}`, LOGIC_W-138,56);
+            ctx.fillStyle="#000";ctx.fillRect(LOGIC_W-170,20,150,50);
+            ctx.fillStyle="#FFF2E0";ctx.font="bold 32px monospace";
+            ctx.fillText(""+Math.floor(score),LOGIC_W-160,55);
             if(message){
-                ctx.font = "bold 18px monospace";
-                ctx.fillStyle = "#FFFAD0";
-                ctx.shadowBlur=4;
-                ctx.fillText(message, LOGIC_W/2-ctx.measureText(message).width/2, LOGIC_H-28);
-                ctx.shadowBlur=0;
+                ctx.font="bold 22px sans-serif";
+                ctx.fillStyle="#FFEEBB";
+                let mw=ctx.measureText(message).width;
+                ctx.fillText(message,LOGIC_W/2-mw/2,LOGIC_H-30);
             }
-            let q = scenes[currentScene].name;
-            ctx.font = "16px monospace";
-            ctx.fillStyle = "#FFF0BF";
-            ctx.fillText(q + " →", 20, LOGIC_H-20);
-            
             if(gameVictory){
-                ctx.fillStyle = "rgba(0,0,0,0.85)";
-                ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
-                ctx.font = "bold 52px monospace";
-                ctx.fillStyle = "#FFE78F";
-                ctx.fillText("✨ 胜利 ✨", LOGIC_W/2-130, LOGIC_H/2-50);
-                ctx.font = "38px monospace";
-                ctx.fillStyle = "#FFD87A";
-                ctx.fillText(`星辉 ${Math.floor(score)}`, LOGIC_W/2-110, LOGIC_H/2+40);
-                ctx.font = "22px monospace";
-                ctx.fillStyle="#FFF";
-                ctx.fillText("点击「月华启程」重新冒险", LOGIC_W/2-180, LOGIC_H-90);
+                ctx.fillStyle="rgba(0,0,0,0.85)";ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
+                ctx.fillStyle="#FFE78F";ctx.font="bold 60px sans-serif";
+                ctx.fillText("通关成功！",LOGIC_W/2-180,LOGIC_H/2-60);
+                ctx.fillStyle="#FFD87A";ctx.font="bold 40px sans-serif";
+                ctx.fillText("总星辉："+Math.floor(score),LOGIC_W/2-160,LOGIC_H/2+20);
+                ctx.fillStyle="#fff";ctx.font="24px sans-serif";
+                ctx.fillText("返回首页重新挑战",LOGIC_W/2-140,LOGIC_H-80);
             }
         }
-        
+
         function gameLoop(){
-            updateGame();
-            drawBackground();
-            drawPlatforms();
-            drawSpikes();
-            drawStars();
-            drawHazards();
-            drawRocket();
-            drawPlayer();
-            drawUI();
+            updateGame();drawBg();drawPlat();drawSpike();drawStar();drawHaz();
+            drawRocketFinal();drawPlayerChar();drawUI();
             requestAnimationFrame(gameLoop);
         }
-        
-        startBtn.addEventListener('click', () => { 
-            fullReset(); 
-            startOverlay.style.display = 'none'; 
-            bottomControls.style.display = 'flex';
-            gameRunning = true;
-            gameVictory = false;
-            initBackgroundMusic();
-            startBackgroundMusic();
-            setTimeout(() => checkLandscapeAndFullscreen(), 200);
-        });
-        
-        function checkRestart(){ 
-            if((gameVictory || (!gameRunning && startOverlay.style.display !== 'flex')) && startOverlay.style.display !== 'flex' && !gameRunning) {
-                startOverlay.style
+
+        startBtn.onclick=()=>{
+            startOverlay.style.display="none";
+            bottomControls.style.display="flex";
+            fullReset();initBackgroundMusic();startBackgroundMusic();
+        };
+        reloadScene(0);gameLoop();
+    })();
+</script>
+</body>
+</html>
