@@ -137,7 +137,7 @@
             letter-spacing: 2px;
         }
 
-        .start-btn {
+        .start-btn, .victory-restart-btn {
             background: linear-gradient(135deg, #ffb7c5, #ff6f9f);
             border: none;
             padding: 14px 56px;
@@ -152,7 +152,7 @@
             letter-spacing: 4px;
         }
 
-        .start-btn:active {
+        .start-btn:active, .victory-restart-btn:active {
             transform: translateY(6px);
             box-shadow: 0 5px 0 #8b3a5a;
         }
@@ -166,9 +166,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 28px calc(12px + env(safe-area-inset-bottom, 0));
-            background: transparent !important;
-            backdrop-filter: none !important;
-            border: none !important;
+            background: transparent;
+            backdrop-filter: none;
+            border: none;
             z-index: 20;
             pointer-events: auto;
             display: none;
@@ -188,27 +188,27 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1.5px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.15);
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             font-size: 3.2rem;
             font-weight: bold;
-            color: rgba(255, 255, 245, 0.95);
+            color: rgba(255, 255, 245, 0.9);
             cursor: pointer;
             transition: 0.05s linear;
             display: flex;
             align-items: center;
             justify-content: center;
             touch-action: manipulation;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(2px);
         }
         .ctrl-btn:active { 
             transform: scale(0.93); 
-            background: rgba(0, 0, 0, 0.4); 
+            background: rgba(0, 0, 0, 0.3); 
         }
         .jump-btn { 
-            background: rgba(0, 0, 0, 0.25); 
-            border-color: rgba(255, 180, 200, 0.7); 
+            background: rgba(0, 0, 0, 0.15); 
+            border-color: rgba(255, 180, 200, 0.6); 
         }
 
         .music-toggle-btn {
@@ -218,9 +218,9 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(255,220,160,0.7);
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,220,160,0.6);
             z-index: 40;
             cursor: pointer;
             display: flex;
@@ -300,6 +300,11 @@
             <div class="start-sub">五境传说 · 乘飞船归乡</div>
             <button class="start-btn" id="startBtn">时 空 启 程</button>
         </div>
+        
+        <!-- 胜利界面独立按钮层 -->
+        <div id="victoryOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; display: none; justify-content: center; align-items: flex-end; padding-bottom: 120px; z-index: 35; pointer-events: none;">
+            <button id="victoryRestartBtn" class="victory-restart-btn" style="pointer-events: auto; display: none;">时 空 重 启</button>
+        </div>
     </div>
     <div class="bottom-controls" id="bottomControls">
         <div class="left-buttons">
@@ -317,11 +322,13 @@
 
 <script>
     (function(){
-        // ---------- DOM 元素 ----------
+        // DOM 元素
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const startOverlay = document.getElementById('startOverlay');
         const startBtn = document.getElementById('startBtn');
+        const victoryOverlay = document.getElementById('victoryOverlay');
+        const victoryRestartBtn = document.getElementById('victoryRestartBtn');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingBar = document.getElementById('loadingBar');
         const loadingText = document.getElementById('loadingText');
@@ -338,14 +345,14 @@
         let musicMuted = false;
         let resourcesLoaded = false;
         
-        // 飞船升空动画数据
+        // 飞船升空动画
         let spaceshipImg = new Image();
         spaceshipImg.src = "spaceship.png";
         let spaceshipFlyAnim = false;
         let spaceshipFlyY = 0;
         let spaceshipFlyAlpha = 1;
         
-        // 图片资源列表
+        // 图片资源
         const imagesToLoad = [
             { name: 'playerStand', url: 'stand.png', img: null },
             { name: 'playerWalk', url: 'walk.png', img: null },
@@ -515,21 +522,20 @@
         let walkFrameCounter = 0;
         let walkFrameDelay = 8;
         
-        // 第4关钟摆机关数据
+        // 第4关钟摆机关 - 加长版
         let pendulum = {
             active: true,
-            angle: 0,           // 当前弧度
-            angularSpeed: 0.022, // 摆动速度
-            maxAngle: Math.PI / 3, // 60度 = π/3，总共120度范围
-            length: 280,        // 摆绳长度
-            centerX: LOGIC_W / 2, // 顶部中点 x=720
-            centerY: 20,        // 顶部起始点 y=20
-            lineWidth: 4,
+            angle: 0,
+            angularSpeed: 0.022,
+            maxAngle: Math.PI / 3,
+            length: 520,        // 加长到520像素，覆盖整个屏幕高度
+            centerX: LOGIC_W / 2,
+            centerY: 10,
+            lineWidth: 5,
             glow: true
         };
-        let pendulumTimer = 0;
         
-        // 五境关卡完整数据（第4关改为钟摆机关）
+        // 五境关卡数据（第4关改钟摆，第5关修复出生点）
         const scenes = [
             { name:"🌙 月之森·沙滩", 
                 platforms: [ 
@@ -621,7 +627,7 @@
                     {x:480,y:680,w:55,h:24},
                     {x:740,y:680,w:55,h:24},
                 ],
-                hazards: [],  // 不使用旧版荆棘球，改用钟摆机关
+                hazards: [],
                 hasPendulum: true },
             { name:"🚀 飞船码头·沙滩",
                 platforms: [ 
@@ -661,7 +667,6 @@
                     movingHazards.push(copy);
                 }
             }
-            // 重置钟摆角度
             pendulum.angle = 0;
         }
         
@@ -669,8 +674,14 @@
             if(newIdx === currentScene) return;
             currentScene = newIdx;
             reloadScene(currentScene);
-            player.x = 100;
-            player.y = 660;
+            // 修复第5关出生点：确保不卡在平台内部
+            if(newIdx === 4) {
+                player.x = 80;
+                player.y = 650;
+            } else {
+                player.x = 100;
+                player.y = 660;
+            }
             player.vy = 0;
             player.vx = 0;
             player.onGround = true;
@@ -691,6 +702,9 @@
             message = `✨ 胜利！星辉: ${Math.floor(finalScore)} ✨`;
             msgTimer = 9999;
             if(bgMusic) bgMusic.pause();
+            // 显示胜利重启按钮
+            victoryOverlay.style.display = 'flex';
+            victoryRestartBtn.style.display = 'block';
         }
         
         function fullReset(){
@@ -711,6 +725,9 @@
             gameVictory = false;
             message = "逃离月球 · 启程！";
             msgTimer = 80;
+            // 隐藏胜利界面
+            victoryOverlay.style.display = 'none';
+            victoryRestartBtn.style.display = 'none';
             if(bgMusic && bgMusic.paused && !musicMuted) startBackgroundMusic();
         }
         
@@ -718,37 +735,22 @@
             return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y); 
         }
         
-        // 检测点是否在钟摆扫过的扇形区域内
         function checkPendulumCollision(playerRect) {
             if(currentScene !== 3) return false;
-            
-            // 计算钟摆末端的坐标
             const endX = pendulum.centerX + Math.sin(pendulum.angle) * pendulum.length;
             const endY = pendulum.centerY + Math.cos(pendulum.angle) * pendulum.length;
-            
-            // 简化碰撞：检测玩家矩形是否与线段（从顶部到末端）相交
-            // 更精确：检测玩家矩形中心点到线段的距离
             const playerCenterX = playerRect.x + playerRect.w / 2;
             const playerCenterY = playerRect.y + playerRect.h / 2;
-            
-            // 计算点到线段的距离
-            const ax = pendulum.centerX;
-            const ay = pendulum.centerY;
-            const bx = endX;
-            const by = endY;
-            const cx = playerCenterX;
-            const cy = playerCenterY;
-            
-            const abx = bx - ax;
-            const aby = by - ay;
+            const ax = pendulum.centerX, ay = pendulum.centerY;
+            const bx = endX, by = endY;
+            const cx = playerCenterX, cy = playerCenterY;
+            const abx = bx - ax, aby = by - ay;
             const t = ((cx - ax) * abx + (cy - ay) * aby) / (abx * abx + aby * aby || 1);
             const tClamped = Math.max(0, Math.min(1, t));
             const closestX = ax + abx * tClamped;
             const closestY = ay + aby * tClamped;
             const dist = Math.hypot(cx - closestX, cy - closestY);
-            
-            // 碰撞半径（玩家半宽+线宽）
-            const collisionRadius = Math.max(playerRect.w, playerRect.h) / 2 + 8;
+            const collisionRadius = Math.max(playerRect.w, playerRect.h) / 2 + 12;
             return dist < collisionRadius;
         }
         
@@ -767,11 +769,8 @@
                     }
                 }
             }
-            
-            // 更新钟摆角度（仅第4关）
             if(currentScene === 3) {
                 pendulum.angle += pendulum.angularSpeed;
-                // 在 -maxAngle 到 +maxAngle 之间来回摆动
                 if(pendulum.angle > pendulum.maxAngle) {
                     pendulum.angle = pendulum.maxAngle;
                     pendulum.angularSpeed = -pendulum.angularSpeed;
@@ -783,7 +782,6 @@
             }
         }
         
-        // 核心游戏更新逻辑
         function updateGame(){
             if(!gameRunning) return;
             
@@ -843,7 +841,6 @@
                 }
             }
             
-            // 第4关钟摆碰撞检测
             if(currentScene === 3) {
                 if(checkPendulumCollision({x:player.x,y:player.y,w:player.w,h:player.h})) {
                     fullReset(); return;
@@ -874,7 +871,7 @@
             if(currentScene === 0 && player.x + player.w > LOGIC_W - 20) { changeScene(1); player.x = 30; }
             else if(currentScene === 1 && player.x + player.w > LOGIC_W - 20) { changeScene(2); player.x = 30; }
             else if(currentScene === 2 && player.x + player.w > LOGIC_W - 20) { changeScene(3); player.x = 30; }
-            else if(currentScene === 3 && player.x + player.w > LOGIC_W - 20) { changeScene(4); player.x = 80; player.y = 650; }
+            else if(currentScene === 3 && player.x + player.w > LOGIC_W - 20) { changeScene(4); }
             
             if(currentScene === 4 && !gameVictory && scenes[4].spaceshipZone){
                 if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].spaceshipZone)){
@@ -890,7 +887,7 @@
             else message = "";
         }
         
-        // 绘图函数
+        // 绘图函数（核心保留，仅展示关键部分）
         function drawSandGround(x, y, w, h) {
             ctx.fillStyle = "#E8D4A8";
             ctx.fillRect(x, y, w, h);
@@ -1005,20 +1002,13 @@
                     ctx.beginPath();
                     ctx.ellipse(h.x, h.y - h.radius/3, h.radius-6, h.radius-6, 0, 0, Math.PI*2);
                     ctx.fill();
-                    ctx.fillStyle = "#FFE080";
-                    ctx.beginPath();
-                    ctx.ellipse(h.x, h.y - h.radius/4, h.radius-12, h.radius-12, 0, 0, Math.PI*2);
-                    ctx.fill();
                     ctx.shadowBlur=0;
                 }
             }
             
-            // 绘制第4关钟摆
             if(currentScene === 3) {
                 const endX = pendulum.centerX + Math.sin(pendulum.angle) * pendulum.length;
                 const endY = pendulum.centerY + Math.cos(pendulum.angle) * pendulum.length;
-                
-                // 绘制摆绳
                 ctx.beginPath();
                 ctx.moveTo(pendulum.centerX, pendulum.centerY);
                 ctx.lineTo(endX, endY);
@@ -1027,29 +1017,22 @@
                 ctx.shadowBlur = 8;
                 ctx.shadowColor = "#FF3366";
                 ctx.stroke();
-                
-                // 绘制摆锤（细长刀刃造型）
                 ctx.fillStyle = "#FF3366";
                 ctx.shadowBlur = 12;
                 ctx.beginPath();
-                ctx.moveTo(endX - 8, endY - 4);
-                ctx.lineTo(endX, endY + 16);
-                ctx.lineTo(endX + 8, endY - 4);
+                ctx.moveTo(endX - 10, endY - 6);
+                ctx.lineTo(endX, endY + 20);
+                ctx.lineTo(endX + 10, endY - 6);
                 ctx.fill();
-                
                 ctx.fillStyle = "#FF88AA";
                 ctx.beginPath();
-                ctx.arc(endX, endY - 2, 6, 0, Math.PI * 2);
+                ctx.arc(endX, endY - 3, 8, 0, Math.PI * 2);
                 ctx.fill();
-                
                 ctx.fillStyle = "#FFFFFF";
                 ctx.beginPath();
-                ctx.arc(endX - 2, endY - 4, 2, 0, Math.PI * 2);
+                ctx.arc(endX - 3, endY - 5, 3, 0, Math.PI * 2);
                 ctx.fill();
-                
                 ctx.shadowBlur = 0;
-                
-                // 绘制摆动轨迹指示（半透明弧线）
                 ctx.beginPath();
                 ctx.arc(pendulum.centerX, pendulum.centerY, pendulum.length, pendulum.maxAngle * -0.8, pendulum.maxAngle * 0.8);
                 ctx.strokeStyle = "rgba(255,100,130,0.3)";
@@ -1070,7 +1053,6 @@
             if(shipImg && shipImg.complete && shipImg.naturalWidth > 0) {
                 ctx.drawImage(shipImg, r.x, r.y + spaceshipFlyY, 120, 120);
             } else {
-                // 绘制飞船造型
                 ctx.fillStyle = "#5A8FCC";
                 ctx.beginPath();
                 ctx.moveTo(r.x + 60, r.y - 20 + spaceshipFlyY);
@@ -1156,9 +1138,6 @@
                 ctx.font = "38px monospace";
                 ctx.fillStyle = "#FFD87A";
                 ctx.fillText(`星辉 ${Math.floor(score)}`, LOGIC_W/2-110, LOGIC_H/2+40);
-                ctx.font = "22px monospace";
-                ctx.fillStyle="#FFF";
-                ctx.fillText("点击「时空启程」重新冒险", LOGIC_W/2-180, LOGIC_H-90);
             }
         }
         
@@ -1180,6 +1159,16 @@
             initBackgroundMusic();
             fullReset(); 
             startOverlay.style.display = 'none'; 
+            bottomControls.style.display = 'flex';
+            gameRunning = true;
+            if(bgMusic && !musicMuted) startBackgroundMusic();
+        });
+        
+        victoryRestartBtn.addEventListener('click', () => {
+            fullReset();
+            victoryOverlay.style.display = 'none';
+            victoryRestartBtn.style.display = 'none';
+            startOverlay.style.display = 'none';
             bottomControls.style.display = 'flex';
             gameRunning = true;
             if(bgMusic && !musicMuted) startBackgroundMusic();
