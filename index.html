@@ -356,8 +356,7 @@
         { primary: "#6A8ABA", secondary: "#7A9ACA", glow: "#9ABADA", light: "#C0E0FF" }
     ];
     
-    // ==================== 五境关卡数据（修复版） ====================
-    // 地面全部延伸到屏幕底部，不留空白
+    // ==================== 五境关卡数据（修复版：第4关平台完全不重叠） ====================
     const scenes = [
         { name:"🌙 月之森·沙滩", colorIdx:0,
             platforms: [ 
@@ -392,7 +391,6 @@
                 {x:1140,y:540,w:300,h:270,type:"groundFull"},
                 {x:70,y:440,w:60,h:60,type:"questionBlock"},{x:330,y:370,w:60,h:60,type:"questionBlock"},
                 {x:610,y:300,w:60,h:60,type:"questionBlock"},{x:930,y:230,w:60,h:60,type:"questionBlock"},
-                // 移动平台 - 调高位置，必须站上去才能跳到下一个平台
                 {x:400,y:400,w:100,h:20,type:"moving",moveRange:140, speed:1.2, startX:400, currentX:400, vx:0}
             ],
             stars: [{x:125,y:400,size:14,col:false,color:[255,220,140]},{x:385,y:330,size:14,col:false,color:[255,200,190]},
@@ -407,19 +405,22 @@
                 {x:0,y:540,w:200,h:270,type:"groundFull"},{x:280,y:540,w:180,h:270,type:"groundFull"},
                 {x:520,y:540,w:200,h:270,type:"groundFull"},{x:780,y:540,w:220,h:270,type:"groundFull"},
                 {x:1060,y:540,w:380,h:270,type:"groundFull"},
-                // 问号块（不重叠）
+                // 问号块（y值错开，避免与绕行平台重叠）
                 {x:250,y:430,w:60,h:60,type:"questionBlock"},{x:510,y:360,w:60,h:60,type:"questionBlock"},
                 {x:770,y:290,w:60,h:60,type:"questionBlock"},{x:1030,y:220,w:60,h:60,type:"questionBlock"},
-                // 绕行平台（不重叠）
+                // 绕行平台（与问号块y值错开，与尖刺x范围错开）
                 {x:180,y:470,w:80,h:20,type:"ground"},{x:280,y:470,w:80,h:20,type:"ground"},
                 {x:1000,y:470,w:80,h:20,type:"ground"},{x:1100,y:470,w:80,h:20,type:"ground"},
-                {x:600,y:500,w:240,h:20,type:"ground"}
+                {x:600,y:500,w:240,h:20,type:"ground"}  // 中央安全平台
             ],
             stars: [{x:105,y:390,size:14,col:false,color:[200,220,150]},{x:365,y:320,size:14,col:false,color:[220,190,230]},
                      {x:625,y:250,size:14,col:false,color:[210,200,220]},{x:925,y:180,size:14,col:false,color:[240,210,130]}],
-            spikes: [{x:220,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500},
-                     {x:480,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500},
-                     {x:740,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500}],
+            spikes: [
+                // 尖刺放在地面层，不与任何平台重叠（y=500，地面层上方）
+                {x:220,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500},
+                {x:480,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500},
+                {x:740,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500}
+            ],
             hazards: [], movingPlatforms: [], hasPendulum: true },
         { name:"🚀 飞船码头·沙滩", colorIdx:4,
             platforms: [ 
@@ -470,7 +471,52 @@
         msgTimer = 90;
     }
     
-    // 飞船动画（完整特效）
+    // 火箭烟雾粒子系统
+    let smokeParticles = [];
+    
+    function addSmoke(x, y, speedFactor) {
+        // 速度越快，烟雾越多
+        let count = Math.floor(5 + speedFactor * 12);
+        for(let i = 0; i < count; i++) {
+            smokeParticles.push({
+                x: x + 60 + (Math.random() - 0.5) * 20,
+                y: y + 55 + Math.random() * 15,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: -Math.random() * 3 - 1 - speedFactor * 2,
+                life: 1,
+                size: 4 + Math.random() * 8,
+                alpha: 0.6
+            });
+        }
+    }
+    
+    function updateSmoke() {
+        for(let i = smokeParticles.length-1; i >= 0; i--) {
+            let p = smokeParticles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.02;
+            p.alpha = p.life * 0.6;
+            if(p.life <= 0 || p.y < 0 || p.x < 0 || p.x > LOGIC_W) {
+                smokeParticles.splice(i,1);
+            }
+        }
+    }
+    
+    function drawSmoke() {
+        for(let p of smokeParticles) {
+            ctx.fillStyle = `rgba(120, 100, 80, ${p.alpha * 0.5})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * (1 - p.life*0.5), 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = `rgba(80, 70, 60, ${p.alpha * 0.3})`;
+            ctx.beginPath();
+            ctx.arc(p.x-2, p.y-1, p.size * 0.7, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
+    
+    // 飞船动画（完整特效+烟雾）
     let spaceshipFlyAnim = false;
     let spaceshipFlyY = 0;
     let spaceshipFlyAlpha = 1;
@@ -485,6 +531,9 @@
             spaceshipSpeed += spaceshipAccel;
             spaceshipSpeed = Math.min(spaceshipSpeedLimit, spaceshipSpeed);
             spaceshipFlyY -= spaceshipSpeed;
+            // 添加烟雾
+            const r = scenes[4].spaceshipZone;
+            addSmoke(r.x, r.y + spaceshipFlyY, spaceshipSpeed / 8);
             if(spaceshipFlyAlpha > 0) spaceshipFlyAlpha -= 0.009;
             if(spaceshipFlyAlpha <= 0.02 && !gameVictory) {
                 spaceshipFlyAnim = false;
@@ -495,6 +544,7 @@
                 victoryOverlay.style.display = 'flex';
             }
         }
+        updateSmoke();
     }
     
     function drawRealisticSpaceship(x, y) {
@@ -569,15 +619,6 @@
         ctx.lineTo(x + 76, shipY + 40);
         ctx.fill();
         
-        if(spaceshipSpeed > 4) {
-            const particleCount = Math.min(8, Math.floor(spaceshipSpeed / 2.5));
-            for(let i = 0; i < particleCount; i++) {
-                ctx.fillStyle = `rgba(255, 120, 60, ${0.4 - i * 0.05})`;
-                ctx.beginPath();
-                ctx.arc(x + 60 + (Math.random() - 0.5) * 14, shipY + 58 + spaceshipSpeed * 2 + i * 6, 3 - i * 0.3, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
         ctx.shadowBlur = 0;
     }
     
@@ -586,6 +627,7 @@
         const r = scenes[4].spaceshipZone;
         if(spaceshipFlyAnim) ctx.globalAlpha = spaceshipFlyAlpha;
         drawRealisticSpaceship(r.x, r.y);
+        drawSmoke();  // 绘制烟雾
         ctx.globalAlpha = 1;
     }
     
@@ -657,6 +699,7 @@
         spaceshipFlyAlpha = 1;
         spaceshipSpeed = 0;
         spaceshipAccel = 0.38;
+        smokeParticles = [];
         gameVictory = false;
         gameRunning = true;
         shakeAmount = 0;
@@ -671,13 +714,14 @@
     }
     
     function deathReset(){ triggerShake('death', 16); fullReset(); }
-    function updateGame(){
+        function updateGame(){
         if(!gameRunning) return;
         
-        // 动画逻辑：行走时循环播放，站立时固定站立
-        const isWalking = (input.left || input.right) && player.onGround;
+        // 动画逻辑：只要左右方向键有输入，无论是否在空中，都播放行走动画
+        // 只有无左右输入且在地面时，才播放站立贴图
+        const shouldWalk = (input.left || input.right);
         
-        if(isWalking) {
+        if(shouldWalk) {
             walkAnimTimer++;
             if(walkAnimTimer >= walkFrameDelay) {
                 walkAnimTimer = 0;
@@ -698,7 +742,6 @@
         player.y += player.vy;
         player.onGround = false;
         
-        // 静态平台碰撞
         for(let plat of currentPlat){
             if(plat.type === 'moving') continue;
             const platRect = {x:plat.x, y:plat.y, w:plat.w, h:plat.h};
@@ -720,7 +763,6 @@
             }
         }
         
-        // 移动平台碰撞
         for(let mp of currentMovingPlatforms){
             const platRect = {x:mp.x, y:mp.y, w:mp.w, h:mp.h};
             const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
@@ -828,7 +870,6 @@
             ctx.fillStyle = "#FFDDAA"; ctx.fillRect(x + 5, y + 3, w - 10, 4);
             ctx.fillStyle = "#FFAA66"; ctx.fillRect(x + 5, y + h - 6, w - 10, 3);
         } else if(type === 'groundFull') {
-            // 延伸到屏幕底部的完整地面
             const groundHeight = LOGIC_H - y;
             const grad = ctx.createLinearGradient(x, y, x, y + groundHeight);
             grad.addColorStop(0, colors.primary);
@@ -836,10 +877,8 @@
             grad.addColorStop(1, "#C8AC7A");
             ctx.fillStyle = grad;
             ctx.fillRect(x, y, w, groundHeight);
-            // 顶部装饰线
             ctx.fillStyle = colors.light;
             ctx.fillRect(x, y, w, 4);
-            // 白色装饰点（只在上半部分）
             ctx.fillStyle = "#FFF8E7";
             const dotCount = Math.floor(w / 22);
             for(let i = 0; i < dotCount; i++) {
@@ -957,8 +996,9 @@
         ctx.translate(player.x + player.w/2, player.y + player.h/2);
         if(player.facingRight) ctx.scale(-1, 1);
         let imgToDraw = null;
-        const isWalking = (input.left || input.right) && player.onGround;
-        if(isWalking && loadedImages.playerWalk && loadedImages.playerWalk.complete) {
+        // 只要左右方向键有输入，就播放行走动画（无论是否在空中）
+        const shouldWalk = (input.left || input.right);
+        if(shouldWalk && loadedImages.playerWalk && loadedImages.playerWalk.complete) {
             imgToDraw = loadedImages.playerWalk;
         } else if(loadedImages.playerStand && loadedImages.playerStand.complete) {
             imgToDraw = loadedImages.playerStand;
