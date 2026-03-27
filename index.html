@@ -51,14 +51,13 @@
             <div class="start-sub">五境传说 · 乘飞船归乡</div>
             <button class="start-btn" id="startBtn">时 空 启 程</button>
         </div>
-        <div id="victoryOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 35;">
+        <div id="victoryOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 35;">
             <div style="text-align: center;">
-                <div style="font-size: 80px; color: #FFE78F; text-shadow: 0 0 40px #ffaa66, 0 0 20px #ff8844; margin-bottom: 30px; animation: victoryGlow 1s infinite;">✨ 胜利 ✨</div>
-                <div style="font-size: 48px; color: #FFD87A; margin-bottom: 20px; text-shadow: 0 0 10px #ffaa66;" id="victoryScoreDisplay">星辉 0</div>
+                <div style="font-size: 72px; color: #FFE78F; text-shadow: 0 0 30px #ffaa66; margin-bottom: 20px;">✨ 胜利 ✨</div>
+                <div style="font-size: 48px; color: #FFD87A; margin-bottom: 30px;" id="victoryScoreDisplay">星辉 0</div>
                 <button id="victoryRestartBtn" class="victory-restart-btn" style="display: block; margin: 0 auto;">时 空 重 启</button>
             </div>
         </div>
-        <style>@keyframes victoryGlow { 0%,100%{ text-shadow: 0 0 20px #ffaa66; } 50%{ text-shadow: 0 0 50px #ffcc88, 0 0 20px #ffaa66; } }</style>
     </div>
     <div class="bottom-controls" id="bottomControls">
         <div class="left-buttons"><button class="ctrl-btn left-btn">←</button><button class="ctrl-btn right-btn">→</button></div>
@@ -102,10 +101,10 @@
     function initAudio() {
         try {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        } catch(e) { console.warn("Web Audio API 不支持"); }
+        } catch(e) {}
     }
     
-    function playSound(type, volume = 0.15) {
+    function playSound(type, volume = 0.12) {
         if(!audioCtx || musicMuted) return;
         try {
             const oscillator = audioCtx.createOscillator();
@@ -129,23 +128,23 @@
                     const osc2 = audioCtx.createOscillator();
                     const g2 = audioCtx.createGain();
                     osc2.connect(g2); g2.connect(audioCtx.destination);
-                    osc2.frequency.value = 1100; g2.gain.value = 0.1;
+                    osc2.frequency.value = 1100; g2.gain.value = 0.08;
                     osc2.start(); osc2.stop(audioCtx.currentTime + 0.1);
                 }, 50);
             } else if(type === 'death') {
                 oscillator.frequency.value = 220;
                 oscillator.type = 'sawtooth';
-                gain.gain.value = 0.25;
+                gain.gain.value = 0.2;
                 gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
                 oscillator.start();
                 oscillator.stop(audioCtx.currentTime + 0.3);
             } else if(type === 'button') {
                 oscillator.frequency.value = 880;
                 oscillator.type = 'sine';
-                gain.gain.value = 0.08;
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+                gain.gain.value = 0.06;
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
                 oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.12);
+                oscillator.stop(audioCtx.currentTime + 0.1);
             }
         } catch(e) {}
     }
@@ -154,7 +153,7 @@
         try {
             bgMusic = new Audio('game.mp3');
             bgMusic.loop = true;
-            bgMusic.volume = 0.25;
+            bgMusic.volume = 0.2;
             bgMusic.muted = musicMuted;
             musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
             const startMusic = () => {
@@ -164,12 +163,12 @@
             };
             document.addEventListener('touchstart', startMusic);
             document.addEventListener('click', startMusic);
-        } catch(e) { console.warn("音乐加载失败", e); }
+        } catch(e) {}
     }
     
     function startBackgroundMusic() {
         if(bgMusic && bgMusic.paused && gameRunning && !musicMuted) {
-            bgMusic.play().catch(e => console.log("自动播放限制"));
+            bgMusic.play().catch(e => {});
         }
     }
     
@@ -185,17 +184,17 @@
     
     // 星空背景
     let stars = [];
-    for(let i = 0; i < 150; i++) {
+    for(let i = 0; i < 180; i++) {
         stars.push({
             x: Math.random() * LOGIC_W,
             y: Math.random() * LOGIC_H,
             radius: Math.random() * 2 + 1,
-            speed: Math.random() * 0.2 + 0.05,
-            alpha: Math.random() * 0.4 + 0.2
+            speed: Math.random() * 0.15 + 0.05,
+            alpha: Math.random() * 0.5 + 0.2
         });
     }
     let starFieldOffset = 0;
-    function updateStarField() { starFieldOffset = (starFieldOffset + 0.15) % LOGIC_H; }
+    function updateStarField() { starFieldOffset = (starFieldOffset + 0.12) % LOGIC_H; }
     function drawStarField() {
         for(let s of stars) {
             let y = (s.y + starFieldOffset * s.speed) % LOGIC_H;
@@ -212,7 +211,7 @@
     function triggerShake(type, intensity) {
         shakeAmount = intensity;
         if(type === 'death') {
-            playSound('death', 0.25);
+            playSound('death', 0.2);
             document.body.style.transition = 'background-color 0.05s';
             document.body.style.backgroundColor = '#ff8866';
             setTimeout(() => document.body.style.backgroundColor = '', 150);
@@ -339,13 +338,12 @@
     let walkFrame = 0;
     let walkAnimTimer = 0;
     let walkFrameDelay = 6;
-    let wasMoving = false;      // 记录上一帧是否有移动输入
     
-    // 钟摆 (第4关) - 长度缩短至260，增加绕行平台
+    // 钟摆 (第4关)
     let pendulum = { 
         angle: 0, angularSpeed: 0.018, 
         maxAngle: Math.PI / 3, 
-        length: 260,            // 缩短摆锤长度
+        length: 280,
         centerX: LOGIC_W / 2, centerY: 10
     };
     
@@ -358,25 +356,15 @@
         { primary: "#6A8ABA", secondary: "#7A9ACA", glow: "#9ABADA", light: "#C0E0FF" }
     ];
     
-    // ==================== 五境关卡数据 ====================
-    // 所有浮空平台下方都添加了支撑地面，风格一致
+    // 五境关卡数据
     const scenes = [
         { name:"🌙 月之森·沙滩", colorIdx:0,
             platforms: [ 
-                // 地面层
                 {x:0,y:540,w:320,h:40,type:"ground"},{x:400,y:540,w:300,h:40,type:"ground"},
                 {x:760,y:540,w:340,h:40,type:"ground"},{x:1180,y:540,w:260,h:40,type:"ground"},
-                // 问号块及其下方支撑
-                {x:110,y:460,w:60,h:60,type:"questionBlock"},
-                {x:110,y:520,w:60,h:20,type:"support",parent:{x:110,y:460,w:60,h:60}},
-                {x:330,y:390,w:60,h:60,type:"questionBlock"},
-                {x:330,y:450,w:60,h:20,type:"support",parent:{x:330,y:390,w:60,h:60}},
-                {x:550,y:320,w:60,h:60,type:"questionBlock"},
-                {x:550,y:380,w:60,h:20,type:"support",parent:{x:550,y:320,w:60,h:60}},
-                {x:810,y:250,w:60,h:60,type:"questionBlock"},
-                {x:810,y:310,w:60,h:20,type:"support",parent:{x:810,y:250,w:60,h:60}},
-                {x:1070,y:180,w:60,h:60,type:"questionBlock"},
-                {x:1070,y:240,w:60,h:20,type:"support",parent:{x:1070,y:180,w:60,h:60}}
+                {x:110,y:460,w:60,h:60,type:"questionBlock"},{x:330,y:390,w:60,h:60,type:"questionBlock"},
+                {x:550,y:320,w:60,h:60,type:"questionBlock"},{x:810,y:250,w:60,h:60,type:"questionBlock"},
+                {x:1070,y:180,w:60,h:60,type:"questionBlock"}
             ],
             stars: [{x:170,y:420,size:14,col:false,color:[255,220,140]},{x:390,y:350,size:14,col:false,color:[230,200,255]},
                      {x:610,y:280,size:14,col:false,color:[255,200,180]},{x:870,y:210,size:14,col:false,color:[200,210,255]},
@@ -387,10 +375,8 @@
                 {x:0,y:540,w:240,h:40,type:"ground"},{x:320,y:540,w:220,h:40,type:"ground"},
                 {x:600,y:540,w:240,h:40,type:"ground"},{x:900,y:540,w:260,h:40,type:"ground"},
                 {x:1240,y:540,w:200,h:40,type:"ground"},
-                {x:90,y:450,w:60,h:60,type:"questionBlock"},{x:90,y:510,w:60,h:20,type:"support"},
-                {x:370,y:380,w:60,h:60,type:"questionBlock"},{x:370,y:440,w:60,h:20,type:"support"},
-                {x:650,y:310,w:60,h:60,type:"questionBlock"},{x:650,y:370,w:60,h:20,type:"support"},
-                {x:970,y:240,w:60,h:60,type:"questionBlock"},{x:970,y:300,w:60,h:20,type:"support"}
+                {x:90,y:450,w:60,h:60,type:"questionBlock"},{x:370,y:380,w:60,h:60,type:"questionBlock"},
+                {x:650,y:310,w:60,h:60,type:"questionBlock"},{x:970,y:240,w:60,h:60,type:"questionBlock"}
             ],
             stars: [{x:145,y:410,size:14,col:false,color:[255,210,160]},{x:425,y:340,size:14,col:false,color:[255,200,200]},
                      {x:705,y:270,size:14,col:false,color:[210,190,255]},{x:1025,y:200,size:14,col:false,color:[255,220,120]}],
@@ -403,11 +389,10 @@
                 {x:0,y:540,w:220,h:40,type:"ground"},{x:300,y:540,w:200,h:40,type:"ground"},
                 {x:560,y:540,w:220,h:40,type:"ground"},{x:840,y:540,w:240,h:40,type:"ground"},
                 {x:1140,y:540,w:300,h:40,type:"ground"},
-                {x:70,y:440,w:60,h:60,type:"questionBlock"},{x:70,y:500,w:60,h:20,type:"support"},
-                {x:330,y:370,w:60,h:60,type:"questionBlock"},{x:330,y:430,w:60,h:20,type:"support"},
-                {x:610,y:300,w:60,h:60,type:"questionBlock"},{x:610,y:360,w:60,h:20,type:"support"},
-                {x:930,y:230,w:60,h:60,type:"questionBlock"},{x:930,y:290,w:60,h:20,type:"support"},
-                {x:400,y:420,w:100,h:20,type:"moving",moveRange:120, speed:1.2, startX:400, currentX:400, vx:0}
+                {x:70,y:440,w:60,h:60,type:"questionBlock"},{x:330,y:370,w:60,h:60,type:"questionBlock"},
+                {x:610,y:300,w:60,h:60,type:"questionBlock"},{x:930,y:230,w:60,h:60,type:"questionBlock"},
+                // 移动平台 - 必须站上去才能跳过高处
+                {x:400,y:420,w:100,h:20,type:"moving",moveRange:140, speed:1.2, startX:400, currentX:400, vx:0}
             ],
             stars: [{x:125,y:400,size:14,col:false,color:[255,220,140]},{x:385,y:330,size:14,col:false,color:[255,200,190]},
                      {x:665,y:260,size:14,col:false,color:[210,210,255]},{x:985,y:190,size:14,col:false,color:[255,220,120]}],
@@ -415,26 +400,18 @@
             hazards: [{x:280,y:440,interval:100,radius:28,type:"flame_pillar",active:false,timer:0},
                       {x:600,y:350,interval:110,radius:28,type:"flame_pillar",active:false,timer:0},
                       {x:920,y:260,interval:95,radius:28,type:"flame_pillar",active:false,timer:0}],
-            movingPlatforms: [{x:400,y:420,w:100,h:20,range:120, speed:1.2, startX:400, currentX:400, dir:1}] },
+            movingPlatforms: [{x:400,y:420,w:100,h:20,range:140, speed:1.2, startX:400, currentX:400, dir:1}] },
         { name:"🌀 时空回廊·钟摆", colorIdx:3,
             platforms: [ 
-                // 地面层
                 {x:0,y:540,w:200,h:40,type:"ground"},{x:280,y:540,w:180,h:40,type:"ground"},
                 {x:520,y:540,w:200,h:40,type:"ground"},{x:780,y:540,w:220,h:40,type:"ground"},
                 {x:1060,y:540,w:380,h:40,type:"ground"},
-                // 左侧绕行平台
-                {x:180,y:460,w:80,h:20,type:"ground"},
-                {x:280,y:460,w:80,h:20,type:"ground"},
-                // 右侧绕行平台
-                {x:1000,y:460,w:80,h:20,type:"ground"},
-                {x:1100,y:460,w:80,h:20,type:"ground"},
-                // 下方安全平台
-                {x:600,y:500,w:240,h:20,type:"ground"},
-                // 问号块及其支撑
-                {x:250,y:430,w:60,h:60,type:"questionBlock"},{x:250,y:490,w:60,h:20,type:"support"},
-                {x:510,y:360,w:60,h:60,type:"questionBlock"},{x:510,y:420,w:60,h:20,type:"support"},
-                {x:770,y:290,w:60,h:60,type:"questionBlock"},{x:770,y:350,w:60,h:20,type:"support"},
-                {x:1030,y:220,w:60,h:60,type:"questionBlock"},{x:1030,y:280,w:60,h:20,type:"support"}
+                {x:250,y:430,w:60,h:60,type:"questionBlock"},{x:510,y:360,w:60,h:60,type:"questionBlock"},
+                {x:770,y:290,w:60,h:60,type:"questionBlock"},{x:1030,y:220,w:60,h:60,type:"questionBlock"},
+                // 绕行平台
+                {x:180,y:470,w:80,h:20,type:"ground"},{x:280,y:470,w:80,h:20,type:"ground"},
+                {x:1000,y:470,w:80,h:20,type:"ground"},{x:1100,y:470,w:80,h:20,type:"ground"},
+                {x:600,y:500,w:240,h:20,type:"ground"}
             ],
             stars: [{x:105,y:390,size:14,col:false,color:[200,220,150]},{x:365,y:320,size:14,col:false,color:[220,190,230]},
                      {x:625,y:250,size:14,col:false,color:[210,200,220]},{x:925,y:180,size:14,col:false,color:[240,210,130]}],
@@ -446,7 +423,6 @@
             platforms: [ 
                 {x:0,y:540,w:1440,h:40,type:"ground"},
                 {x:100,y:460,w:140,h:30,type:"ground"},{x:340,y:400,w:120,h:26,type:"questionBlock"},
-                {x:340,y:460,w:120,h:20,type:"support"},
                 {x:580,y:460,w:160,h:30,type:"ground"},{x:820,y:400,w:140,h:30,type:"ground"},
                 {x:1120,y:340,w:160,h:30,type:"rocketPad"}
             ],
@@ -485,28 +461,29 @@
         if(newIdx === 4) { player.x = 80; player.y = 470; }
         else { player.x = 100; player.y = 480; }
         player.vy = 0; player.vx = 0; player.onGround = true;
+        player.facingRight = false;
         if(newIdx === 4) message = "🚀 触碰飞船，逃离月球！🚀";
         else if(newIdx === 3) message = "🌀 躲避钟摆，穿越时空回廊 🌀";
         else message = "✨ 收集星辉 躲避灾厄 ✨";
         msgTimer = 90;
     }
     
-    // 飞船动画
+    // 飞船动画（完整特效）
     let spaceshipFlyAnim = false;
     let spaceshipFlyY = 0;
     let spaceshipFlyAlpha = 1;
     let spaceshipSpeed = 0;
-    let spaceshipAccel = 0.35;
-    let spaceshipSpeedLimit = 18;
+    let spaceshipAccel = 0.38;
+    let spaceshipSpeedLimit = 20;
     let flamePulse = 0;
     
     function updateSpaceship() {
         if(spaceshipFlyAnim) {
-            spaceshipAccel = Math.min(1.5, spaceshipAccel + 0.03);
+            spaceshipAccel = Math.min(1.6, spaceshipAccel + 0.035);
             spaceshipSpeed += spaceshipAccel;
             spaceshipSpeed = Math.min(spaceshipSpeedLimit, spaceshipSpeed);
             spaceshipFlyY -= spaceshipSpeed;
-            if(spaceshipFlyAlpha > 0) spaceshipFlyAlpha -= 0.008;
+            if(spaceshipFlyAlpha > 0) spaceshipFlyAlpha -= 0.009;
             if(spaceshipFlyAlpha <= 0.02 && !gameVictory) {
                 spaceshipFlyAnim = false;
                 gameVictory = true;
@@ -519,8 +496,10 @@
     }
     
     function drawRealisticSpaceship(x, y) {
-        flamePulse = (flamePulse + 0.2) % (Math.PI * 2);
+        flamePulse = (flamePulse + 0.22) % (Math.PI * 2);
         const shipY = y + spaceshipFlyY;
+        
+        // 主体
         ctx.fillStyle = "#E8E8F0";
         ctx.shadowBlur = 8;
         ctx.shadowColor = "#88AAFF";
@@ -532,12 +511,16 @@
         ctx.lineTo(x + 32, shipY + 32);
         ctx.lineTo(x + 22, shipY + 12);
         ctx.fill();
+        
+        // 红色鼻锥
         ctx.fillStyle = "#FF5555";
         ctx.beginPath();
         ctx.moveTo(x + 60, shipY - 32);
         ctx.lineTo(x + 70, shipY - 12);
         ctx.lineTo(x + 50, shipY - 12);
         ctx.fill();
+        
+        // 驾驶舱
         ctx.fillStyle = "#88AAFF";
         ctx.beginPath();
         ctx.arc(x + 60, shipY + 10, 12, 0, Math.PI * 2);
@@ -550,6 +533,8 @@
         ctx.beginPath();
         ctx.arc(x + 55, shipY + 5, 2.5, 0, Math.PI * 2);
         ctx.fill();
+        
+        // 侧翼
         ctx.fillStyle = "#CCCCDD";
         ctx.beginPath();
         ctx.moveTo(x + 32, shipY + 28);
@@ -561,31 +546,42 @@
         ctx.lineTo(x + 105, shipY + 48);
         ctx.lineTo(x + 88, shipY + 40);
         ctx.fill();
-        const speedFactor = Math.min(1, spaceshipSpeed / 12);
-        const pulseSize = Math.sin(flamePulse) * 3;
-        ctx.fillStyle = `rgba(255, 220, 100, ${0.8 + speedFactor * 0.5})`;
+        
+        // 多级火焰特效
+        const speedFactor = Math.min(1, spaceshipSpeed / 14);
+        const pulseSize = Math.sin(flamePulse) * 4;
+        
+        // 第一级火焰（内层亮白）
+        ctx.fillStyle = `rgba(255, 240, 120, ${0.9 + speedFactor * 0.6})`;
         ctx.beginPath();
         ctx.moveTo(x + 52, shipY + 44);
-        ctx.lineTo(x + 60, shipY + 58 + spaceshipSpeed * 4.5 + pulseSize);
+        ctx.lineTo(x + 60, shipY + 62 + spaceshipSpeed * 5 + pulseSize);
         ctx.lineTo(x + 68, shipY + 44);
         ctx.fill();
-        ctx.fillStyle = `rgba(255, 140, 60, ${0.9 + speedFactor * 0.6})`;
+        
+        // 第二级火焰（中层橙色）
+        ctx.fillStyle = `rgba(255, 140, 60, ${0.95 + speedFactor * 0.7})`;
         ctx.beginPath();
         ctx.moveTo(x + 48, shipY + 42);
-        ctx.lineTo(x + 60, shipY + 54 + spaceshipSpeed * 3.5 + pulseSize * 0.8);
+        ctx.lineTo(x + 60, shipY + 58 + spaceshipSpeed * 4 + pulseSize * 0.9);
         ctx.lineTo(x + 72, shipY + 42);
         ctx.fill();
-        ctx.fillStyle = `rgba(255, 70, 40, ${0.7 + speedFactor * 0.7})`;
+        
+        // 第三级火焰（外层红色拖尾）
+        ctx.fillStyle = `rgba(255, 70, 40, ${0.85 + speedFactor * 0.8})`;
         ctx.beginPath();
         ctx.moveTo(x + 44, shipY + 40);
-        ctx.lineTo(x + 60, shipY + 50 + spaceshipSpeed * 2.5 + pulseSize * 0.6);
+        ctx.lineTo(x + 60, shipY + 54 + spaceshipSpeed * 3.2 + pulseSize * 0.7);
         ctx.lineTo(x + 76, shipY + 40);
         ctx.fill();
-        if(spaceshipSpeed > 3) {
-            for(let i = 0; i < Math.floor(spaceshipSpeed / 2); i++) {
-                ctx.fillStyle = `rgba(255, 100, 50, ${0.3 - i * 0.05})`;
+        
+        // 尾气粒子拖影
+        if(spaceshipSpeed > 4) {
+            const particleCount = Math.min(8, Math.floor(spaceshipSpeed / 2.5));
+            for(let i = 0; i < particleCount; i++) {
+                ctx.fillStyle = `rgba(255, 120, 60, ${0.4 - i * 0.05})`;
                 ctx.beginPath();
-                ctx.arc(x + 60 + (Math.random() - 0.5) * 12, shipY + 55 + spaceshipSpeed * 2 + i * 5, 3 - i * 0.5, 0, Math.PI * 2);
+                ctx.arc(x + 60 + (Math.random() - 0.5) * 14, shipY + 58 + spaceshipSpeed * 2 + i * 6, 3 - i * 0.3, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
@@ -656,7 +652,7 @@
         spaceshipFlyY = 0;
         spaceshipFlyAlpha = 1;
         spaceshipSpeed = 0;
-        spaceshipAccel = 0.35;
+        spaceshipAccel = 0.38;
         gameRunning = false;
     }
     
@@ -667,7 +663,7 @@
         spaceshipFlyY = 0;
         spaceshipFlyAlpha = 1;
         spaceshipSpeed = 0;
-        spaceshipAccel = 0.35;
+        spaceshipAccel = 0.38;
         gameVictory = false;
         gameRunning = true;
         shakeAmount = 0;
@@ -686,19 +682,16 @@
     function updateGame(){
         if(!gameRunning) return;
         
-        // 修正动画逻辑：根据移动输入决定是否播放行走动画
-        const isMovingInput = (input.left || input.right);
-        const shouldWalk = isMovingInput && player.onGround;
+        // 动画逻辑：行走时循环播放，站立时固定站立
+        const isWalking = (input.left || input.right) && player.onGround;
         
-        if(shouldWalk) {
-            // 只要按住左右且在地面，就持续累加帧计时器
+        if(isWalking) {
             walkAnimTimer++;
             if(walkAnimTimer >= walkFrameDelay) {
                 walkAnimTimer = 0;
-                walkFrame = (walkFrame + 1) % 4;  // 循环4帧
+                walkFrame = (walkFrame + 1) % 4;
             }
         } else {
-            // 没有移动输入或不在空中时，停止动画计数，重置为站立帧（walkFrame=0）
             walkAnimTimer = 0;
             walkFrame = 0;
         }
@@ -713,7 +706,7 @@
         player.y += player.vy;
         player.onGround = false;
         
-        // 静态平台碰撞（包括支撑地面）
+        // 静态平台碰撞
         for(let plat of currentPlat){
             if(plat.type === 'moving') continue;
             const platRect = {x:plat.x, y:plat.y, w:plat.w, h:plat.h};
@@ -779,7 +772,7 @@
             player.vy = player.jumpPower;
             player.onGround = false;
             input.jump = false;
-            playSound('jump', 0.12);
+            playSound('jump', 0.1);
         }
         
         for(let s of currentStars){
@@ -788,7 +781,7 @@
                 if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, starRect)){
                     s.col = true;
                     score += 100;
-                    playSound('star', 0.18);
+                    playSound('star', 0.15);
                     message = "⭐ +100 星辉 ⭐";
                     msgTimer = 25;
                 }
@@ -817,26 +810,8 @@
         else message = "";
     }
     
-    // ==================== 绘图函数 ====================
-    function drawSupportGround(x, y, w, h, colorIdx) {
-        const colors = sceneColors[colorIdx];
-        const grad = ctx.createLinearGradient(x, y, x, y + h);
-        grad.addColorStop(0, colors.primary);
-        grad.addColorStop(1, colors.secondary);
-        ctx.fillStyle = grad;
-        ctx.fillRect(x, y, w, h);
-        ctx.fillStyle = colors.light;
-        ctx.fillRect(x, y, w, 3);
-        ctx.fillStyle = "#FFF8E7";
-        const dotCount = Math.floor(w / 20);
-        for(let i = 0; i < dotCount; i++) {
-            const dotX = x + 12 + (i * 24) % (w - 20);
-            const dotY = y + h - 6 - (i % 8);
-            ctx.beginPath(); ctx.arc(dotX, dotY, 2, 0, Math.PI * 2); ctx.fill();
-        }
-    }
-    
-    function drawBeautifulPlatform(x, y, w, h, type, colorIdx, isMoving = false) {
+    // 绘图函数
+    function drawBeautifulPlatform(x, y, w, h, type, colorIdx) {
         const colors = sceneColors[colorIdx];
         if(type === 'questionBlock') {
             const size = Math.min(w, h);
@@ -853,23 +828,23 @@
         } else if(type === 'rocketPad') {
             ctx.fillStyle = "#4A5A7A"; ctx.fillRect(x, y, w, h);
             ctx.fillStyle = "#6A8ABA"; ctx.fillRect(x + 5, y - 8, w - 10, 8);
-        } else if(type === 'moving' || isMoving) {
+            for(let i=0;i<3;i++){ ctx.fillStyle = `rgba(100,150,200,0.6)`; ctx.fillRect(x + 15 + i*35, y + 5, 12, h-10); }
+        } else if(type === 'moving') {
             const grad = ctx.createLinearGradient(x, y, x + w, y);
             grad.addColorStop(0, "#FFAA66"); grad.addColorStop(0.5, "#FF8844"); grad.addColorStop(1, "#FFAA66");
             ctx.fillStyle = grad; ctx.fillRect(x, y, w, h);
             ctx.fillStyle = "#FFDDAA"; ctx.fillRect(x + 5, y + 3, w - 10, 4);
-        } else if(type === 'support') {
-            drawSupportGround(x, y, w, h, colorIdx);
+            ctx.fillStyle = "#FFAA66"; ctx.fillRect(x + 5, y + h - 6, w - 10, 3);
         } else {
             const grad = ctx.createLinearGradient(x, y, x, y + h);
             grad.addColorStop(0, colors.primary); grad.addColorStop(1, colors.secondary);
             ctx.fillStyle = grad; ctx.fillRect(x, y, w, h);
             ctx.fillStyle = colors.light; ctx.fillRect(x, y, w, 3);
             ctx.fillStyle = "#FFF8E7";
-            const dotCount = Math.floor(w / 20);
+            const dotCount = Math.floor(w / 22);
             for(let i = 0; i < dotCount; i++) {
-                const dotX = x + 12 + (i * 24) % (w - 20);
-                const dotY = y + h - 8 - (i % 8);
+                const dotX = x + 10 + (i * 26) % (w - 20);
+                const dotY = y + h - 7 - (i % 10);
                 ctx.beginPath(); ctx.arc(dotX, dotY, 2, 0, Math.PI * 2); ctx.fill();
             }
         }
@@ -881,7 +856,7 @@
             drawBeautifulPlatform(plat.x, plat.y, plat.w, plat.h, plat.type, colorIdx);
         }
         for(let mp of currentMovingPlatforms){
-            drawBeautifulPlatform(mp.x, mp.y, mp.w, mp.h, "moving", colorIdx, true);
+            drawBeautifulPlatform(mp.x, mp.y, mp.w, mp.h, "moving", colorIdx);
         }
     }
     
@@ -895,8 +870,17 @@
             ctx.fillStyle=g; ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
         }
         drawStarField();
-        ctx.fillStyle = "#E8D4A8"; ctx.fillRect(0, LOGIC_H - 40, LOGIC_W, 40);
-        ctx.fillStyle = "#D4BC7A"; ctx.fillRect(0, LOGIC_H - 20, LOGIC_W, 20);
+        // 底部沙滩完全填满
+        ctx.fillStyle = "#E8D4A8";
+        ctx.fillRect(0, LOGIC_H - 55, LOGIC_W, 55);
+        ctx.fillStyle = "#D4BC7A";
+        ctx.fillRect(0, LOGIC_H - 25, LOGIC_W, 25);
+        for(let i=0;i<LOGIC_W/30;i++){
+            ctx.fillStyle = "#FFF2CC";
+            ctx.beginPath();
+            ctx.arc(15 + i*35, LOGIC_H - 12, 3, 0, Math.PI*2);
+            ctx.fill();
+        }
     }
     
     function drawSpikes(){
@@ -906,7 +890,7 @@
             for(let i=0;i<5;i++){
                 ctx.beginPath();
                 ctx.moveTo(sp.x + i*(sp.w/5), sp.y);
-                ctx.lineTo(sp.x + i*(sp.w/5) + sp.w/10, sp.y - 16);
+                ctx.lineTo(sp.x + i*(sp.w/5) + sp.w/10, sp.y - 14);
                 ctx.lineTo(sp.x + i*(sp.w/5) + sp.w/5, sp.y);
                 ctx.fill();
             }
@@ -917,7 +901,7 @@
         for(let s of currentStars){
             if(!s.col){
                 ctx.fillStyle = `rgb(${s.color[0]},${s.color[1]},${s.color[2]})`;
-                ctx.shadowBlur = 6;
+                ctx.shadowBlur = 8;
                 ctx.beginPath();
                 for(let i=0;i<5;i++){
                     let ang = (i*72-36)*Math.PI/180;
@@ -944,10 +928,12 @@
                 ctx.fillStyle = `rgba(255, 200, 100, 0.8)`;
                 ctx.fillRect(h.currentX+1,0,h.width-2,h.y-12);
             } else if(h.type === 'flame_pillar' && h.active){
-                ctx.fillStyle = "#FF5A2A"; ctx.shadowBlur = 16;
+                ctx.fillStyle = "#FF5A2A"; ctx.shadowBlur = 18;
                 ctx.beginPath(); ctx.ellipse(h.x, h.y - h.radius/2, h.radius, h.radius*2.2, 0, 0, Math.PI*2); ctx.fill();
                 ctx.fillStyle = "#FFAA40";
                 ctx.beginPath(); ctx.ellipse(h.x, h.y - h.radius/3, h.radius-5, h.radius-5, 0, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#FFFF80";
+                ctx.beginPath(); ctx.ellipse(h.x, h.y - h.radius/4, h.radius-10, h.radius-10, 0, 0, Math.PI*2); ctx.fill();
                 ctx.shadowBlur = 0;
             }
         }
@@ -959,26 +945,34 @@
             ctx.fillStyle = "#FF5577";
             ctx.beginPath(); ctx.moveTo(endX - 12, endY - 8); ctx.lineTo(endX, endY + 24); ctx.lineTo(endX + 12, endY - 8); ctx.fill();
             ctx.fillStyle = "#FFAACC"; ctx.beginPath(); ctx.arc(endX, endY - 4, 10, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#FFFFFF"; ctx.beginPath(); ctx.arc(endX - 3, endY - 7, 3, 0, Math.PI * 2); ctx.fill();
             ctx.shadowBlur = 0;
         }
     }
     
     function drawPlayer() {
-        if(spaceshipFlyAnim && currentScene === 4 && gameVictory) return;
+        if(spaceshipFlyAnim && currentScene === 4) return;
         ctx.save();
         ctx.translate(player.x + player.w/2, player.y + player.h/2);
+        // 默认图片朝左，需要翻转时用scale
         if(player.facingRight) ctx.scale(-1, 1);
         let imgToDraw = null;
-        const isMoving = Math.abs(player.vx) > 1.5 && player.onGround;
-        // 根据walkFrame选择贴图，但walkFrame在站立时为0
-        if(isMoving && walkFrame % 2 === 0 && loadedImages.playerWalk && loadedImages.playerWalk.complete) imgToDraw = loadedImages.playerWalk;
-        else if(loadedImages.playerStand && loadedImages.playerStand.complete) imgToDraw = loadedImages.playerStand;
+        const isWalking = (input.left || input.right) && player.onGround;
+        // 行走时循环播放行走图，站立时用站立图
+        if(isWalking && loadedImages.playerWalk && loadedImages.playerWalk.complete) {
+            imgToDraw = loadedImages.playerWalk;
+        } else if(loadedImages.playerStand && loadedImages.playerStand.complete) {
+            imgToDraw = loadedImages.playerStand;
+        }
         if(imgToDraw) {
             ctx.drawImage(imgToDraw, -player.w*0.65, -player.h*0.65, player.w*1.3, player.h*1.3);
         } else {
-            ctx.fillStyle = "#FFD8A0"; ctx.fillRect(-player.w/2,-player.h/2,player.w,player.h);
-            ctx.fillStyle = "#F0A87A"; ctx.fillRect(-player.w/2+8,-player.h/2-6,player.w-16,10);
-            ctx.fillStyle = "#4A2A1A"; ctx.fillRect(-player.w/2+12,-player.h/2+12,8,8);
+            ctx.fillStyle = "#FFD8A0";
+            ctx.fillRect(-player.w/2,-player.h/2,player.w,player.h);
+            ctx.fillStyle = "#F0A87A";
+            ctx.fillRect(-player.w/2+8,-player.h/2-6,player.w-16,10);
+            ctx.fillStyle = "#4A2A1A";
+            ctx.fillRect(-player.w/2+12,-player.h/2+12,8,8);
             ctx.fillRect(-player.w/2+32,-player.h/2+12,8,8);
         }
         ctx.restore();
