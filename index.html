@@ -317,7 +317,7 @@
         if(e.key === 'ArrowUp' || e.key === ' ') input.jump=false; 
     });
     
-    // 玩家数据 - 恢复长方形比例 (52x68)
+    // 玩家数据 - 长方形9:16比例 (52x68)
     let player = { 
         x: 100, y: 480, w: 52, h: 68, 
         vx: 0, vy: 0, 
@@ -335,15 +335,18 @@
     let spikes = [];
     let currentMovingPlatforms = [];
     
+    // 动画相关变量
     let walkFrame = 0;
     let walkAnimTimer = 0;
-    let walkFrameDelay = 8;
+    let walkFrameDelay = 6;
+    let wasMoving = false;      // 记录上一帧是否有移动输入
     
-    // 钟摆
+    // 钟摆 (第4关) - 长度缩短至260，增加绕行平台
     let pendulum = { 
         angle: 0, angularSpeed: 0.018, 
         maxAngle: Math.PI / 3, 
-        length: 480, centerX: LOGIC_W / 2, centerY: 10
+        length: 260,            // 缩短摆锤长度
+        centerX: LOGIC_W / 2, centerY: 10
     };
     
     // 每关配色
@@ -355,16 +358,25 @@
         { primary: "#6A8ABA", secondary: "#7A9ACA", glow: "#9ABADA", light: "#C0E0FF" }
     ];
     
-    // 五境关卡数据 - 场景上移80像素，地面y=540，问号块改为60x60正方形
+    // ==================== 五境关卡数据 ====================
+    // 所有浮空平台下方都添加了支撑地面，风格一致
     const scenes = [
         { name:"🌙 月之森·沙滩", colorIdx:0,
             platforms: [ 
+                // 地面层
                 {x:0,y:540,w:320,h:40,type:"ground"},{x:400,y:540,w:300,h:40,type:"ground"},
                 {x:760,y:540,w:340,h:40,type:"ground"},{x:1180,y:540,w:260,h:40,type:"ground"},
-                // 正方形问号块 60x60，位置重新调整
-                {x:110,y:460,w:60,h:60,type:"questionBlock"},{x:330,y:390,w:60,h:60,type:"questionBlock"},
-                {x:550,y:320,w:60,h:60,type:"questionBlock"},{x:810,y:250,w:60,h:60,type:"questionBlock"},
+                // 问号块及其下方支撑
+                {x:110,y:460,w:60,h:60,type:"questionBlock"},
+                {x:110,y:520,w:60,h:20,type:"support",parent:{x:110,y:460,w:60,h:60}},
+                {x:330,y:390,w:60,h:60,type:"questionBlock"},
+                {x:330,y:450,w:60,h:20,type:"support",parent:{x:330,y:390,w:60,h:60}},
+                {x:550,y:320,w:60,h:60,type:"questionBlock"},
+                {x:550,y:380,w:60,h:20,type:"support",parent:{x:550,y:320,w:60,h:60}},
+                {x:810,y:250,w:60,h:60,type:"questionBlock"},
+                {x:810,y:310,w:60,h:20,type:"support",parent:{x:810,y:250,w:60,h:60}},
                 {x:1070,y:180,w:60,h:60,type:"questionBlock"},
+                {x:1070,y:240,w:60,h:20,type:"support",parent:{x:1070,y:180,w:60,h:60}}
             ],
             stars: [{x:170,y:420,size:14,col:false,color:[255,220,140]},{x:390,y:350,size:14,col:false,color:[230,200,255]},
                      {x:610,y:280,size:14,col:false,color:[255,200,180]},{x:870,y:210,size:14,col:false,color:[200,210,255]},
@@ -375,8 +387,10 @@
                 {x:0,y:540,w:240,h:40,type:"ground"},{x:320,y:540,w:220,h:40,type:"ground"},
                 {x:600,y:540,w:240,h:40,type:"ground"},{x:900,y:540,w:260,h:40,type:"ground"},
                 {x:1240,y:540,w:200,h:40,type:"ground"},
-                {x:90,y:450,w:60,h:60,type:"questionBlock"},{x:370,y:380,w:60,h:60,type:"questionBlock"},
-                {x:650,y:310,w:60,h:60,type:"questionBlock"},{x:970,y:240,w:60,h:60,type:"questionBlock"},
+                {x:90,y:450,w:60,h:60,type:"questionBlock"},{x:90,y:510,w:60,h:20,type:"support"},
+                {x:370,y:380,w:60,h:60,type:"questionBlock"},{x:370,y:440,w:60,h:20,type:"support"},
+                {x:650,y:310,w:60,h:60,type:"questionBlock"},{x:650,y:370,w:60,h:20,type:"support"},
+                {x:970,y:240,w:60,h:60,type:"questionBlock"},{x:970,y:300,w:60,h:20,type:"support"}
             ],
             stars: [{x:145,y:410,size:14,col:false,color:[255,210,160]},{x:425,y:340,size:14,col:false,color:[255,200,200]},
                      {x:705,y:270,size:14,col:false,color:[210,190,255]},{x:1025,y:200,size:14,col:false,color:[255,220,120]}],
@@ -389,9 +403,11 @@
                 {x:0,y:540,w:220,h:40,type:"ground"},{x:300,y:540,w:200,h:40,type:"ground"},
                 {x:560,y:540,w:220,h:40,type:"ground"},{x:840,y:540,w:240,h:40,type:"ground"},
                 {x:1140,y:540,w:300,h:40,type:"ground"},
-                {x:70,y:440,w:60,h:60,type:"questionBlock"},{x:330,y:370,w:60,h:60,type:"questionBlock"},
-                {x:610,y:300,w:60,h:60,type:"questionBlock"},{x:930,y:230,w:60,h:60,type:"questionBlock"},
-                {x:400,y:420,w:100,h:20,type:"moving",moveRange:120, speed:1.2, startX:400, currentX:400, vx:0},
+                {x:70,y:440,w:60,h:60,type:"questionBlock"},{x:70,y:500,w:60,h:20,type:"support"},
+                {x:330,y:370,w:60,h:60,type:"questionBlock"},{x:330,y:430,w:60,h:20,type:"support"},
+                {x:610,y:300,w:60,h:60,type:"questionBlock"},{x:610,y:360,w:60,h:20,type:"support"},
+                {x:930,y:230,w:60,h:60,type:"questionBlock"},{x:930,y:290,w:60,h:20,type:"support"},
+                {x:400,y:420,w:100,h:20,type:"moving",moveRange:120, speed:1.2, startX:400, currentX:400, vx:0}
             ],
             stars: [{x:125,y:400,size:14,col:false,color:[255,220,140]},{x:385,y:330,size:14,col:false,color:[255,200,190]},
                      {x:665,y:260,size:14,col:false,color:[210,210,255]},{x:985,y:190,size:14,col:false,color:[255,220,120]}],
@@ -402,12 +418,23 @@
             movingPlatforms: [{x:400,y:420,w:100,h:20,range:120, speed:1.2, startX:400, currentX:400, dir:1}] },
         { name:"🌀 时空回廊·钟摆", colorIdx:3,
             platforms: [ 
+                // 地面层
                 {x:0,y:540,w:200,h:40,type:"ground"},{x:280,y:540,w:180,h:40,type:"ground"},
                 {x:520,y:540,w:200,h:40,type:"ground"},{x:780,y:540,w:220,h:40,type:"ground"},
                 {x:1060,y:540,w:380,h:40,type:"ground"},
-                // 移除出生点上方平台（原x:60,y:430），改为更右侧的位置
-                {x:250,y:430,w:60,h:60,type:"questionBlock"},{x:510,y:360,w:60,h:60,type:"questionBlock"},
-                {x:770,y:290,w:60,h:60,type:"questionBlock"},{x:1030,y:220,w:60,h:60,type:"questionBlock"},
+                // 左侧绕行平台
+                {x:180,y:460,w:80,h:20,type:"ground"},
+                {x:280,y:460,w:80,h:20,type:"ground"},
+                // 右侧绕行平台
+                {x:1000,y:460,w:80,h:20,type:"ground"},
+                {x:1100,y:460,w:80,h:20,type:"ground"},
+                // 下方安全平台
+                {x:600,y:500,w:240,h:20,type:"ground"},
+                // 问号块及其支撑
+                {x:250,y:430,w:60,h:60,type:"questionBlock"},{x:250,y:490,w:60,h:20,type:"support"},
+                {x:510,y:360,w:60,h:60,type:"questionBlock"},{x:510,y:420,w:60,h:20,type:"support"},
+                {x:770,y:290,w:60,h:60,type:"questionBlock"},{x:770,y:350,w:60,h:20,type:"support"},
+                {x:1030,y:220,w:60,h:60,type:"questionBlock"},{x:1030,y:280,w:60,h:20,type:"support"}
             ],
             stars: [{x:105,y:390,size:14,col:false,color:[200,220,150]},{x:365,y:320,size:14,col:false,color:[220,190,230]},
                      {x:625,y:250,size:14,col:false,color:[210,200,220]},{x:925,y:180,size:14,col:false,color:[240,210,130]}],
@@ -419,6 +446,7 @@
             platforms: [ 
                 {x:0,y:540,w:1440,h:40,type:"ground"},
                 {x:100,y:460,w:140,h:30,type:"ground"},{x:340,y:400,w:120,h:26,type:"questionBlock"},
+                {x:340,y:460,w:120,h:20,type:"support"},
                 {x:580,y:460,w:160,h:30,type:"ground"},{x:820,y:400,w:140,h:30,type:"ground"},
                 {x:1120,y:340,w:160,h:30,type:"rocketPad"}
             ],
@@ -463,7 +491,7 @@
         msgTimer = 90;
     }
     
-    // 飞船动画（多级火焰 + 先慢后快）
+    // 飞船动画
     let spaceshipFlyAnim = false;
     let spaceshipFlyY = 0;
     let spaceshipFlyAlpha = 1;
@@ -471,7 +499,6 @@
     let spaceshipAccel = 0.35;
     let spaceshipSpeedLimit = 18;
     let flamePulse = 0;
-    let victoryPending = false;   // 动画未完成时延迟胜利
     
     function updateSpaceship() {
         if(spaceshipFlyAnim) {
@@ -480,7 +507,6 @@
             spaceshipSpeed = Math.min(spaceshipSpeedLimit, spaceshipSpeed);
             spaceshipFlyY -= spaceshipSpeed;
             if(spaceshipFlyAlpha > 0) spaceshipFlyAlpha -= 0.008;
-            // 动画结束（透明度接近0或飞出画面）触发胜利界面
             if(spaceshipFlyAlpha <= 0.02 && !gameVictory) {
                 spaceshipFlyAnim = false;
                 gameVictory = true;
@@ -495,7 +521,6 @@
     function drawRealisticSpaceship(x, y) {
         flamePulse = (flamePulse + 0.2) % (Math.PI * 2);
         const shipY = y + spaceshipFlyY;
-        
         ctx.fillStyle = "#E8E8F0";
         ctx.shadowBlur = 8;
         ctx.shadowColor = "#88AAFF";
@@ -507,14 +532,12 @@
         ctx.lineTo(x + 32, shipY + 32);
         ctx.lineTo(x + 22, shipY + 12);
         ctx.fill();
-        
         ctx.fillStyle = "#FF5555";
         ctx.beginPath();
         ctx.moveTo(x + 60, shipY - 32);
         ctx.lineTo(x + 70, shipY - 12);
         ctx.lineTo(x + 50, shipY - 12);
         ctx.fill();
-        
         ctx.fillStyle = "#88AAFF";
         ctx.beginPath();
         ctx.arc(x + 60, shipY + 10, 12, 0, Math.PI * 2);
@@ -527,7 +550,6 @@
         ctx.beginPath();
         ctx.arc(x + 55, shipY + 5, 2.5, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = "#CCCCDD";
         ctx.beginPath();
         ctx.moveTo(x + 32, shipY + 28);
@@ -539,31 +561,26 @@
         ctx.lineTo(x + 105, shipY + 48);
         ctx.lineTo(x + 88, shipY + 40);
         ctx.fill();
-        
         const speedFactor = Math.min(1, spaceshipSpeed / 12);
         const pulseSize = Math.sin(flamePulse) * 3;
-        
         ctx.fillStyle = `rgba(255, 220, 100, ${0.8 + speedFactor * 0.5})`;
         ctx.beginPath();
         ctx.moveTo(x + 52, shipY + 44);
         ctx.lineTo(x + 60, shipY + 58 + spaceshipSpeed * 4.5 + pulseSize);
         ctx.lineTo(x + 68, shipY + 44);
         ctx.fill();
-        
         ctx.fillStyle = `rgba(255, 140, 60, ${0.9 + speedFactor * 0.6})`;
         ctx.beginPath();
         ctx.moveTo(x + 48, shipY + 42);
         ctx.lineTo(x + 60, shipY + 54 + spaceshipSpeed * 3.5 + pulseSize * 0.8);
         ctx.lineTo(x + 72, shipY + 42);
         ctx.fill();
-        
         ctx.fillStyle = `rgba(255, 70, 40, ${0.7 + speedFactor * 0.7})`;
         ctx.beginPath();
         ctx.moveTo(x + 44, shipY + 40);
         ctx.lineTo(x + 60, shipY + 50 + spaceshipSpeed * 2.5 + pulseSize * 0.6);
         ctx.lineTo(x + 76, shipY + 40);
         ctx.fill();
-        
         if(spaceshipSpeed > 3) {
             for(let i = 0; i < Math.floor(spaceshipSpeed / 2); i++) {
                 ctx.fillStyle = `rgba(255, 100, 50, ${0.3 - i * 0.05})`;
@@ -578,9 +595,7 @@
     function drawSpaceship(){
         if(currentScene !== 4) return;
         const r = scenes[4].spaceshipZone;
-        if(spaceshipFlyAnim) {
-            ctx.globalAlpha = spaceshipFlyAlpha;
-        }
+        if(spaceshipFlyAnim) ctx.globalAlpha = spaceshipFlyAlpha;
         drawRealisticSpaceship(r.x, r.y);
         ctx.globalAlpha = 1;
     }
@@ -637,14 +652,12 @@
     
     function winGame(finalScore){
         if(gameVictory) return;
-        // 不立即结束，启动动画
         spaceshipFlyAnim = true;
         spaceshipFlyY = 0;
         spaceshipFlyAlpha = 1;
         spaceshipSpeed = 0;
         spaceshipAccel = 0.35;
-        gameRunning = false;  // 停止玩家控制
-        // 等待动画完成（在updateSpaceship中触发胜利界面）
+        gameRunning = false;
     }
     
     function fullReset(){
@@ -673,10 +686,22 @@
     function updateGame(){
         if(!gameRunning) return;
         
-        if(Math.abs(player.vx) > 1.5 && player.onGround) {
+        // 修正动画逻辑：根据移动输入决定是否播放行走动画
+        const isMovingInput = (input.left || input.right);
+        const shouldWalk = isMovingInput && player.onGround;
+        
+        if(shouldWalk) {
+            // 只要按住左右且在地面，就持续累加帧计时器
             walkAnimTimer++;
-            if(walkAnimTimer >= walkFrameDelay) { walkAnimTimer = 0; walkFrame = (walkFrame + 1) % 4; }
-        } else { walkAnimTimer = 0; walkFrame = 0; }
+            if(walkAnimTimer >= walkFrameDelay) {
+                walkAnimTimer = 0;
+                walkFrame = (walkFrame + 1) % 4;  // 循环4帧
+            }
+        } else {
+            // 没有移动输入或不在空中时，停止动画计数，重置为站立帧（walkFrame=0）
+            walkAnimTimer = 0;
+            walkFrame = 0;
+        }
         
         let move = (input.left ? -1 : 0) + (input.right ? 1 : 0);
         player.vx = move * player.speed;
@@ -688,6 +713,7 @@
         player.y += player.vy;
         player.onGround = false;
         
+        // 静态平台碰撞（包括支撑地面）
         for(let plat of currentPlat){
             if(plat.type === 'moving') continue;
             const platRect = {x:plat.x, y:plat.y, w:plat.w, h:plat.h};
@@ -709,6 +735,7 @@
             }
         }
         
+        // 移动平台碰撞
         for(let mp of currentMovingPlatforms){
             const platRect = {x:mp.x, y:mp.y, w:mp.w, h:mp.h};
             const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
@@ -790,11 +817,28 @@
         else message = "";
     }
     
-    // 绘图函数
+    // ==================== 绘图函数 ====================
+    function drawSupportGround(x, y, w, h, colorIdx) {
+        const colors = sceneColors[colorIdx];
+        const grad = ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, colors.primary);
+        grad.addColorStop(1, colors.secondary);
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = colors.light;
+        ctx.fillRect(x, y, w, 3);
+        ctx.fillStyle = "#FFF8E7";
+        const dotCount = Math.floor(w / 20);
+        for(let i = 0; i < dotCount; i++) {
+            const dotX = x + 12 + (i * 24) % (w - 20);
+            const dotY = y + h - 6 - (i % 8);
+            ctx.beginPath(); ctx.arc(dotX, dotY, 2, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+    
     function drawBeautifulPlatform(x, y, w, h, type, colorIdx, isMoving = false) {
         const colors = sceneColors[colorIdx];
         if(type === 'questionBlock') {
-            // 正方形平台
             const size = Math.min(w, h);
             const offsetX = x + (w - size) / 2;
             const offsetY = y + (h - size) / 2;
@@ -814,6 +858,8 @@
             grad.addColorStop(0, "#FFAA66"); grad.addColorStop(0.5, "#FF8844"); grad.addColorStop(1, "#FFAA66");
             ctx.fillStyle = grad; ctx.fillRect(x, y, w, h);
             ctx.fillStyle = "#FFDDAA"; ctx.fillRect(x + 5, y + 3, w - 10, 4);
+        } else if(type === 'support') {
+            drawSupportGround(x, y, w, h, colorIdx);
         } else {
             const grad = ctx.createLinearGradient(x, y, x, y + h);
             grad.addColorStop(0, colors.primary); grad.addColorStop(1, colors.secondary);
@@ -831,8 +877,12 @@
     
     function drawPlatforms(){
         const colorIdx = scenes[currentScene].colorIdx;
-        for(let plat of currentPlat){ drawBeautifulPlatform(plat.x, plat.y, plat.w, plat.h, plat.type, colorIdx); }
-        for(let mp of currentMovingPlatforms){ drawBeautifulPlatform(mp.x, mp.y, mp.w, mp.h, "moving", colorIdx, true); }
+        for(let plat of currentPlat){
+            drawBeautifulPlatform(plat.x, plat.y, plat.w, plat.h, plat.type, colorIdx);
+        }
+        for(let mp of currentMovingPlatforms){
+            drawBeautifulPlatform(mp.x, mp.y, mp.w, mp.h, "moving", colorIdx, true);
+        }
     }
     
     function drawBackground(){
@@ -845,11 +895,8 @@
             ctx.fillStyle=g; ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
         }
         drawStarField();
-        // 底部沙滩填满，不留白
-        ctx.fillStyle = "#E8D4A8";
-        ctx.fillRect(0, LOGIC_H - 40, LOGIC_W, 40);
-        ctx.fillStyle = "#D4BC7A";
-        ctx.fillRect(0, LOGIC_H - 20, LOGIC_W, 20);
+        ctx.fillStyle = "#E8D4A8"; ctx.fillRect(0, LOGIC_H - 40, LOGIC_W, 40);
+        ctx.fillStyle = "#D4BC7A"; ctx.fillRect(0, LOGIC_H - 20, LOGIC_W, 20);
     }
     
     function drawSpikes(){
@@ -923,6 +970,7 @@
         if(player.facingRight) ctx.scale(-1, 1);
         let imgToDraw = null;
         const isMoving = Math.abs(player.vx) > 1.5 && player.onGround;
+        // 根据walkFrame选择贴图，但walkFrame在站立时为0
         if(isMoving && walkFrame % 2 === 0 && loadedImages.playerWalk && loadedImages.playerWalk.complete) imgToDraw = loadedImages.playerWalk;
         else if(loadedImages.playerStand && loadedImages.playerStand.complete) imgToDraw = loadedImages.playerStand;
         if(imgToDraw) {
@@ -937,7 +985,7 @@
     }
     
     function drawUI(){
-        if(!gameVictory && !victoryPending) {
+        if(!gameVictory) {
             ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(LOGIC_W-170, 12, 158, 54);
             ctx.fillStyle = "rgba(255,240,200,0.9)"; ctx.fillRect(LOGIC_W-168, 14, 154, 50);
             const grad = ctx.createLinearGradient(LOGIC_W-168, 14, LOGIC_W-14, 64);
@@ -946,12 +994,12 @@
             ctx.font = "bold 34px monospace"; ctx.fillStyle = "#4A2E62";
             ctx.fillText(`${Math.floor(score)}`, LOGIC_W-138, 56);
         }
-        if(message && !gameVictory && !victoryPending){
+        if(message && !gameVictory){
             ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(LOGIC_W/2-150, LOGIC_H-48, 300, 36);
             ctx.font = "bold 20px monospace"; ctx.fillStyle = "#FFFAD0";
             ctx.fillText(message, LOGIC_W/2-ctx.measureText(message).width/2, LOGIC_H-28);
         }
-        if(!gameVictory && !victoryPending) {
+        if(!gameVictory) {
             let q = scenes[currentScene].name;
             ctx.font = "18px monospace"; ctx.fillStyle = "#FFF0BF";
             ctx.fillText(q + " →", 20, LOGIC_H-20);
