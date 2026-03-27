@@ -317,9 +317,9 @@
         if(e.key === 'ArrowUp' || e.key === ' ') input.jump=false; 
     });
     
-    // 玩家数据 60x60 正方形
+    // 玩家数据 - 恢复长方形比例 (52x68)
     let player = { 
-        x: 100, y: 560, w: 60, h: 60, 
+        x: 100, y: 480, w: 52, h: 68, 
         vx: 0, vy: 0, 
         speed: 5.8, 
         jumpPower: -11.2, 
@@ -355,75 +355,78 @@
         { primary: "#6A8ABA", secondary: "#7A9ACA", glow: "#9ABADA", light: "#C0E0FF" }
     ];
     
-    // 五境关卡数据
+    // 五境关卡数据 - 场景上移80像素，地面y=540，问号块改为60x60正方形
     const scenes = [
         { name:"🌙 月之森·沙滩", colorIdx:0,
             platforms: [ 
-                {x:0,y:620,w:320,h:40,type:"ground"},{x:400,y:620,w:300,h:40,type:"ground"},
-                {x:760,y:620,w:340,h:40,type:"ground"},{x:1180,y:620,w:260,h:40,type:"ground"},
-                {x:120,y:540,w:100,h:24,type:"questionBlock"},{x:340,y:470,w:100,h:24,type:"questionBlock"},
-                {x:560,y:400,w:100,h:24,type:"questionBlock"},{x:820,y:330,w:100,h:24,type:"questionBlock"},
-                {x:1080,y:260,w:100,h:24,type:"questionBlock"},
+                {x:0,y:540,w:320,h:40,type:"ground"},{x:400,y:540,w:300,h:40,type:"ground"},
+                {x:760,y:540,w:340,h:40,type:"ground"},{x:1180,y:540,w:260,h:40,type:"ground"},
+                // 正方形问号块 60x60，位置重新调整
+                {x:110,y:460,w:60,h:60,type:"questionBlock"},{x:330,y:390,w:60,h:60,type:"questionBlock"},
+                {x:550,y:320,w:60,h:60,type:"questionBlock"},{x:810,y:250,w:60,h:60,type:"questionBlock"},
+                {x:1070,y:180,w:60,h:60,type:"questionBlock"},
             ],
-            stars: [{x:170,y:500,size:14,col:false,color:[255,220,140]},{x:390,y:430,size:14,col:false,color:[230,200,255]},
-                     {x:610,y:360,size:14,col:false,color:[255,200,180]},{x:870,y:290,size:14,col:false,color:[200,210,255]},
-                     {x:1130,y:220,size:14,col:false,color:[255,230,130]}],
+            stars: [{x:170,y:420,size:14,col:false,color:[255,220,140]},{x:390,y:350,size:14,col:false,color:[230,200,255]},
+                     {x:610,y:280,size:14,col:false,color:[255,200,180]},{x:870,y:210,size:14,col:false,color:[200,210,255]},
+                     {x:1130,y:140,size:14,col:false,color:[255,230,130]}],
             spikes: [], hazards: [], movingPlatforms: [] },
         { name:"⚔️ 尖刺回廊·沙滩", colorIdx:1,
             platforms: [ 
-                {x:0,y:620,w:240,h:40,type:"ground"},{x:320,y:620,w:220,h:40,type:"ground"},
-                {x:600,y:620,w:240,h:40,type:"ground"},{x:900,y:620,w:260,h:40,type:"ground"},
-                {x:1240,y:620,w:200,h:40,type:"ground"},{x:100,y:530,w:90,h:22,type:"questionBlock"},
-                {x:380,y:460,w:90,h:22,type:"questionBlock"},{x:660,y:390,w:90,h:22,type:"questionBlock"},
-                {x:980,y:320,w:90,h:22,type:"questionBlock"},
+                {x:0,y:540,w:240,h:40,type:"ground"},{x:320,y:540,w:220,h:40,type:"ground"},
+                {x:600,y:540,w:240,h:40,type:"ground"},{x:900,y:540,w:260,h:40,type:"ground"},
+                {x:1240,y:540,w:200,h:40,type:"ground"},
+                {x:90,y:450,w:60,h:60,type:"questionBlock"},{x:370,y:380,w:60,h:60,type:"questionBlock"},
+                {x:650,y:310,w:60,h:60,type:"questionBlock"},{x:970,y:240,w:60,h:60,type:"questionBlock"},
             ],
-            stars: [{x:145,y:490,size:14,col:false,color:[255,210,160]},{x:425,y:420,size:14,col:false,color:[255,200,200]},
-                     {x:705,y:350,size:14,col:false,color:[210,190,255]},{x:1025,y:280,size:14,col:false,color:[255,220,120]}],
-            spikes: [{x:260,y:580,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:580},
-                     {x:560,y:580,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:580},
-                     {x:860,y:580,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:580}], 
+            stars: [{x:145,y:410,size:14,col:false,color:[255,210,160]},{x:425,y:340,size:14,col:false,color:[255,200,200]},
+                     {x:705,y:270,size:14,col:false,color:[210,190,255]},{x:1025,y:200,size:14,col:false,color:[255,220,120]}],
+            spikes: [{x:260,y:500,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:500},
+                     {x:560,y:500,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:500},
+                     {x:860,y:500,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:500}], 
             hazards: [], movingPlatforms: [] },
         { name:"🔥 火焰峡谷·沙滩", colorIdx:2,
             platforms: [ 
-                {x:0,y:620,w:220,h:40,type:"ground"},{x:300,y:620,w:200,h:40,type:"ground"},
-                {x:560,y:620,w:220,h:40,type:"ground"},{x:840,y:620,w:240,h:40,type:"ground"},
-                {x:1140,y:620,w:300,h:40,type:"ground"},{x:80,y:520,w:90,h:22,type:"questionBlock"},
-                {x:340,y:450,w:90,h:22,type:"questionBlock"},{x:620,y:380,w:90,h:22,type:"questionBlock"},
-                {x:940,y:310,w:90,h:22,type:"questionBlock"},
-                {x:400,y:500,w:100,h:20,type:"moving",moveRange:120, speed:1.2, startX:400, currentX:400, vx:0},
+                {x:0,y:540,w:220,h:40,type:"ground"},{x:300,y:540,w:200,h:40,type:"ground"},
+                {x:560,y:540,w:220,h:40,type:"ground"},{x:840,y:540,w:240,h:40,type:"ground"},
+                {x:1140,y:540,w:300,h:40,type:"ground"},
+                {x:70,y:440,w:60,h:60,type:"questionBlock"},{x:330,y:370,w:60,h:60,type:"questionBlock"},
+                {x:610,y:300,w:60,h:60,type:"questionBlock"},{x:930,y:230,w:60,h:60,type:"questionBlock"},
+                {x:400,y:420,w:100,h:20,type:"moving",moveRange:120, speed:1.2, startX:400, currentX:400, vx:0},
             ],
-            stars: [{x:125,y:480,size:14,col:false,color:[255,220,140]},{x:385,y:410,size:14,col:false,color:[255,200,190]},
-                     {x:665,y:340,size:14,col:false,color:[210,210,255]},{x:985,y:270,size:14,col:false,color:[255,220,120]}],
-            spikes: [{x:520,y:580,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:580}], 
-            hazards: [{x:280,y:520,interval:100,radius:28,type:"flame_pillar",active:false,timer:0},
-                      {x:600,y:430,interval:110,radius:28,type:"flame_pillar",active:false,timer:0},
-                      {x:920,y:340,interval:95,radius:28,type:"flame_pillar",active:false,timer:0}],
-            movingPlatforms: [{x:400,y:500,w:100,h:20,range:120, speed:1.2, startX:400, currentX:400, dir:1}] },
+            stars: [{x:125,y:400,size:14,col:false,color:[255,220,140]},{x:385,y:330,size:14,col:false,color:[255,200,190]},
+                     {x:665,y:260,size:14,col:false,color:[210,210,255]},{x:985,y:190,size:14,col:false,color:[255,220,120]}],
+            spikes: [{x:520,y:500,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:500}], 
+            hazards: [{x:280,y:440,interval:100,radius:28,type:"flame_pillar",active:false,timer:0},
+                      {x:600,y:350,interval:110,radius:28,type:"flame_pillar",active:false,timer:0},
+                      {x:920,y:260,interval:95,radius:28,type:"flame_pillar",active:false,timer:0}],
+            movingPlatforms: [{x:400,y:420,w:100,h:20,range:120, speed:1.2, startX:400, currentX:400, dir:1}] },
         { name:"🌀 时空回廊·钟摆", colorIdx:3,
             platforms: [ 
-                {x:0,y:620,w:200,h:40,type:"ground"},{x:280,y:620,w:180,h:40,type:"ground"},
-                {x:520,y:620,w:200,h:40,type:"ground"},{x:780,y:620,w:220,h:40,type:"ground"},
-                {x:1060,y:620,w:380,h:40,type:"ground"},{x:60,y:510,w:90,h:22,type:"questionBlock"},
-                {x:320,y:440,w:90,h:22,type:"questionBlock"},{x:580,y:370,w:90,h:22,type:"questionBlock"},
-                {x:880,y:300,w:90,h:22,type:"questionBlock"},
+                {x:0,y:540,w:200,h:40,type:"ground"},{x:280,y:540,w:180,h:40,type:"ground"},
+                {x:520,y:540,w:200,h:40,type:"ground"},{x:780,y:540,w:220,h:40,type:"ground"},
+                {x:1060,y:540,w:380,h:40,type:"ground"},
+                // 移除出生点上方平台（原x:60,y:430），改为更右侧的位置
+                {x:250,y:430,w:60,h:60,type:"questionBlock"},{x:510,y:360,w:60,h:60,type:"questionBlock"},
+                {x:770,y:290,w:60,h:60,type:"questionBlock"},{x:1030,y:220,w:60,h:60,type:"questionBlock"},
             ],
-            stars: [{x:105,y:470,size:14,col:false,color:[200,220,150]},{x:365,y:400,size:14,col:false,color:[220,190,230]},
-                     {x:625,y:330,size:14,col:false,color:[210,200,220]},{x:925,y:260,size:14,col:false,color:[240,210,130]}],
-            spikes: [{x:220,y:580,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:580},
-                     {x:480,y:580,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:580},
-                     {x:740,y:580,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:580}],
+            stars: [{x:105,y:390,size:14,col:false,color:[200,220,150]},{x:365,y:320,size:14,col:false,color:[220,190,230]},
+                     {x:625,y:250,size:14,col:false,color:[210,200,220]},{x:925,y:180,size:14,col:false,color:[240,210,130]}],
+            spikes: [{x:220,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500},
+                     {x:480,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500},
+                     {x:740,y:500,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:500}],
             hazards: [], movingPlatforms: [], hasPendulum: true },
         { name:"🚀 飞船码头·沙滩", colorIdx:4,
             platforms: [ 
-                {x:0,y:620,w:1440,h:40,type:"ground"},{x:100,y:540,w:140,h:30,type:"ground"},
-                {x:340,y:480,w:120,h:26,type:"questionBlock"},{x:580,y:540,w:160,h:30,type:"ground"},
-                {x:820,y:480,w:140,h:30,type:"ground"},{x:1120,y:420,w:160,h:30,type:"rocketPad"}
+                {x:0,y:540,w:1440,h:40,type:"ground"},
+                {x:100,y:460,w:140,h:30,type:"ground"},{x:340,y:400,w:120,h:26,type:"questionBlock"},
+                {x:580,y:460,w:160,h:30,type:"ground"},{x:820,y:400,w:140,h:30,type:"ground"},
+                {x:1120,y:340,w:160,h:30,type:"rocketPad"}
             ],
-            stars: [{x:170,y:500,size:14,col:false,color:[255,220,180]},{x:400,y:440,size:14,col:false,color:[220,200,255]},
-                     {x:660,y:500,size:14,col:false,color:[255,230,160]},{x:890,y:440,size:14,col:false,color:[255,220,190]},
-                     {x:1200,y:380,size:14,col:false,color:[255,245,200]}],
-            spikes: [], hazards: [{x:500,y:490,range:140,width:4,type:"laser",speed:0.4,currentX:500}],
-            movingPlatforms: [], spaceshipZone: { x: 1140, y: 340, w: 120, h: 80 } }
+            stars: [{x:170,y:420,size:14,col:false,color:[255,220,180]},{x:400,y:360,size:14,col:false,color:[220,200,255]},
+                     {x:660,y:420,size:14,col:false,color:[255,230,160]},{x:890,y:360,size:14,col:false,color:[255,220,190]},
+                     {x:1200,y:300,size:14,col:false,color:[255,245,200]}],
+            spikes: [], hazards: [{x:500,y:410,range:140,width:4,type:"laser",speed:0.4,currentX:500}],
+            movingPlatforms: [], spaceshipZone: { x: 1140, y: 260, w: 120, h: 80 } }
     ];
     
     let currentPlat = [];
@@ -451,8 +454,8 @@
         if(newIdx === currentScene) return;
         currentScene = newIdx;
         reloadScene(currentScene);
-        if(newIdx === 4) { player.x = 80; player.y = 550; }
-        else { player.x = 100; player.y = 560; }
+        if(newIdx === 4) { player.x = 80; player.y = 470; }
+        else { player.x = 100; player.y = 480; }
         player.vy = 0; player.vx = 0; player.onGround = true;
         if(newIdx === 4) message = "🚀 触碰飞船，逃离月球！🚀";
         else if(newIdx === 3) message = "🌀 躲避钟摆，穿越时空回廊 🌀";
@@ -460,23 +463,32 @@
         msgTimer = 90;
     }
     
-    // ==================== 飞船动画（增强版：多级火焰 + 先慢后快） ====================
+    // 飞船动画（多级火焰 + 先慢后快）
     let spaceshipFlyAnim = false;
     let spaceshipFlyY = 0;
     let spaceshipFlyAlpha = 1;
     let spaceshipSpeed = 0;
-    let spaceshipAccel = 0.35;      // 加速度，先慢后快（初始慢，逐渐增加）
+    let spaceshipAccel = 0.35;
     let spaceshipSpeedLimit = 18;
     let flamePulse = 0;
+    let victoryPending = false;   // 动画未完成时延迟胜利
     
     function updateSpaceship() {
         if(spaceshipFlyAnim) {
-            // 加速度逐渐增加（先慢后快效果）
             spaceshipAccel = Math.min(1.5, spaceshipAccel + 0.03);
             spaceshipSpeed += spaceshipAccel;
             spaceshipSpeed = Math.min(spaceshipSpeedLimit, spaceshipSpeed);
             spaceshipFlyY -= spaceshipSpeed;
             if(spaceshipFlyAlpha > 0) spaceshipFlyAlpha -= 0.008;
+            // 动画结束（透明度接近0或飞出画面）触发胜利界面
+            if(spaceshipFlyAlpha <= 0.02 && !gameVictory) {
+                spaceshipFlyAnim = false;
+                gameVictory = true;
+                gameRunning = false;
+                if(bgMusic) bgMusic.pause();
+                victoryScoreDisplay.textContent = `星辉 ${Math.floor(score)}`;
+                victoryOverlay.style.display = 'flex';
+            }
         }
     }
     
@@ -484,7 +496,6 @@
         flamePulse = (flamePulse + 0.2) % (Math.PI * 2);
         const shipY = y + spaceshipFlyY;
         
-        // 主体
         ctx.fillStyle = "#E8E8F0";
         ctx.shadowBlur = 8;
         ctx.shadowColor = "#88AAFF";
@@ -497,7 +508,6 @@
         ctx.lineTo(x + 22, shipY + 12);
         ctx.fill();
         
-        // 红色鼻锥
         ctx.fillStyle = "#FF5555";
         ctx.beginPath();
         ctx.moveTo(x + 60, shipY - 32);
@@ -505,7 +515,6 @@
         ctx.lineTo(x + 50, shipY - 12);
         ctx.fill();
         
-        // 驾驶舱
         ctx.fillStyle = "#88AAFF";
         ctx.beginPath();
         ctx.arc(x + 60, shipY + 10, 12, 0, Math.PI * 2);
@@ -519,7 +528,6 @@
         ctx.arc(x + 55, shipY + 5, 2.5, 0, Math.PI * 2);
         ctx.fill();
         
-        // 侧翼
         ctx.fillStyle = "#CCCCDD";
         ctx.beginPath();
         ctx.moveTo(x + 32, shipY + 28);
@@ -532,11 +540,9 @@
         ctx.lineTo(x + 88, shipY + 40);
         ctx.fill();
         
-        // ========== 多级火焰（根据速度动态变化） ==========
         const speedFactor = Math.min(1, spaceshipSpeed / 12);
         const pulseSize = Math.sin(flamePulse) * 3;
         
-        // 第一级火焰（内层，最亮）
         ctx.fillStyle = `rgba(255, 220, 100, ${0.8 + speedFactor * 0.5})`;
         ctx.beginPath();
         ctx.moveTo(x + 52, shipY + 44);
@@ -544,7 +550,6 @@
         ctx.lineTo(x + 68, shipY + 44);
         ctx.fill();
         
-        // 第二级火焰（中层，橙色）
         ctx.fillStyle = `rgba(255, 140, 60, ${0.9 + speedFactor * 0.6})`;
         ctx.beginPath();
         ctx.moveTo(x + 48, shipY + 42);
@@ -552,7 +557,6 @@
         ctx.lineTo(x + 72, shipY + 42);
         ctx.fill();
         
-        // 第三级火焰（外层，红色，拖尾效果）
         ctx.fillStyle = `rgba(255, 70, 40, ${0.7 + speedFactor * 0.7})`;
         ctx.beginPath();
         ctx.moveTo(x + 44, shipY + 40);
@@ -560,7 +564,6 @@
         ctx.lineTo(x + 76, shipY + 40);
         ctx.fill();
         
-        // 尾气粒子拖影（速度越快粒子越多）
         if(spaceshipSpeed > 3) {
             for(let i = 0; i < Math.floor(spaceshipSpeed / 2); i++) {
                 ctx.fillStyle = `rgba(255, 100, 50, ${0.3 - i * 0.05})`;
@@ -569,7 +572,6 @@
                 ctx.fill();
             }
         }
-        
         ctx.shadowBlur = 0;
     }
     
@@ -620,7 +622,6 @@
                 sp.y = (sp.originalY || sp.y) + (sp.isUp ? -16 : 0);
             }
         }
-        // 移动平台更新 + 记录速度用于人物跟随
         for(let mp of currentMovingPlatforms){
             const oldX = mp.currentX !== undefined ? mp.currentX : mp.x;
             mp.currentX = mp.startX + Math.sin(Date.now() * 0.003 * mp.speed) * mp.range;
@@ -636,17 +637,14 @@
     
     function winGame(finalScore){
         if(gameVictory) return;
-        gameRunning = false;
-        gameVictory = true;
+        // 不立即结束，启动动画
         spaceshipFlyAnim = true;
         spaceshipFlyY = 0;
         spaceshipFlyAlpha = 1;
         spaceshipSpeed = 0;
         spaceshipAccel = 0.35;
-        message = `✨ 胜利！星辉: ${Math.floor(finalScore)} ✨`;
-        if(bgMusic) bgMusic.pause();
-        victoryScoreDisplay.textContent = `星辉 ${Math.floor(finalScore)}`;
-        victoryOverlay.style.display = 'flex';
+        gameRunning = false;  // 停止玩家控制
+        // 等待动画完成（在updateSpaceship中触发胜利界面）
     }
     
     function fullReset(){
@@ -657,12 +655,13 @@
         spaceshipFlyAlpha = 1;
         spaceshipSpeed = 0;
         spaceshipAccel = 0.35;
+        gameVictory = false;
+        gameRunning = true;
         shakeAmount = 0;
         reloadScene(0);
         pendulum.angle = 0;
-        player.x = 100; player.y = 560; player.vy = 0; player.vx = 0;
+        player.x = 100; player.y = 480; player.vy = 0; player.vx = 0;
         player.onGround = true; player.facingRight = false;
-        gameRunning = true; gameVictory = false;
         message = "逃离月球 · 启程！";
         msgTimer = 80;
         victoryOverlay.style.display = 'none';
@@ -674,7 +673,6 @@
     function updateGame(){
         if(!gameRunning) return;
         
-        // 行走动画
         if(Math.abs(player.vx) > 1.5 && player.onGround) {
             walkAnimTimer++;
             if(walkAnimTimer >= walkFrameDelay) { walkAnimTimer = 0; walkFrame = (walkFrame + 1) % 4; }
@@ -690,7 +688,6 @@
         player.y += player.vy;
         player.onGround = false;
         
-        // 静态平台碰撞
         for(let plat of currentPlat){
             if(plat.type === 'moving') continue;
             const platRect = {x:plat.x, y:plat.y, w:plat.w, h:plat.h};
@@ -712,7 +709,6 @@
             }
         }
         
-        // ========== 移动平台碰撞 + 人物跟随 ==========
         for(let mp of currentMovingPlatforms){
             const platRect = {x:mp.x, y:mp.y, w:mp.w, h:mp.h};
             const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
@@ -721,10 +717,7 @@
                     player.y = mp.y - player.h;
                     player.vy = 0;
                     player.onGround = true;
-                    // 人物跟随平台移动
-                    if(mp.vx) {
-                        player.x += mp.vx;
-                    }
+                    if(mp.vx) player.x += mp.vx;
                 }
                 else if(player.vy < 0 && (mp.y + mp.h - player.y <= 12)){
                     player.y = mp.y + mp.h;
@@ -737,12 +730,10 @@
             }
         }
         
-        // 尖刺碰撞
         for(let sp of spikes){
             if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:sp.x,y:sp.y,w:sp.w,h:sp.h})){ deathReset(); return; }
         }
         
-        // 机关伤害
         for(let h of movingHazards){
             let hx = h.currentX !== undefined ? h.currentX : h.x;
             let hy = h.y;
@@ -764,7 +755,6 @@
             playSound('jump', 0.12);
         }
         
-        // 星辉收集
         for(let s of currentStars){
             if(!s.col){
                 const starRect = {x:s.x - s.size/2, y:s.y - s.size/2, w:s.size, h:s.size};
@@ -778,14 +768,16 @@
             }
         }
         
-        // 场景切换
         if(currentScene === 0 && player.x + player.w > LOGIC_W - 20) { changeScene(1); player.x = 30; }
         else if(currentScene === 1 && player.x + player.w > LOGIC_W - 20) { changeScene(2); player.x = 30; }
         else if(currentScene === 2 && player.x + player.w > LOGIC_W - 20) { changeScene(3); player.x = 30; }
         else if(currentScene === 3 && player.x + player.w > LOGIC_W - 20) { changeScene(4); }
         
-        if(currentScene === 4 && !gameVictory && scenes[4].spaceshipZone){
-            if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].spaceshipZone)){ winGame(score); return; }
+        if(currentScene === 4 && !gameVictory && !spaceshipFlyAnim && scenes[4].spaceshipZone){
+            if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].spaceshipZone)){
+                winGame(score);
+                return;
+            }
         }
         
         if(player.vx > 2) player.facingRight = true;
@@ -793,26 +785,26 @@
         
         updateHazards();
         updateStarField();
-        updateSpaceship();  // 更新飞船动画
         
         if(msgTimer > 0) msgTimer--;
         else message = "";
     }
     
-    // ==================== 绘图函数 ====================
+    // 绘图函数
     function drawBeautifulPlatform(x, y, w, h, type, colorIdx, isMoving = false) {
         const colors = sceneColors[colorIdx];
         if(type === 'questionBlock') {
-            const blockSize = Math.min(w, h * 1.2);
-            const offsetX = x + (w - blockSize) / 2;
-            const offsetY = y + (h - blockSize) / 2;
-            const grad = ctx.createLinearGradient(offsetX, offsetY, offsetX + blockSize, offsetY + blockSize);
+            // 正方形平台
+            const size = Math.min(w, h);
+            const offsetX = x + (w - size) / 2;
+            const offsetY = y + (h - size) / 2;
+            const grad = ctx.createLinearGradient(offsetX, offsetY, offsetX + size, offsetY + size);
             grad.addColorStop(0, colors.primary); grad.addColorStop(1, colors.secondary);
-            ctx.fillStyle = grad; ctx.fillRect(offsetX, offsetY, blockSize, blockSize);
-            ctx.font = `bold ${Math.floor(blockSize * 0.55)}px "Segoe UI"`;
+            ctx.fillStyle = grad; ctx.fillRect(offsetX, offsetY, size, size);
+            ctx.font = `bold ${Math.floor(size * 0.55)}px "Segoe UI"`;
             ctx.fillStyle = "#FFFFFF"; ctx.shadowBlur = 6; ctx.shadowColor = colors.glow;
             ctx.textAlign = "center"; ctx.textBaseline = "middle";
-            ctx.fillText("?", offsetX + blockSize/2, offsetY + blockSize/2);
+            ctx.fillText("?", offsetX + size/2, offsetY + size/2);
             ctx.shadowBlur = 0; ctx.textAlign = "left";
         } else if(type === 'rocketPad') {
             ctx.fillStyle = "#4A5A7A"; ctx.fillRect(x, y, w, h);
@@ -853,8 +845,11 @@
             ctx.fillStyle=g; ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
         }
         drawStarField();
-        ctx.fillStyle = "#E8D4A8"; ctx.fillRect(0, LOGIC_H - 50, LOGIC_W, 50);
-        ctx.fillStyle = "#D4BC7A"; ctx.fillRect(0, LOGIC_H - 20, LOGIC_W, 20);
+        // 底部沙滩填满，不留白
+        ctx.fillStyle = "#E8D4A8";
+        ctx.fillRect(0, LOGIC_H - 40, LOGIC_W, 40);
+        ctx.fillStyle = "#D4BC7A";
+        ctx.fillRect(0, LOGIC_H - 20, LOGIC_W, 20);
     }
     
     function drawSpikes(){
@@ -931,7 +926,7 @@
         if(isMoving && walkFrame % 2 === 0 && loadedImages.playerWalk && loadedImages.playerWalk.complete) imgToDraw = loadedImages.playerWalk;
         else if(loadedImages.playerStand && loadedImages.playerStand.complete) imgToDraw = loadedImages.playerStand;
         if(imgToDraw) {
-            ctx.drawImage(imgToDraw, -player.w*0.7, -player.h*0.7, player.w*1.4, player.h*1.4);
+            ctx.drawImage(imgToDraw, -player.w*0.65, -player.h*0.65, player.w*1.3, player.h*1.3);
         } else {
             ctx.fillStyle = "#FFD8A0"; ctx.fillRect(-player.w/2,-player.h/2,player.w,player.h);
             ctx.fillStyle = "#F0A87A"; ctx.fillRect(-player.w/2+8,-player.h/2-6,player.w-16,10);
@@ -942,7 +937,7 @@
     }
     
     function drawUI(){
-        if(!gameVictory) {
+        if(!gameVictory && !victoryPending) {
             ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(LOGIC_W-170, 12, 158, 54);
             ctx.fillStyle = "rgba(255,240,200,0.9)"; ctx.fillRect(LOGIC_W-168, 14, 154, 50);
             const grad = ctx.createLinearGradient(LOGIC_W-168, 14, LOGIC_W-14, 64);
@@ -951,12 +946,12 @@
             ctx.font = "bold 34px monospace"; ctx.fillStyle = "#4A2E62";
             ctx.fillText(`${Math.floor(score)}`, LOGIC_W-138, 56);
         }
-        if(message && !gameVictory){
+        if(message && !gameVictory && !victoryPending){
             ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(LOGIC_W/2-150, LOGIC_H-48, 300, 36);
             ctx.font = "bold 20px monospace"; ctx.fillStyle = "#FFFAD0";
             ctx.fillText(message, LOGIC_W/2-ctx.measureText(message).width/2, LOGIC_H-28);
         }
-        if(!gameVictory) {
+        if(!gameVictory && !victoryPending) {
             let q = scenes[currentScene].name;
             ctx.font = "18px monospace"; ctx.fillStyle = "#FFF0BF";
             ctx.fillText(q + " →", 20, LOGIC_H-20);
@@ -965,6 +960,7 @@
     
     function gameLoop(){
         updateGame();
+        updateSpaceship();
         const shook = applyShake();
         drawBackground();
         drawPlatforms();
