@@ -3,321 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
-    <title>超时空辉夜姬 | 五境传说·月华归乡·沙滩终章</title>
+    <title>超时空辉夜姬 | 五境传说·月华归乡</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: #0a0620;
-        }
-
-        .game-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .canvas-area {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #0a0620;
-        }
-
-        #gameCanvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            background: #0b0822;
-        }
-
-        .loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1338 0%, #0c0820 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 50;
-        }
-
-        .loading-title {
-            font-size: clamp(24px, 8vw, 48px);
-            font-weight: bold;
-            color: #FFF5E0;
-            text-shadow: 0 0 20px #ff88aa;
-            margin-bottom: 30px;
-            font-family: monospace;
-        }
-
-        .loading-bar-container {
-            width: 280px;
-            height: 24px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 30px;
-            overflow: hidden;
-            border: 2px solid #ffccaa;
-        }
-
-        .loading-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, #ffb7c5, #ff6f9f);
-            border-radius: 30px;
-            transition: width 0.2s ease;
-        }
-
-        .loading-text {
-            color: #ffefc0;
-            margin-top: 16px;
-            font-size: 14px;
-            font-family: monospace;
-        }
-
-        .start-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #1a1338 0%, #0c0820 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 30;
-        }
-
-        .start-title {
-            font-size: clamp(32px, 8vw, 70px);
-            font-weight: bold;
-            color: #FFF5E0;
-            text-shadow: 0 0 30px #ff88aa, 0 0 50px #b56eff, 0 5px 15px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
-            letter-spacing: 6px;
-            font-family: 'Noto Sans CJK SC', monospace;
-            text-align: center;
-        }
-
-        .start-sub {
-            font-size: clamp(16px, 5vw, 24px);
-            color: #ffefc0;
-            margin-bottom: 50px;
-            text-align: center;
-            padding: 0 24px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-            letter-spacing: 2px;
-        }
-
-        .start-btn, .victory-restart-btn {
-            background: linear-gradient(135deg, #ffb7c5, #ff6f9f);
-            border: none;
-            padding: 14px 56px;
-            font-size: clamp(26px, 6vw, 44px);
-            font-weight: bold;
-            color: #2a1422;
-            border-radius: 60px;
-            cursor: pointer;
-            box-shadow: 0 12px 0 #8b3a5a;
-            transition: 0.08s linear;
-            font-family: monospace;
-            letter-spacing: 4px;
-        }
-
-        .start-btn:active, .victory-restart-btn:active {
-            transform: translateY(6px);
-            box-shadow: 0 5px 0 #8b3a5a;
-        }
-
-        .bottom-controls {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 28px calc(12px + env(safe-area-inset-bottom, 0));
-            background: transparent;
-            backdrop-filter: none;
-            border: none;
-            z-index: 20;
-            pointer-events: auto;
-            display: none;
-        }
-
-        .left-buttons { 
-            display: flex; 
-            gap: 1.5rem; 
-            background: transparent; 
-        }
-        .right-button { 
-            display: flex; 
-            background: transparent;
-        }
-
-        .ctrl-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.15);
-            border: 1.5px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            font-size: 3.2rem;
-            font-weight: bold;
-            color: rgba(255, 255, 245, 0.9);
-            cursor: pointer;
-            transition: 0.05s linear;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            touch-action: manipulation;
-            backdrop-filter: blur(2px);
-        }
-        .ctrl-btn:active { 
-            transform: scale(0.93); 
-            background: rgba(0, 0, 0, 0.3); 
-        }
-        .jump-btn { 
-            background: rgba(0, 0, 0, 0.15); 
-            border-color: rgba(255, 180, 200, 0.6); 
-        }
-
-        .music-toggle-btn {
-            position: fixed;
-            top: 8px;
-            left: 8px;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,220,160,0.6);
-            z-index: 40;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-        .music-toggle-btn:active { transform: scale(0.92); }
-
-        @media (max-width: 850px) and (orientation: landscape) {
-            .ctrl-btn { width: 70px; height: 70px; font-size: 2.8rem; }
-            .bottom-controls { padding: 8px 20px calc(8px + env(safe-area-inset-bottom,0)); }
-            .left-buttons { gap: 1.2rem; }
-        }
-        @media (max-width: 650px) and (orientation: landscape) {
-            .ctrl-btn { width: 62px; height: 62px; font-size: 2.4rem; }
-        }
-
-        .fullscreen-tip {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
-            padding: 6px 18px;
-            border-radius: 40px;
-            color: #ffddbb;
-            font-size: 12px;
-            z-index: 25;
-            pointer-events: none;
-            white-space: nowrap;
-            transition: opacity 0.5s;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        html, body { width: 100%; height: 100%; overflow: hidden; position: fixed; top: 0; left: 0; background: #0a0620; }
+        .game-container { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; position: relative; }
+        .canvas-area { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #0a0620; }
+        #gameCanvas { display: block; width: 100%; height: 100%; object-fit: cover; background: #0b0822; }
+        .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a1338 0%, #0c0820 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 50; }
+        .loading-title { font-size: clamp(24px, 8vw, 48px); font-weight: bold; color: #FFF5E0; text-shadow: 0 0 20px #ff88aa; margin-bottom: 30px; font-family: monospace; }
+        .loading-bar-container { width: 280px; height: 24px; background: rgba(0,0,0,0.5); border-radius: 30px; overflow: hidden; border: 2px solid #ffccaa; }
+        .loading-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #ffb7c5, #ff6f9f); border-radius: 30px; transition: width 0.2s ease; }
+        .loading-text { color: #ffefc0; margin-top: 16px; font-size: 14px; font-family: monospace; }
+        .start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #1a1338 0%, #0c0820 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 30; }
+        .start-title { font-size: clamp(32px, 8vw, 70px); font-weight: bold; color: #FFF5E0; text-shadow: 0 0 30px #ff88aa, 0 0 50px #b56eff; margin-bottom: 20px; letter-spacing: 6px; font-family: monospace; text-align: center; }
+        .start-sub { font-size: clamp(16px, 5vw, 24px); color: #ffefc0; margin-bottom: 50px; text-align: center; padding: 0 24px; }
+        .start-btn, .victory-restart-btn { background: linear-gradient(135deg, #ffb7c5, #ff6f9f); border: none; padding: 14px 56px; font-size: clamp(26px, 6vw, 44px); font-weight: bold; color: #2a1422; border-radius: 60px; cursor: pointer; box-shadow: 0 12px 0 #8b3a5a; transition: 0.08s linear; font-family: monospace; letter-spacing: 4px; }
+        .start-btn:active, .victory-restart-btn:active { transform: translateY(6px); box-shadow: 0 5px 0 #8b3a5a; }
+        .bottom-controls { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 12px 28px calc(12px + env(safe-area-inset-bottom, 0)); background: transparent; z-index: 20; pointer-events: auto; display: none; }
+        .left-buttons { display: flex; gap: 1.5rem; }
+        .right-button { display: flex; }
+        .ctrl-btn { width: 80px; height: 80px; border-radius: 50%; background: rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.5); font-size: 3.2rem; font-weight: bold; color: rgba(255,255,245,0.95); cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: 0.05s linear; }
+        .ctrl-btn:active { transform: scale(0.93); background: rgba(0,0,0,0.4); }
+        .music-toggle-btn { position: fixed; top: 8px; left: 8px; width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px); border: 1px solid rgba(255,220,160,0.7); z-index: 40; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .fullscreen-tip { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); padding: 6px 18px; border-radius: 40px; color: #ffddbb; font-size: 12px; z-index: 25; pointer-events: none; white-space: nowrap; transition: opacity 0.5s; }
         .fullscreen-tip.fade-out { opacity: 0; }
-
-        .rotate-tip {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000000ee;
-            backdrop-filter: blur(14px);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #ffecb3;
-            font-size: 26px;
-            text-align: center;
-            pointer-events: none;
-        }
+        .rotate-tip { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000000ee; backdrop-filter: blur(14px); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #ffecb3; font-size: 26px; text-align: center; pointer-events: none; }
         .rotate-tip.hidden { display: none; }
         .rotate-icon { font-size: 90px; margin-bottom: 20px; animation: rotateHint 1.4s infinite ease; }
         .rotate-text { background: rgba(0,0,0,0.7); padding: 12px 32px; border-radius: 60px; font-size: 20px; border: 1px solid #ffcc88; }
         @keyframes rotateHint { 0%,100%{ transform: rotate(0deg); } 40%{ transform: rotate(90deg); } 80%{ transform: rotate(90deg); } }
         @media (orientation: landscape) { .rotate-tip { display: none; } }
+        @media (max-width: 850px) and (orientation: landscape) { .ctrl-btn { width: 70px; height: 70px; font-size: 2.8rem; } }
     </style>
 </head>
 <body>
 <div class="game-container" id="gameContainer">
     <div class="canvas-area">
         <canvas id="gameCanvas"></canvas>
-        
         <div class="loading-overlay" id="loadingOverlay">
             <div class="loading-title">✨ 超时空加载中 ✨</div>
-            <div class="loading-bar-container">
-                <div class="loading-bar" id="loadingBar"></div>
-            </div>
+            <div class="loading-bar-container"><div class="loading-bar" id="loadingBar"></div></div>
             <div class="loading-text" id="loadingText">等待资源加载...</div>
         </div>
-        
         <div class="start-overlay" id="startOverlay" style="display: none;">
             <div class="start-title">✨ 超时空輝夜姬 ✨</div>
             <div class="start-sub">五境传说 · 乘飞船归乡</div>
             <button class="start-btn" id="startBtn">时 空 启 程</button>
         </div>
-        
-        <div id="victoryOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 35;">
+        <div id="victoryOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 35;">
             <div style="text-align: center;">
-                <div style="font-size: 80px; color: #FFE78F; text-shadow: 0 0 30px #ffaa66; margin-bottom: 30px;">✨ 胜利 ✨</div>
-                <div style="font-size: 48px; color: #FFD87A; margin-bottom: 20px;" id="victoryScoreDisplay">星辉 0</div>
+                <div style="font-size: 80px; color: #FFE78F; text-shadow: 0 0 40px #ffaa66, 0 0 20px #ff8844; margin-bottom: 30px; animation: victoryGlow 1s infinite;">✨ 胜利 ✨</div>
+                <div style="font-size: 48px; color: #FFD87A; margin-bottom: 20px; text-shadow: 0 0 10px #ffaa66;" id="victoryScoreDisplay">星辉 0</div>
                 <button id="victoryRestartBtn" class="victory-restart-btn" style="display: block; margin: 0 auto;">时 空 重 启</button>
             </div>
         </div>
+        <style>@keyframes victoryGlow { 0%,100%{ text-shadow: 0 0 20px #ffaa66; } 50%{ text-shadow: 0 0 50px #ffcc88, 0 0 20px #ffaa66; } }</style>
     </div>
     <div class="bottom-controls" id="bottomControls">
-        <div class="left-buttons">
-            <button class="ctrl-btn left-btn">←</button>
-            <button class="ctrl-btn right-btn">→</button>
-        </div>
-        <div class="right-button">
-            <button class="ctrl-btn jump-btn">↑</button>
-        </div>
+        <div class="left-buttons"><button class="ctrl-btn left-btn">←</button><button class="ctrl-btn right-btn">→</button></div>
+        <div class="right-button"><button class="ctrl-btn jump-btn">↑</button></div>
     </div>
     <button class="music-toggle-btn" id="musicToggleBtn">🔊</button>
     <div class="fullscreen-tip" id="fullscreenTip">✨ 横屏自动全屏 · 沉浸体验 ✨</div>
@@ -325,1046 +70,940 @@
 <div class="rotate-tip" id="rotateTip"><div class="rotate-icon">📱🔄</div><div class="rotate-text">请打开「自动旋转」<br>横屏获得最佳体验</div></div>
 
 <script>
-    (function(){
-        // DOM 元素
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const startOverlay = document.getElementById('startOverlay');
-        const startBtn = document.getElementById('startBtn');
-        const victoryOverlay = document.getElementById('victoryOverlay');
-        const victoryRestartBtn = document.getElementById('victoryRestartBtn');
-        const victoryScoreDisplay = document.getElementById('victoryScoreDisplay');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const loadingBar = document.getElementById('loadingBar');
-        const loadingText = document.getElementById('loadingText');
-        const gameContainer = document.getElementById('gameContainer');
-        const fullscreenTip = document.getElementById('fullscreenTip');
-        const bottomControls = document.getElementById('bottomControls');
-        const musicToggleBtn = document.getElementById('musicToggleBtn');
-        
-        const LOGIC_W = 1440;
-        const LOGIC_H = 810;
-        
-        let gameRunning = false;
-        let gameVictory = false;
-        let musicMuted = false;
-        let resourcesLoaded = false;
-        
-        // 屏幕震动效果
-        let shakeAmount = 0;
-        let shakeDecay = 0.8;
-        
-        // 火箭升空动画
-        let spaceshipFlyAnim = false;
-        let spaceshipFlyY = 0;
-        let spaceshipFlyAlpha = 1;
-        let spaceshipSpeed = 0;
-        let spaceshipAccel = 1.2;
-        
-        // 按钮音效
-        let buttonClickSound = null;
-        function initButtonSound() {
-            try {
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                if (AudioContext) {
-                    const audioCtx = new AudioContext();
-                    buttonClickSound = {
-                        play: function() {
-                            const oscillator = audioCtx.createOscillator();
-                            const gain = audioCtx.createGain();
-                            oscillator.connect(gain);
-                            gain.connect(audioCtx.destination);
-                            oscillator.frequency.value = 880;
-                            gain.gain.value = 0.08;
-                            oscillator.type = 'sine';
-                            oscillator.start();
-                            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.15);
-                            oscillator.stop(audioCtx.currentTime + 0.15);
-                        }
-                    };
-                }
-            } catch(e) { console.log("音效初始化失败"); }
-        }
-        function playButtonClick() {
-            if(buttonClickSound && buttonClickSound.play) {
-                try { buttonClickSound.play(); } catch(e) {}
-            }
-        }
-        
-        // 死亡震动函数
-        function triggerDeathShake() {
-            shakeAmount = 18;
-            // 同时添加屏幕闪白效果
-            document.body.style.transition = 'background-color 0.05s';
-            document.body.style.backgroundColor = '#ffaa88';
-            setTimeout(() => { document.body.style.backgroundColor = ''; }, 150);
-        }
-        
-        // 应用屏幕震动
-        function applyShake() {
-            if(shakeAmount > 0) {
-                const xOffset = (Math.random() - 0.5) * shakeAmount;
-                const yOffset = (Math.random() - 0.5) * shakeAmount;
-                ctx.save();
-                ctx.translate(xOffset, yOffset);
-                shakeAmount *= shakeDecay;
-                if(shakeAmount < 0.5) shakeAmount = 0;
-                return true;
-            }
-            return false;
-        }
-        
-        function restoreShake() {
-            if(shakeAmount === 0) return;
-            ctx.restore();
-        }
-        
-        // 图片资源
-        const imagesToLoad = [
-            { name: 'playerStand', url: 'stand.png', img: null },
-            { name: 'playerWalk', url: 'walk.png', img: null },
-            { name: 'bg0', url: 'bg_scene0.png', img: null },
-            { name: 'bg1', url: 'bg_scene1.png', img: null },
-            { name: 'bg2', url: 'bg_scene2.png', img: null },
-            { name: 'bg3', url: 'bg_scene3.png', img: null },
-            { name: 'bg4', url: 'bg_scene4.png', img: null },
-            { name: 'bgStart', url: 'bg_start.png', img: null }
-        ];
-        
-        let loadedCount = 0;
-        let totalImages = imagesToLoad.length;
-        
-        const loadedImages = {
-            playerStand: null,
-            playerWalk: null,
-            bg0: null,
-            bg1: null,
-            bg2: null,
-            bg3: null,
-            bg4: null,
-            bgStart: null
-        };
-        
-        function updateLoadingProgress() {
-            const percent = (loadedCount / totalImages) * 100;
-            loadingBar.style.width = percent + '%';
-            loadingText.textContent = `加载资源 ${loadedCount}/${totalImages} ...`;
-            
-            if (loadedCount === totalImages) {
-                loadingText.textContent = '加载完成！即将进入游戏...';
+(function(){
+    // DOM 元素
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const startOverlay = document.getElementById('startOverlay');
+    const startBtn = document.getElementById('startBtn');
+    const victoryOverlay = document.getElementById('victoryOverlay');
+    const victoryRestartBtn = document.getElementById('victoryRestartBtn');
+    const victoryScoreDisplay = document.getElementById('victoryScoreDisplay');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingBar = document.getElementById('loadingBar');
+    const loadingText = document.getElementById('loadingText');
+    const gameContainer = document.getElementById('gameContainer');
+    const fullscreenTip = document.getElementById('fullscreenTip');
+    const bottomControls = document.getElementById('bottomControls');
+    const musicToggleBtn = document.getElementById('musicToggleBtn');
+    
+    const LOGIC_W = 1440;
+    const LOGIC_H = 810;
+    
+    let gameRunning = false;
+    let gameVictory = false;
+    let musicMuted = false;
+    let resourcesLoaded = false;
+    
+    // 音效系统
+    let audioCtx = null;
+    let bgMusic = null;
+    
+    function initAudio() {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch(e) { console.warn("Web Audio API 不支持"); }
+    }
+    
+    function playSound(type, volume = 0.15) {
+        if(!audioCtx || musicMuted) return;
+        try {
+            const oscillator = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            oscillator.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.value = volume;
+            if(type === 'jump') {
+                oscillator.frequency.value = 660;
+                oscillator.type = 'sine';
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.2);
+            } else if(type === 'star') {
+                oscillator.frequency.value = 880;
+                oscillator.type = 'sine';
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.15);
                 setTimeout(() => {
-                    loadingOverlay.style.display = 'none';
-                    startOverlay.style.display = 'flex';
-                    resourcesLoaded = true;
-                    if (loadedImages.bgStart && loadedImages.bgStart.complete && loadedImages.bgStart.naturalWidth > 0) {
-                        startOverlay.style.backgroundImage = `url('${loadedImages.bgStart.src}')`;
-                        startOverlay.style.backgroundSize = 'cover';
-                        startOverlay.style.backgroundPosition = 'center';
-                    }
-                }, 500);
+                    const osc2 = audioCtx.createOscillator();
+                    const g2 = audioCtx.createGain();
+                    osc2.connect(g2); g2.connect(audioCtx.destination);
+                    osc2.frequency.value = 1100; g2.gain.value = 0.1;
+                    osc2.start(); osc2.stop(audioCtx.currentTime + 0.1);
+                }, 50);
+            } else if(type === 'death') {
+                oscillator.frequency.value = 220;
+                oscillator.type = 'sawtooth';
+                gain.gain.value = 0.25;
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.3);
+            } else if(type === 'button') {
+                oscillator.frequency.value = 880;
+                oscillator.type = 'sine';
+                gain.gain.value = 0.08;
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.12);
             }
-        }
-        
-        function loadImage(item, index) {
-            const img = new Image();
-            img.onload = () => {
-                loadedImages[item.name] = img;
-                loadedCount++;
-                updateLoadingProgress();
-            };
-            img.onerror = () => {
-                console.warn(`图片加载失败，使用备用绘制: ${item.url}`);
-                loadedCount++;
-                updateLoadingProgress();
-            };
-            img.src = item.url;
-            imagesToLoad[index].img = img;
-        }
-        
-        function loadAllResources() {
-            for (let i = 0; i < imagesToLoad.length; i++) {
-                loadImage(imagesToLoad[i], i);
-            }
-        }
-        
-        // 背景音乐
-        let bgMusic = null;
-        function initBackgroundMusic() {
-            try {
-                bgMusic = new Audio('game.mp3');
-                bgMusic.loop = true;
-                bgMusic.volume = 0.25;
-                bgMusic.muted = musicMuted;
-                musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
-            } catch(e) { console.warn("音乐加载失败", e); }
-        }
-        function startBackgroundMusic() {
-            if(bgMusic && bgMusic.paused && gameRunning && !musicMuted) {
-                bgMusic.play().catch(e => console.log("自动播放限制"));
-            }
-        }
-        
-        musicToggleBtn.addEventListener('click', () => {
-            playButtonClick();
-            musicMuted = !musicMuted;
-            if(bgMusic) {
-                bgMusic.muted = musicMuted;
-                if(!musicMuted && gameRunning && bgMusic.paused) bgMusic.play().catch(e => {});
-            }
+        } catch(e) {}
+    }
+    
+    function initBackgroundMusic() {
+        try {
+            bgMusic = new Audio('game.mp3');
+            bgMusic.loop = true;
+            bgMusic.volume = 0.25;
+            bgMusic.muted = musicMuted;
             musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
-        });
-        
-        function requestFullscreen() { 
-            const el = gameContainer; 
-            if(el.requestFullscreen) el.requestFullscreen(); 
-            else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen(); 
+            const startMusic = () => {
+                if(gameRunning && !musicMuted && bgMusic.paused) bgMusic.play().catch(e=>{});
+                document.removeEventListener('touchstart', startMusic);
+                document.removeEventListener('click', startMusic);
+            };
+            document.addEventListener('touchstart', startMusic);
+            document.addEventListener('click', startMusic);
+        } catch(e) { console.warn("音乐加载失败", e); }
+    }
+    
+    function startBackgroundMusic() {
+        if(bgMusic && bgMusic.paused && gameRunning && !musicMuted) {
+            bgMusic.play().catch(e => console.log("自动播放限制"));
         }
-        function checkLandscapeAndFullscreen() {
-            if(window.matchMedia("(orientation: landscape)").matches) {
-                if(!(document.fullscreenElement || document.webkitFullscreenElement)) requestFullscreen();
-                fullscreenTip.classList.add('fade-out');
-                setTimeout(() => fullscreenTip.style.display = 'none', 500);
-            } else {
-                fullscreenTip.classList.remove('fade-out');
-                fullscreenTip.style.display = 'block';
+    }
+    
+    musicToggleBtn.addEventListener('click', () => {
+        playSound('button');
+        musicMuted = !musicMuted;
+        if(bgMusic) {
+            bgMusic.muted = musicMuted;
+            if(!musicMuted && gameRunning && bgMusic.paused) bgMusic.play().catch(e => {});
+        }
+        musicToggleBtn.textContent = musicMuted ? "🔇" : "🔊";
+    });
+    
+    // 星空背景
+    let stars = [];
+    for(let i = 0; i < 150; i++) {
+        stars.push({
+            x: Math.random() * LOGIC_W,
+            y: Math.random() * LOGIC_H,
+            radius: Math.random() * 2 + 1,
+            speed: Math.random() * 0.2 + 0.05,
+            alpha: Math.random() * 0.4 + 0.2
+        });
+    }
+    let starFieldOffset = 0;
+    function updateStarField() { starFieldOffset = (starFieldOffset + 0.15) % LOGIC_H; }
+    function drawStarField() {
+        for(let s of stars) {
+            let y = (s.y + starFieldOffset * s.speed) % LOGIC_H;
+            ctx.beginPath();
+            ctx.arc(s.x, y, s.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 240, 200, ${s.alpha})`;
+            ctx.fill();
+        }
+    }
+    
+    // 屏幕震动
+    let shakeAmount = 0;
+    let shakeDecay = 0.85;
+    function triggerShake(type, intensity) {
+        shakeAmount = intensity;
+        if(type === 'death') {
+            playSound('death', 0.25);
+            document.body.style.transition = 'background-color 0.05s';
+            document.body.style.backgroundColor = '#ff8866';
+            setTimeout(() => document.body.style.backgroundColor = '', 150);
+        }
+    }
+    function applyShake() {
+        if(shakeAmount > 0) {
+            const xOffset = (Math.random() - 0.5) * shakeAmount;
+            const yOffset = (Math.random() - 0.5) * shakeAmount;
+            ctx.save();
+            ctx.translate(xOffset, yOffset);
+            shakeAmount *= shakeDecay;
+            if(shakeAmount < 0.5) shakeAmount = 0;
+            return true;
+        }
+        return false;
+    }
+    function restoreShake() { if(shakeAmount === 0) return; ctx.restore(); }
+    
+    // 图片资源
+    const imagesToLoad = [
+        { name: 'playerStand', url: 'stand.png', img: null },
+        { name: 'playerWalk', url: 'walk.png', img: null },
+        { name: 'bg0', url: 'bg_scene0.png', img: null },
+        { name: 'bg1', url: 'bg_scene1.png', img: null },
+        { name: 'bg2', url: 'bg_scene2.png', img: null },
+        { name: 'bg3', url: 'bg_scene3.png', img: null },
+        { name: 'bg4', url: 'bg_scene4.png', img: null },
+        { name: 'bgStart', url: 'bg_start.png', img: null }
+    ];
+    let loadedCount = 0;
+    let totalImages = imagesToLoad.length;
+    const loadedImages = { playerStand: null, playerWalk: null, bg0: null, bg1: null, bg2: null, bg3: null, bg4: null, bgStart: null };
+    
+    function updateLoadingProgress() {
+        const percent = (loadedCount / totalImages) * 100;
+        loadingBar.style.width = percent + '%';
+        loadingText.textContent = `加载资源 ${loadedCount}/${totalImages} ...`;
+        if (loadedCount === totalImages) {
+            loadingText.textContent = '加载完成！即将进入游戏...';
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+                startOverlay.style.display = 'flex';
+                resourcesLoaded = true;
+                if (loadedImages.bgStart && loadedImages.bgStart.complete && loadedImages.bgStart.naturalWidth > 0) {
+                    startOverlay.style.backgroundImage = `url('${loadedImages.bgStart.src}')`;
+                    startOverlay.style.backgroundSize = 'cover';
+                    startOverlay.style.backgroundPosition = 'center';
+                }
+            }, 500);
+        }
+    }
+    
+    function loadImage(item, index) {
+        const img = new Image();
+        img.onload = () => { loadedImages[item.name] = img; loadedCount++; updateLoadingProgress(); };
+        img.onerror = () => { console.warn(`图片加载失败: ${item.url}`); loadedCount++; updateLoadingProgress(); };
+        img.src = item.url;
+        imagesToLoad[index].img = img;
+    }
+    function loadAllResources() { for (let i = 0; i < imagesToLoad.length; i++) loadImage(imagesToLoad[i], i); }
+    
+    // 全屏适配
+    function requestFullscreen() { const el = gameContainer; if(el.requestFullscreen) el.requestFullscreen(); else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen(); }
+    function checkLandscapeAndFullscreen() {
+        if(window.matchMedia("(orientation: landscape)").matches) {
+            if(!(document.fullscreenElement || document.webkitFullscreenElement)) requestFullscreen();
+            fullscreenTip.classList.add('fade-out');
+            setTimeout(() => fullscreenTip.style.display = 'none', 500);
+        } else { fullscreenTip.classList.remove('fade-out'); fullscreenTip.style.display = 'block'; }
+    }
+    checkLandscapeAndFullscreen();
+    setInterval(checkLandscapeAndFullscreen, 500);
+    canvas.addEventListener('click', () => { if(!(document.fullscreenElement || document.webkitFullscreenElement)) requestFullscreen(); });
+    
+    function resizeCanvas() { canvas.width = LOGIC_W; canvas.height = LOGIC_H; }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    
+    // 输入控制
+    let input = { left: false, right: false, jump: false };
+    const leftBtn = document.querySelector('.left-btn');
+    const rightBtn = document.querySelector('.right-btn');
+    const jumpBtn = document.querySelector('.jump-btn');
+    function attach(btn, key){ 
+        if(!btn) return;
+        btn.addEventListener('touchstart', (e)=>{ e.preventDefault(); playSound('button'); input[key]=true; }, {passive:false}); 
+        btn.addEventListener('touchend', (e)=>{ e.preventDefault(); input[key]=false; }); 
+        btn.addEventListener('mousedown', ()=>{ playSound('button'); input[key]=true; }); 
+        btn.addEventListener('mouseup', ()=>{ input[key]=false; }); 
+        btn.addEventListener('mouseleave', ()=>{ input[key]=false; });
+    }
+    if(leftBtn && rightBtn && jumpBtn) { attach(leftBtn, 'left'); attach(rightBtn, 'right'); attach(jumpBtn, 'jump'); }
+    window.addEventListener('keydown', (e)=>{ 
+        if(e.key === 'ArrowLeft'){ input.left=true; e.preventDefault(); } 
+        if(e.key === 'ArrowRight'){ input.right=true; e.preventDefault(); } 
+        if(e.key === 'ArrowUp' || e.key === ' '){ input.jump=true; e.preventDefault(); } 
+    });
+    window.addEventListener('keyup', (e)=>{ 
+        if(e.key === 'ArrowLeft') input.left=false; 
+        if(e.key === 'ArrowRight') input.right=false; 
+        if(e.key === 'ArrowUp' || e.key === ' ') input.jump=false; 
+    });
+    
+    // 玩家数据 60x60 正方形
+    let player = { 
+        x: 100, y: 560, w: 60, h: 60, 
+        vx: 0, vy: 0, 
+        speed: 5.8, 
+        jumpPower: -11.2, 
+        gravity: 0.62, 
+        onGround: false, 
+        facingRight: false
+    };
+    let currentScene = 0;
+    let score = 0;
+    let message = "";
+    let msgTimer = 0;
+    let movingHazards = [];
+    let spikes = [];
+    let currentMovingPlatforms = [];
+    
+    let walkFrame = 0;
+    let walkAnimTimer = 0;
+    let walkFrameDelay = 8;
+    
+    // 钟摆
+    let pendulum = { 
+        angle: 0, angularSpeed: 0.018, 
+        maxAngle: Math.PI / 3, 
+        length: 480, centerX: LOGIC_W / 2, centerY: 10
+    };
+    
+    // 每关配色
+    const sceneColors = [
+        { primary: "#8B5A8B", secondary: "#9B6A9B", glow: "#B87CB8", light: "#D4A0D4" },
+        { primary: "#6A4A8A", secondary: "#7A5A9A", glow: "#9A7ABA", light: "#B89CDA" },
+        { primary: "#AA6A6A", secondary: "#BA7A7A", glow: "#DA9A9A", light: "#F0B0B0" },
+        { primary: "#5A8A6A", secondary: "#6A9A7A", glow: "#8ABA8A", light: "#B0D8B0" },
+        { primary: "#6A8ABA", secondary: "#7A9ACA", glow: "#9ABADA", light: "#C0E0FF" }
+    ];
+    
+    // 五境关卡数据
+    const scenes = [
+        { name:"🌙 月之森·沙滩", colorIdx:0,
+            platforms: [ 
+                {x:0,y:620,w:320,h:40,type:"ground"},{x:400,y:620,w:300,h:40,type:"ground"},
+                {x:760,y:620,w:340,h:40,type:"ground"},{x:1180,y:620,w:260,h:40,type:"ground"},
+                {x:120,y:540,w:100,h:24,type:"questionBlock"},{x:340,y:470,w:100,h:24,type:"questionBlock"},
+                {x:560,y:400,w:100,h:24,type:"questionBlock"},{x:820,y:330,w:100,h:24,type:"questionBlock"},
+                {x:1080,y:260,w:100,h:24,type:"questionBlock"},
+            ],
+            stars: [{x:170,y:500,size:14,col:false,color:[255,220,140]},{x:390,y:430,size:14,col:false,color:[230,200,255]},
+                     {x:610,y:360,size:14,col:false,color:[255,200,180]},{x:870,y:290,size:14,col:false,color:[200,210,255]},
+                     {x:1130,y:220,size:14,col:false,color:[255,230,130]}],
+            spikes: [], hazards: [], movingPlatforms: [] },
+        { name:"⚔️ 尖刺回廊·沙滩", colorIdx:1,
+            platforms: [ 
+                {x:0,y:620,w:240,h:40,type:"ground"},{x:320,y:620,w:220,h:40,type:"ground"},
+                {x:600,y:620,w:240,h:40,type:"ground"},{x:900,y:620,w:260,h:40,type:"ground"},
+                {x:1240,y:620,w:200,h:40,type:"ground"},{x:100,y:530,w:90,h:22,type:"questionBlock"},
+                {x:380,y:460,w:90,h:22,type:"questionBlock"},{x:660,y:390,w:90,h:22,type:"questionBlock"},
+                {x:980,y:320,w:90,h:22,type:"questionBlock"},
+            ],
+            stars: [{x:145,y:490,size:14,col:false,color:[255,210,160]},{x:425,y:420,size:14,col:false,color:[255,200,200]},
+                     {x:705,y:350,size:14,col:false,color:[210,190,255]},{x:1025,y:280,size:14,col:false,color:[255,220,120]}],
+            spikes: [{x:260,y:580,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:580},
+                     {x:560,y:580,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:580},
+                     {x:860,y:580,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:580}], 
+            hazards: [], movingPlatforms: [] },
+        { name:"🔥 火焰峡谷·沙滩", colorIdx:2,
+            platforms: [ 
+                {x:0,y:620,w:220,h:40,type:"ground"},{x:300,y:620,w:200,h:40,type:"ground"},
+                {x:560,y:620,w:220,h:40,type:"ground"},{x:840,y:620,w:240,h:40,type:"ground"},
+                {x:1140,y:620,w:300,h:40,type:"ground"},{x:80,y:520,w:90,h:22,type:"questionBlock"},
+                {x:340,y:450,w:90,h:22,type:"questionBlock"},{x:620,y:380,w:90,h:22,type:"questionBlock"},
+                {x:940,y:310,w:90,h:22,type:"questionBlock"},
+                {x:400,y:500,w:100,h:20,type:"moving",moveRange:120, speed:1.2, startX:400, currentX:400, vx:0},
+            ],
+            stars: [{x:125,y:480,size:14,col:false,color:[255,220,140]},{x:385,y:410,size:14,col:false,color:[255,200,190]},
+                     {x:665,y:340,size:14,col:false,color:[210,210,255]},{x:985,y:270,size:14,col:false,color:[255,220,120]}],
+            spikes: [{x:520,y:580,w:60,h:24,cycleTimer:0,isUp:false,active:true,originalY:580}], 
+            hazards: [{x:280,y:520,interval:100,radius:28,type:"flame_pillar",active:false,timer:0},
+                      {x:600,y:430,interval:110,radius:28,type:"flame_pillar",active:false,timer:0},
+                      {x:920,y:340,interval:95,radius:28,type:"flame_pillar",active:false,timer:0}],
+            movingPlatforms: [{x:400,y:500,w:100,h:20,range:120, speed:1.2, startX:400, currentX:400, dir:1}] },
+        { name:"🌀 时空回廊·钟摆", colorIdx:3,
+            platforms: [ 
+                {x:0,y:620,w:200,h:40,type:"ground"},{x:280,y:620,w:180,h:40,type:"ground"},
+                {x:520,y:620,w:200,h:40,type:"ground"},{x:780,y:620,w:220,h:40,type:"ground"},
+                {x:1060,y:620,w:380,h:40,type:"ground"},{x:60,y:510,w:90,h:22,type:"questionBlock"},
+                {x:320,y:440,w:90,h:22,type:"questionBlock"},{x:580,y:370,w:90,h:22,type:"questionBlock"},
+                {x:880,y:300,w:90,h:22,type:"questionBlock"},
+            ],
+            stars: [{x:105,y:470,size:14,col:false,color:[200,220,150]},{x:365,y:400,size:14,col:false,color:[220,190,230]},
+                     {x:625,y:330,size:14,col:false,color:[210,200,220]},{x:925,y:260,size:14,col:false,color:[240,210,130]}],
+            spikes: [{x:220,y:580,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:580},
+                     {x:480,y:580,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:580},
+                     {x:740,y:580,w:55,h:24,cycleTimer:0,isUp:false,active:true,originalY:580}],
+            hazards: [], movingPlatforms: [], hasPendulum: true },
+        { name:"🚀 飞船码头·沙滩", colorIdx:4,
+            platforms: [ 
+                {x:0,y:620,w:1440,h:40,type:"ground"},{x:100,y:540,w:140,h:30,type:"ground"},
+                {x:340,y:480,w:120,h:26,type:"questionBlock"},{x:580,y:540,w:160,h:30,type:"ground"},
+                {x:820,y:480,w:140,h:30,type:"ground"},{x:1120,y:420,w:160,h:30,type:"rocketPad"}
+            ],
+            stars: [{x:170,y:500,size:14,col:false,color:[255,220,180]},{x:400,y:440,size:14,col:false,color:[220,200,255]},
+                     {x:660,y:500,size:14,col:false,color:[255,230,160]},{x:890,y:440,size:14,col:false,color:[255,220,190]},
+                     {x:1200,y:380,size:14,col:false,color:[255,245,200]}],
+            spikes: [], hazards: [{x:500,y:490,range:140,width:4,type:"laser",speed:0.4,currentX:500}],
+            movingPlatforms: [], spaceshipZone: { x: 1140, y: 340, w: 120, h: 80 } }
+    ];
+    
+    let currentPlat = [];
+    let currentStars = [];
+    
+    function reloadScene(sceneId){
+        const sc = scenes[sceneId];
+        currentPlat = sc.platforms.map(p => ({...p}));
+        currentStars = sc.stars.map(s => ({...s, col: false}));
+        spikes = sc.spikes ? sc.spikes.map(sp => ({...sp})) : [];
+        movingHazards = [];
+        currentMovingPlatforms = sc.movingPlatforms ? sc.movingPlatforms.map(mp => ({...mp})) : [];
+        if(sc.hazards){
+            for(let h of sc.hazards){
+                let copy = {...h};
+                if(copy.type === 'laser') copy.currentX = copy.x;
+                if(copy.type === 'flame_pillar') { copy.timer = 0; copy.active = false; }
+                movingHazards.push(copy);
             }
         }
-        checkLandscapeAndFullscreen();
-        setInterval(checkLandscapeAndFullscreen, 300);
-        canvas.addEventListener('click', () => { 
-            if(!(document.fullscreenElement || document.webkitFullscreenElement)) requestFullscreen(); 
-        });
-        
-        function resizeCanvas() { canvas.width = LOGIC_W; canvas.height = LOGIC_H; }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        
-        // 输入控制
-        let input = { left: false, right: false, jump: false };
-        const leftBtn = document.querySelector('.left-btn');
-        const rightBtn = document.querySelector('.right-btn');
-        const jumpBtn = document.querySelector('.jump-btn');
-        function attach(btn, key){ 
-            if(!btn) return;
-            btn.addEventListener('touchstart', (e)=>{ e.preventDefault(); playButtonClick(); input[key]=true; }, {passive:false}); 
-            btn.addEventListener('touchend', (e)=>{ e.preventDefault(); input[key]=false; }); 
-            btn.addEventListener('mousedown', ()=>{ playButtonClick(); input[key]=true; }); 
-            btn.addEventListener('mouseup', ()=>{ input[key]=false; }); 
-            btn.addEventListener('mouseleave', ()=>{ input[key]=false; });
+        pendulum.angle = 0;
+    }
+    
+    function changeScene(newIdx){
+        if(newIdx === currentScene) return;
+        currentScene = newIdx;
+        reloadScene(currentScene);
+        if(newIdx === 4) { player.x = 80; player.y = 550; }
+        else { player.x = 100; player.y = 560; }
+        player.vy = 0; player.vx = 0; player.onGround = true;
+        if(newIdx === 4) message = "🚀 触碰飞船，逃离月球！🚀";
+        else if(newIdx === 3) message = "🌀 躲避钟摆，穿越时空回廊 🌀";
+        else message = "✨ 收集星辉 躲避灾厄 ✨";
+        msgTimer = 90;
+    }
+    
+    // ==================== 飞船动画（增强版：多级火焰 + 先慢后快） ====================
+    let spaceshipFlyAnim = false;
+    let spaceshipFlyY = 0;
+    let spaceshipFlyAlpha = 1;
+    let spaceshipSpeed = 0;
+    let spaceshipAccel = 0.35;      // 加速度，先慢后快（初始慢，逐渐增加）
+    let spaceshipSpeedLimit = 18;
+    let flamePulse = 0;
+    
+    function updateSpaceship() {
+        if(spaceshipFlyAnim) {
+            // 加速度逐渐增加（先慢后快效果）
+            spaceshipAccel = Math.min(1.5, spaceshipAccel + 0.03);
+            spaceshipSpeed += spaceshipAccel;
+            spaceshipSpeed = Math.min(spaceshipSpeedLimit, spaceshipSpeed);
+            spaceshipFlyY -= spaceshipSpeed;
+            if(spaceshipFlyAlpha > 0) spaceshipFlyAlpha -= 0.008;
         }
-        if(leftBtn && rightBtn && jumpBtn) {
-            attach(leftBtn, 'left');
-            attach(rightBtn, 'right');
-            attach(jumpBtn, 'jump');
+    }
+    
+    function drawRealisticSpaceship(x, y) {
+        flamePulse = (flamePulse + 0.2) % (Math.PI * 2);
+        const shipY = y + spaceshipFlyY;
+        
+        // 主体
+        ctx.fillStyle = "#E8E8F0";
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "#88AAFF";
+        ctx.beginPath();
+        ctx.moveTo(x + 60, shipY - 28);
+        ctx.lineTo(x + 98, shipY + 12);
+        ctx.lineTo(x + 88, shipY + 32);
+        ctx.lineTo(x + 60, shipY + 42);
+        ctx.lineTo(x + 32, shipY + 32);
+        ctx.lineTo(x + 22, shipY + 12);
+        ctx.fill();
+        
+        // 红色鼻锥
+        ctx.fillStyle = "#FF5555";
+        ctx.beginPath();
+        ctx.moveTo(x + 60, shipY - 32);
+        ctx.lineTo(x + 70, shipY - 12);
+        ctx.lineTo(x + 50, shipY - 12);
+        ctx.fill();
+        
+        // 驾驶舱
+        ctx.fillStyle = "#88AAFF";
+        ctx.beginPath();
+        ctx.arc(x + 60, shipY + 10, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#2266AA";
+        ctx.beginPath();
+        ctx.arc(x + 58, shipY + 8, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#FFFFFF";
+        ctx.beginPath();
+        ctx.arc(x + 55, shipY + 5, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 侧翼
+        ctx.fillStyle = "#CCCCDD";
+        ctx.beginPath();
+        ctx.moveTo(x + 32, shipY + 28);
+        ctx.lineTo(x + 15, shipY + 48);
+        ctx.lineTo(x + 32, shipY + 40);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x + 88, shipY + 28);
+        ctx.lineTo(x + 105, shipY + 48);
+        ctx.lineTo(x + 88, shipY + 40);
+        ctx.fill();
+        
+        // ========== 多级火焰（根据速度动态变化） ==========
+        const speedFactor = Math.min(1, spaceshipSpeed / 12);
+        const pulseSize = Math.sin(flamePulse) * 3;
+        
+        // 第一级火焰（内层，最亮）
+        ctx.fillStyle = `rgba(255, 220, 100, ${0.8 + speedFactor * 0.5})`;
+        ctx.beginPath();
+        ctx.moveTo(x + 52, shipY + 44);
+        ctx.lineTo(x + 60, shipY + 58 + spaceshipSpeed * 4.5 + pulseSize);
+        ctx.lineTo(x + 68, shipY + 44);
+        ctx.fill();
+        
+        // 第二级火焰（中层，橙色）
+        ctx.fillStyle = `rgba(255, 140, 60, ${0.9 + speedFactor * 0.6})`;
+        ctx.beginPath();
+        ctx.moveTo(x + 48, shipY + 42);
+        ctx.lineTo(x + 60, shipY + 54 + spaceshipSpeed * 3.5 + pulseSize * 0.8);
+        ctx.lineTo(x + 72, shipY + 42);
+        ctx.fill();
+        
+        // 第三级火焰（外层，红色，拖尾效果）
+        ctx.fillStyle = `rgba(255, 70, 40, ${0.7 + speedFactor * 0.7})`;
+        ctx.beginPath();
+        ctx.moveTo(x + 44, shipY + 40);
+        ctx.lineTo(x + 60, shipY + 50 + spaceshipSpeed * 2.5 + pulseSize * 0.6);
+        ctx.lineTo(x + 76, shipY + 40);
+        ctx.fill();
+        
+        // 尾气粒子拖影（速度越快粒子越多）
+        if(spaceshipSpeed > 3) {
+            for(let i = 0; i < Math.floor(spaceshipSpeed / 2); i++) {
+                ctx.fillStyle = `rgba(255, 100, 50, ${0.3 - i * 0.05})`;
+                ctx.beginPath();
+                ctx.arc(x + 60 + (Math.random() - 0.5) * 12, shipY + 55 + spaceshipSpeed * 2 + i * 5, 3 - i * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
-        window.addEventListener('keydown', (e)=>{ 
-            if(e.key === 'ArrowLeft'){ input.left=true; e.preventDefault(); } 
-            if(e.key === 'ArrowRight'){ input.right=true; e.preventDefault(); } 
-            if(e.key === 'ArrowUp' || e.key === ' '){ input.jump=true; e.preventDefault(); } 
-        });
-        window.addEventListener('keyup', (e)=>{ 
-            if(e.key === 'ArrowLeft') input.left=false; 
-            if(e.key === 'ArrowRight') input.right=false; 
-            if(e.key === 'ArrowUp' || e.key === ' ') input.jump=false; 
-        });
         
-        // 玩家数据 - 正方形碰撞体积（52x52）
-        let player = { 
-            x: 140, y: 660, w: 52, h: 52, 
-            vx: 0, vy: 0, 
-            speed: 5.8, 
-            jumpPower: -11.2, 
-            gravity: 0.62, 
-            onGround: false, 
-            facingRight: false
-        };
-        let currentScene = 0;
-        let score = 0;
-        let message = "";
-        let msgTimer = 0;
-        let movingHazards = [];
-        let spikes = [];
-        let movingPlatforms = []; // 移动平台
-        
-        let walkFrameCounter = 0;
-        let walkFrameDelay = 8;
-        
-        // 第4关钟摆机关
-        let pendulum = {
-            active: true,
-            angle: 0,
-            angularSpeed: 0.022,
-            maxAngle: Math.PI / 3,
-            length: 520,
-            centerX: LOGIC_W / 2,
-            centerY: 10,
-            lineWidth: 5
-        };
-        
-        // 每关不同的平台样式配置
-        const sceneColors = [
-            { primary: "#8B5A8B", secondary: "#9B6A9B", glow: "#B87CB8" },
-            { primary: "#6A4A8A", secondary: "#7A5A9A", glow: "#9A7ABA" },
-            { primary: "#AA6A6A", secondary: "#BA7A7A", glow: "#DA9A9A" },
-            { primary: "#5A8A6A", secondary: "#6A9A7A", glow: "#8ABA8A" },
-            { primary: "#6A8ABA", secondary: "#7A9ACA", glow: "#9ABADA" }
-        ];
-        
-        // 五境关卡数据
-        const scenes = [
-            { name:"🌙 月之森·沙滩", colorIdx:0,
-                platforms: [ 
-                    {x:0,y:720,w:320,h:40,type:"ground"},
-                    {x:400,y:720,w:300,h:40,type:"ground"},
-                    {x:760,y:720,w:340,h:40,type:"ground"},
-                    {x:1180,y:720,w:260,h:40,type:"ground"},
-                    // 出生点后方保护平台
-                    {x:40,y:660,w:80,h:20,type:"ground"},
-                    {x:120,y:640,w:100,h:24,type:"questionBlock"},
-                    {x:340,y:570,w:100,h:24,type:"questionBlock"},
-                    {x:560,y:500,w:100,h:24,type:"questionBlock"},
-                    {x:820,y:430,w:100,h:24,type:"questionBlock"},
-                    {x:1080,y:360,w:100,h:24,type:"questionBlock"},
-                ],
-                stars: [ 
-                    {x:170,y:600,size:14,col:false,color:[255,220,140]},
-                    {x:390,y:530,size:14,col:false,color:[230,200,255]},
-                    {x:610,y:460,size:14,col:false,color:[255,200,180]},
-                    {x:870,y:390,size:14,col:false,color:[200,210,255]},
-                    {x:1130,y:320,size:14,col:false,color:[255,230,130]},
-                ],
-                spikes: [], hazards: [], movingPlatforms: [] },
-            { name:"⚔️ 尖刺回廊·沙滩", colorIdx:1,
-                platforms: [ 
-                    {x:0,y:720,w:240,h:40,type:"ground"},
-                    {x:320,y:720,w:220,h:40,type:"ground"},
-                    {x:600,y:720,w:240,h:40,type:"ground"},
-                    {x:900,y:720,w:260,h:40,type:"ground"},
-                    {x:1240,y:720,w:200,h:40,type:"ground"},
-                    {x:40,y:660,w:80,h:20,type:"ground"},
-                    {x:100,y:630,w:90,h:22,type:"questionBlock"},
-                    {x:380,y:560,w:90,h:22,type:"questionBlock"},
-                    {x:660,y:490,w:90,h:22,type:"questionBlock"},
-                    {x:980,y:420,w:90,h:22,type:"questionBlock"},
-                ],
-                stars: [ 
-                    {x:145,y:590,size:14,col:false,color:[255,210,160]},
-                    {x:425,y:520,size:14,col:false,color:[255,200,200]},
-                    {x:705,y:450,size:14,col:false,color:[210,190,255]},
-                    {x:1025,y:380,size:14,col:false,color:[255,220,120]},
-                ],
-                spikes: [ 
-                    {x:260,y:680,w:60,h:24,cycleTimer:0,isUp:false,active:true},
-                    {x:560,y:680,w:60,h:24,cycleTimer:0,isUp:false,active:true},
-                    {x:860,y:680,w:60,h:24,cycleTimer:0,isUp:false,active:true},
-                ], hazards: [], movingPlatforms: [] },
-            { name:"🔥 火焰峡谷·沙滩", colorIdx:2,
-                platforms: [ 
-                    {x:0,y:720,w:220,h:40,type:"ground"},
-                    {x:300,y:720,w:200,h:40,type:"ground"},
-                    {x:560,y:720,w:220,h:40,type:"ground"},
-                    {x:840,y:720,w:240,h:40,type:"ground"},
-                    {x:1140,y:720,w:300,h:40,type:"ground"},
-                    {x:40,y:660,w:80,h:20,type:"ground"},
-                    {x:80,y:620,w:90,h:22,type:"questionBlock"},
-                    {x:340,y:550,w:90,h:22,type:"questionBlock"},
-                    {x:620,y:480,w:90,h:22,type:"questionBlock"},
-                    {x:940,y:410,w:90,h:22,type:"questionBlock"},
-                    // 移动平台
-                    {x:400,y:600,w:100,h:20,type:"moving",moveRange:120, speed:1.2, direction:1, startX:400},
-                ],
-                stars: [ 
-                    {x:125,y:580,size:14,col:false,color:[255,220,140]},
-                    {x:385,y:510,size:14,col:false,color:[255,200,190]},
-                    {x:665,y:440,size:14,col:false,color:[210,210,255]},
-                    {x:985,y:370,size:14,col:false,color:[255,220,120]},
-                ],
-                spikes: [{x:520,y:680,w:60,h:24,cycleTimer:0,isUp:false,active:true}], 
-                hazards: [ 
-                    {x:280,y:620,interval:100,radius:28,type:"flame_pillar",active:false,timer:0},
-                    {x:600,y:530,interval:110,radius:28,type:"flame_pillar",active:false,timer:0},
-                    {x:920,y:440,interval:95,radius:28,type:"flame_pillar",active:false,timer:0}
-                ],
-                movingPlatforms: [{x:400,y:600,w:100,h:20,range:120, speed:1.2, dir:1, startX:400}] },
-            { name:"🌀 时空回廊·钟摆", colorIdx:3,
-                platforms: [ 
-                    {x:0,y:720,w:200,h:40,type:"ground"},
-                    {x:280,y:720,w:180,h:40,type:"ground"},
-                    {x:520,y:720,w:200,h:40,type:"ground"},
-                    {x:780,y:720,w:220,h:40,type:"ground"},
-                    {x:1060,y:720,w:380,h:40,type:"ground"},
-                    {x:40,y:660,w:80,h:20,type:"ground"},
-                    {x:60,y:610,w:90,h:22,type:"questionBlock"},
-                    {x:320,y:540,w:90,h:22,type:"questionBlock"},
-                    {x:580,y:470,w:90,h:22,type:"questionBlock"},
-                    {x:880,y:400,w:90,h:22,type:"questionBlock"},
-                ],
-                stars: [ 
-                    {x:105,y:570,size:14,col:false,color:[200,220,150]},
-                    {x:365,y:500,size:14,col:false,color:[220,190,230]},
-                    {x:625,y:430,size:14,col:false,color:[210,200,220]},
-                    {x:925,y:360,size:14,col:false,color:[240,210,130]},
-                ],
-                spikes: [ 
-                    {x:220,y:680,w:55,h:24,cycleTimer:0,isUp:false,active:true},
-                    {x:480,y:680,w:55,h:24,cycleTimer:0,isUp:false,active:true},
-                    {x:740,y:680,w:55,h:24,cycleTimer:0,isUp:false,active:true},
-                ],
-                hazards: [],
-                movingPlatforms: [],
-                hasPendulum: true },
-            { name:"🚀 飞船码头·沙滩", colorIdx:4,
-                platforms: [ 
-                    {x:0,y:720,w:1440,h:40,type:"ground"},
-                    {x:40,y:660,w:80,h:20,type:"ground"},
-                    {x:100,y:640,w:140,h:30,type:"ground"},
-                    {x:340,y:580,w:120,h:26,type:"questionBlock"},
-                    {x:580,y:640,w:160,h:30,type:"ground"},
-                    {x:820,y:580,w:140,h:30,type:"ground"},
-                    {x:1120,y:520,w:160,h:30,type:"rocketPad"}
-                ],
-                stars: [ 
-                    {x:170,y:600,size:14,col:false,color:[255,220,180]},
-                    {x:400,y:540,size:14,col:false,color:[220,200,255]},
-                    {x:660,y:600,size:14,col:false,color:[255,230,160]},
-                    {x:890,y:540,size:14,col:false,color:[255,220,190]},
-                    {x:1200,y:480,size:14,col:false,color:[255,245,200]}
-                ],
-                spikes: [], 
-                hazards: [ {x:500,y:590,range:140,width:4,type:"laser",speed:0.4,currentX:500} ],
-                movingPlatforms: [],
-                spaceshipZone: { x: 1140, y: 440, w: 120, h: 80 } }
-        ];
-        
-        let currentPlat = [];
-        let currentStars = [];
-        let currentMovingPlatforms = [];
-        
-        function reloadScene(sceneId){
-            const sc = scenes[sceneId];
-            currentPlat = sc.platforms.map(p => ({...p}));
-            currentStars = sc.stars.map(s => ({...s, col: false}));
-            spikes = sc.spikes ? sc.spikes.map(sp => ({...sp, cycleTimer: sp.cycleTimer || 0, isUp: sp.isUp || false, originalY: sp.y})) : [];
-            movingHazards = [];
-            currentMovingPlatforms = sc.movingPlatforms ? sc.movingPlatforms.map(mp => ({...mp})) : [];
-            if(sc.hazards){
-                for(let h of sc.hazards){
-                    let copy = {...h};
-                    if(copy.type === 'laser') copy.currentX = copy.x;
-                    if(copy.type === 'flame_pillar') { copy.timer = 0; copy.active = false; }
-                    movingHazards.push(copy);
+        ctx.shadowBlur = 0;
+    }
+    
+    function drawSpaceship(){
+        if(currentScene !== 4) return;
+        const r = scenes[4].spaceshipZone;
+        if(spaceshipFlyAnim) {
+            ctx.globalAlpha = spaceshipFlyAlpha;
+        }
+        drawRealisticSpaceship(r.x, r.y);
+        ctx.globalAlpha = 1;
+    }
+    
+    function collide(r1,r2){ return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y); }
+    
+    function checkPendulumCollision(playerRect) {
+        if(currentScene !== 3) return false;
+        const endX = pendulum.centerX + Math.sin(pendulum.angle) * pendulum.length;
+        const endY = pendulum.centerY + Math.cos(pendulum.angle) * pendulum.length;
+        const cx = playerRect.x + playerRect.w/2, cy = playerRect.y + playerRect.h/2;
+        const ax = pendulum.centerX, ay = pendulum.centerY, bx = endX, by = endY;
+        const abx = bx - ax, aby = by - ay;
+        const t = ((cx - ax) * abx + (cy - ay) * aby) / (abx * abx + aby * aby || 1);
+        const tClamped = Math.max(0, Math.min(1, t));
+        const closestX = ax + abx * tClamped, closestY = ay + aby * tClamped;
+        const dist = Math.hypot(cx - closestX, cy - closestY);
+        return dist < (Math.max(playerRect.w, playerRect.h) / 2 + 12);
+    }
+    
+    function updateHazards(){
+        const now = Date.now();
+        for(let h of movingHazards){
+            if(h.type === 'laser'){
+                h.currentX = h.x + Math.sin(now * 0.002 * h.speed) * h.range;
+            }
+            else if(h.type === 'flame_pillar'){
+                h.timer += 1/60;
+                if(h.timer >= h.interval){
+                    h.timer = 0; h.active = true;
+                    setTimeout(()=>{ if(h) h.active = false; }, 220);
                 }
             }
-            pendulum.angle = 0;
         }
-        
-        function changeScene(newIdx){
-            if(newIdx === currentScene) return;
-            currentScene = newIdx;
-            reloadScene(currentScene);
-            if(newIdx === 4) {
-                player.x = 80;
-                player.y = 650;
-            } else {
-                player.x = 100;
-                player.y = 660;
+        for(let sp of spikes){
+            if(sp.active !== false) {
+                sp.cycleTimer = (sp.cycleTimer || 0) + 1/60;
+                if(sp.cycleTimer >= 1.2) { sp.cycleTimer = 0; sp.isUp = !sp.isUp; }
+                sp.y = (sp.originalY || sp.y) + (sp.isUp ? -16 : 0);
             }
-            player.vy = 0;
-            player.vx = 0;
-            player.onGround = true;
-            player.facingRight = false;
-            if(newIdx === 4) message = "🚀 触碰飞船，逃离月球！🚀";
-            else if(newIdx === 3) message = "🌀 躲避钟摆，穿越时空回廊 🌀";
-            else message = "✨ 收集星辉 躲避灾厄 ✨";
-            msgTimer = 90;
+        }
+        // 移动平台更新 + 记录速度用于人物跟随
+        for(let mp of currentMovingPlatforms){
+            const oldX = mp.currentX !== undefined ? mp.currentX : mp.x;
+            mp.currentX = mp.startX + Math.sin(Date.now() * 0.003 * mp.speed) * mp.range;
+            mp.vx = mp.currentX - oldX;
+            mp.x = mp.currentX;
+        }
+        if(currentScene === 3) {
+            pendulum.angle += pendulum.angularSpeed;
+            if(pendulum.angle > pendulum.maxAngle) { pendulum.angle = pendulum.maxAngle; pendulum.angularSpeed = -pendulum.angularSpeed; }
+            if(pendulum.angle < -pendulum.maxAngle) { pendulum.angle = -pendulum.maxAngle; pendulum.angularSpeed = -pendulum.angularSpeed; }
+        }
+    }
+    
+    function winGame(finalScore){
+        if(gameVictory) return;
+        gameRunning = false;
+        gameVictory = true;
+        spaceshipFlyAnim = true;
+        spaceshipFlyY = 0;
+        spaceshipFlyAlpha = 1;
+        spaceshipSpeed = 0;
+        spaceshipAccel = 0.35;
+        message = `✨ 胜利！星辉: ${Math.floor(finalScore)} ✨`;
+        if(bgMusic) bgMusic.pause();
+        victoryScoreDisplay.textContent = `星辉 ${Math.floor(finalScore)}`;
+        victoryOverlay.style.display = 'flex';
+    }
+    
+    function fullReset(){
+        score = 0;
+        currentScene = 0;
+        spaceshipFlyAnim = false;
+        spaceshipFlyY = 0;
+        spaceshipFlyAlpha = 1;
+        spaceshipSpeed = 0;
+        spaceshipAccel = 0.35;
+        shakeAmount = 0;
+        reloadScene(0);
+        pendulum.angle = 0;
+        player.x = 100; player.y = 560; player.vy = 0; player.vx = 0;
+        player.onGround = true; player.facingRight = false;
+        gameRunning = true; gameVictory = false;
+        message = "逃离月球 · 启程！";
+        msgTimer = 80;
+        victoryOverlay.style.display = 'none';
+        if(bgMusic && bgMusic.paused && !musicMuted) startBackgroundMusic();
+    }
+    
+    function deathReset(){ triggerShake('death', 16); fullReset(); }
+    
+    function updateGame(){
+        if(!gameRunning) return;
+        
+        // 行走动画
+        if(Math.abs(player.vx) > 1.5 && player.onGround) {
+            walkAnimTimer++;
+            if(walkAnimTimer >= walkFrameDelay) { walkAnimTimer = 0; walkFrame = (walkFrame + 1) % 4; }
+        } else { walkAnimTimer = 0; walkFrame = 0; }
+        
+        let move = (input.left ? -1 : 0) + (input.right ? 1 : 0);
+        player.vx = move * player.speed;
+        player.x += player.vx;
+        if(player.x < 8) player.x = 8;
+        if(player.x + player.w > LOGIC_W - 8) player.x = LOGIC_W - player.w - 8;
+        
+        player.vy += player.gravity;
+        player.y += player.vy;
+        player.onGround = false;
+        
+        // 静态平台碰撞
+        for(let plat of currentPlat){
+            if(plat.type === 'moving') continue;
+            const platRect = {x:plat.x, y:plat.y, w:plat.w, h:plat.h};
+            const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
+            if(collide(pRect, platRect)){
+                if(player.vy >= 0 && (player.y + player.h - plat.y <= plat.h + 8)){
+                    player.y = plat.y - player.h;
+                    player.vy = 0;
+                    player.onGround = true;
+                }
+                else if(player.vy < 0 && (plat.y + plat.h - player.y <= 12)){
+                    player.y = plat.y + plat.h;
+                    player.vy = 0;
+                }
+                else {
+                    if(player.x + player.w/2 < plat.x + plat.w/2) player.x = plat.x - player.w;
+                    else player.x = plat.x + plat.w;
+                }
+            }
         }
         
-        function winGame(finalScore){
-            if(gameVictory) return;
-            gameRunning = false;
-            gameVictory = true;
-            spaceshipFlyAnim = true;
-            spaceshipFlyY = 0;
-            spaceshipFlyAlpha = 1;
-            spaceshipSpeed = 0;
-            message = `✨ 胜利！星辉: ${Math.floor(finalScore)} ✨`;
-            msgTimer = 9999;
-            if(bgMusic) bgMusic.pause();
-            victoryScoreDisplay.textContent = `星辉 ${Math.floor(finalScore)}`;
-            victoryOverlay.style.display = 'flex';
+        // ========== 移动平台碰撞 + 人物跟随 ==========
+        for(let mp of currentMovingPlatforms){
+            const platRect = {x:mp.x, y:mp.y, w:mp.w, h:mp.h};
+            const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
+            if(collide(pRect, platRect)){
+                if(player.vy >= 0 && (player.y + player.h - mp.y <= mp.h + 8)){
+                    player.y = mp.y - player.h;
+                    player.vy = 0;
+                    player.onGround = true;
+                    // 人物跟随平台移动
+                    if(mp.vx) {
+                        player.x += mp.vx;
+                    }
+                }
+                else if(player.vy < 0 && (mp.y + mp.h - player.y <= 12)){
+                    player.y = mp.y + mp.h;
+                    player.vy = 0;
+                }
+                else {
+                    if(player.x + player.w/2 < mp.x + mp.w/2) player.x = mp.x - player.w;
+                    else player.x = mp.x + mp.w;
+                }
+            }
         }
         
-        function fullReset(){
-            score = 0;
-            currentScene = 0;
-            spaceshipFlyAnim = false;
-            spaceshipFlyY = 0;
-            spaceshipFlyAlpha = 1;
-            spaceshipSpeed = 0;
-            shakeAmount = 0;
-            reloadScene(0);
-            pendulum.angle = 0;
-            player.x = 100;
-            player.y = 660;
-            player.vy = 0;
-            player.vx = 0;
-            player.onGround = true;
-            player.facingRight = false;
-            gameRunning = true;
-            gameVictory = false;
-            message = "逃离月球 · 启程！";
-            msgTimer = 80;
-            victoryOverlay.style.display = 'none';
-            if(bgMusic && bgMusic.paused && !musicMuted) startBackgroundMusic();
+        // 尖刺碰撞
+        for(let sp of spikes){
+            if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:sp.x,y:sp.y,w:sp.w,h:sp.h})){ deathReset(); return; }
         }
         
-        function deathReset(){
-            triggerDeathShake();
-            fullReset();
+        // 机关伤害
+        for(let h of movingHazards){
+            let hx = h.currentX !== undefined ? h.currentX : h.x;
+            let hy = h.y;
+            let hazardRect;
+            if(h.type === 'laser'){ hazardRect = {x:hx, y:0, w:h.width, h:hy - 10}; }
+            else if(h.type === 'flame_pillar' && h.active){ hazardRect = {x:h.x - h.radius, y:h.y - h.radius*1.5, w:h.radius*2, h:h.radius*3}; }
+            else continue;
+            if(hazardRect && collide({x:player.x,y:player.y,w:player.w,h:player.h}, hazardRect)){ deathReset(); return; }
         }
         
-        function collide(r1,r2){ 
-            return !(r2.x > r1.x + r1.w || r2.x + r2.w < r1.x || r2.y > r1.y + r1.h || r2.y + r2.h < r1.y); 
+        if(currentScene === 3 && checkPendulumCollision({x:player.x,y:player.y,w:player.w,h:player.h})){ deathReset(); return; }
+        if(player.y + player.h > LOGIC_H + 50){ deathReset(); return; }
+        if(player.y < -80){ deathReset(); return; }
+        
+        if(input.jump && player.onGround){
+            player.vy = player.jumpPower;
+            player.onGround = false;
+            input.jump = false;
+            playSound('jump', 0.12);
         }
         
-        function checkPendulumCollision(playerRect) {
-            if(currentScene !== 3) return false;
+        // 星辉收集
+        for(let s of currentStars){
+            if(!s.col){
+                const starRect = {x:s.x - s.size/2, y:s.y - s.size/2, w:s.size, h:s.size};
+                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, starRect)){
+                    s.col = true;
+                    score += 100;
+                    playSound('star', 0.18);
+                    message = "⭐ +100 星辉 ⭐";
+                    msgTimer = 25;
+                }
+            }
+        }
+        
+        // 场景切换
+        if(currentScene === 0 && player.x + player.w > LOGIC_W - 20) { changeScene(1); player.x = 30; }
+        else if(currentScene === 1 && player.x + player.w > LOGIC_W - 20) { changeScene(2); player.x = 30; }
+        else if(currentScene === 2 && player.x + player.w > LOGIC_W - 20) { changeScene(3); player.x = 30; }
+        else if(currentScene === 3 && player.x + player.w > LOGIC_W - 20) { changeScene(4); }
+        
+        if(currentScene === 4 && !gameVictory && scenes[4].spaceshipZone){
+            if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].spaceshipZone)){ winGame(score); return; }
+        }
+        
+        if(player.vx > 2) player.facingRight = true;
+        if(player.vx < -2) player.facingRight = false;
+        
+        updateHazards();
+        updateStarField();
+        updateSpaceship();  // 更新飞船动画
+        
+        if(msgTimer > 0) msgTimer--;
+        else message = "";
+    }
+    
+    // ==================== 绘图函数 ====================
+    function drawBeautifulPlatform(x, y, w, h, type, colorIdx, isMoving = false) {
+        const colors = sceneColors[colorIdx];
+        if(type === 'questionBlock') {
+            const blockSize = Math.min(w, h * 1.2);
+            const offsetX = x + (w - blockSize) / 2;
+            const offsetY = y + (h - blockSize) / 2;
+            const grad = ctx.createLinearGradient(offsetX, offsetY, offsetX + blockSize, offsetY + blockSize);
+            grad.addColorStop(0, colors.primary); grad.addColorStop(1, colors.secondary);
+            ctx.fillStyle = grad; ctx.fillRect(offsetX, offsetY, blockSize, blockSize);
+            ctx.font = `bold ${Math.floor(blockSize * 0.55)}px "Segoe UI"`;
+            ctx.fillStyle = "#FFFFFF"; ctx.shadowBlur = 6; ctx.shadowColor = colors.glow;
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText("?", offsetX + blockSize/2, offsetY + blockSize/2);
+            ctx.shadowBlur = 0; ctx.textAlign = "left";
+        } else if(type === 'rocketPad') {
+            ctx.fillStyle = "#4A5A7A"; ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = "#6A8ABA"; ctx.fillRect(x + 5, y - 8, w - 10, 8);
+        } else if(type === 'moving' || isMoving) {
+            const grad = ctx.createLinearGradient(x, y, x + w, y);
+            grad.addColorStop(0, "#FFAA66"); grad.addColorStop(0.5, "#FF8844"); grad.addColorStop(1, "#FFAA66");
+            ctx.fillStyle = grad; ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = "#FFDDAA"; ctx.fillRect(x + 5, y + 3, w - 10, 4);
+        } else {
+            const grad = ctx.createLinearGradient(x, y, x, y + h);
+            grad.addColorStop(0, colors.primary); grad.addColorStop(1, colors.secondary);
+            ctx.fillStyle = grad; ctx.fillRect(x, y, w, h);
+            ctx.fillStyle = colors.light; ctx.fillRect(x, y, w, 3);
+            ctx.fillStyle = "#FFF8E7";
+            const dotCount = Math.floor(w / 20);
+            for(let i = 0; i < dotCount; i++) {
+                const dotX = x + 12 + (i * 24) % (w - 20);
+                const dotY = y + h - 8 - (i % 8);
+                ctx.beginPath(); ctx.arc(dotX, dotY, 2, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+    }
+    
+    function drawPlatforms(){
+        const colorIdx = scenes[currentScene].colorIdx;
+        for(let plat of currentPlat){ drawBeautifulPlatform(plat.x, plat.y, plat.w, plat.h, plat.type, colorIdx); }
+        for(let mp of currentMovingPlatforms){ drawBeautifulPlatform(mp.x, mp.y, mp.w, mp.h, "moving", colorIdx, true); }
+    }
+    
+    function drawBackground(){
+        const bgKey = `bg${currentScene}`;
+        const bgImg = loadedImages[bgKey];
+        if(bgImg && bgImg.complete && bgImg.naturalWidth > 0){ ctx.drawImage(bgImg, 0, 0, LOGIC_W, LOGIC_H); }
+        else {
+            const g = ctx.createLinearGradient(0,0,0,LOGIC_H);
+            g.addColorStop(0,"#0a0630"); g.addColorStop(0.5,"#1a1040"); g.addColorStop(1,"#2a1a50");
+            ctx.fillStyle=g; ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
+        }
+        drawStarField();
+        ctx.fillStyle = "#E8D4A8"; ctx.fillRect(0, LOGIC_H - 50, LOGIC_W, 50);
+        ctx.fillStyle = "#D4BC7A"; ctx.fillRect(0, LOGIC_H - 20, LOGIC_W, 20);
+    }
+    
+    function drawSpikes(){
+        for(let sp of spikes){
+            ctx.fillStyle = "#5A3A2A"; ctx.fillRect(sp.x, sp.y, sp.w, sp.h);
+            ctx.fillStyle = "#D89454";
+            for(let i=0;i<5;i++){
+                ctx.beginPath();
+                ctx.moveTo(sp.x + i*(sp.w/5), sp.y);
+                ctx.lineTo(sp.x + i*(sp.w/5) + sp.w/10, sp.y - 16);
+                ctx.lineTo(sp.x + i*(sp.w/5) + sp.w/5, sp.y);
+                ctx.fill();
+            }
+        }
+    }
+    
+    function drawStars(){
+        for(let s of currentStars){
+            if(!s.col){
+                ctx.fillStyle = `rgb(${s.color[0]},${s.color[1]},${s.color[2]})`;
+                ctx.shadowBlur = 6;
+                ctx.beginPath();
+                for(let i=0;i<5;i++){
+                    let ang = (i*72-36)*Math.PI/180;
+                    let x1 = s.x+Math.cos(ang)*s.size/2;
+                    let y1 = s.y+Math.sin(ang)*s.size/2;
+                    let ang2 = (i*72)*Math.PI/180;
+                    let x2 = s.x+Math.cos(ang2)*s.size/3;
+                    let y2 = s.y+Math.sin(ang2)*s.size/3;
+                    if(i===0) ctx.moveTo(x1,y1);
+                    else ctx.lineTo(x1,y1);
+                    ctx.lineTo(x2,y2);
+                }
+                ctx.fill();
+            }
+        }
+        ctx.shadowBlur = 0;
+    }
+    
+    function drawHazards(){
+        for(let h of movingHazards){
+            if(h.type === 'laser'){
+                ctx.fillStyle = `rgba(255, 100, 80, 0.7)`;
+                ctx.fillRect(h.currentX,0,h.width,h.y-10);
+                ctx.fillStyle = `rgba(255, 200, 100, 0.8)`;
+                ctx.fillRect(h.currentX+1,0,h.width-2,h.y-12);
+            } else if(h.type === 'flame_pillar' && h.active){
+                ctx.fillStyle = "#FF5A2A"; ctx.shadowBlur = 16;
+                ctx.beginPath(); ctx.ellipse(h.x, h.y - h.radius/2, h.radius, h.radius*2.2, 0, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#FFAA40";
+                ctx.beginPath(); ctx.ellipse(h.x, h.y - h.radius/3, h.radius-5, h.radius-5, 0, 0, Math.PI*2); ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+        if(currentScene === 3) {
             const endX = pendulum.centerX + Math.sin(pendulum.angle) * pendulum.length;
             const endY = pendulum.centerY + Math.cos(pendulum.angle) * pendulum.length;
-            const playerCenterX = playerRect.x + playerRect.w / 2;
-            const playerCenterY = playerRect.y + playerRect.h / 2;
-            const ax = pendulum.centerX, ay = pendulum.centerY;
-            const bx = endX, by = endY;
-            const cx = playerCenterX, cy = playerCenterY;
-            const abx = bx - ax, aby = by - ay;
-            const t = ((cx - ax) * abx + (cy - ay) * aby) / (abx * abx + aby * aby || 1);
-            const tClamped = Math.max(0, Math.min(1, t));
-            const closestX = ax + abx * tClamped;
-            const closestY = ay + aby * tClamped;
-            const dist = Math.hypot(cx - closestX, cy - closestY);
-            const collisionRadius = Math.max(playerRect.w, playerRect.h) / 2 + 12;
-            return dist < collisionRadius;
-        }
-        
-        function updateHazards(){
-            const now = Date.now();
-            for(let h of movingHazards){
-                if(h.type === 'laser'){
-                    h.currentX = h.x + Math.sin(now * 0.002 * h.speed) * h.range;
-                }
-                else if(h.type === 'flame_pillar'){
-                    h.timer += 1/60;
-                    if(h.timer >= h.interval){
-                        h.timer = 0;
-                        h.active = true;
-                        setTimeout(()=>{ if(h) h.active = false; }, 220);
-                    }
-                }
-            }
-            
-            // 尖刺周期性升降
-            for(let sp of spikes){
-                if(sp.active !== false) {
-                    sp.cycleTimer = (sp.cycleTimer || 0) + 1/60;
-                    const cycleTime = 1.2;
-                    if(sp.cycleTimer >= cycleTime) {
-                        sp.cycleTimer = 0;
-                        sp.isUp = !sp.isUp;
-                    }
-                    if(sp.isUp) {
-                        sp.y = (sp.originalY || sp.y) - 16;
-                    } else {
-                        sp.y = sp.originalY || sp.y;
-                    }
-                }
-            }
-            
-            // 移动平台更新
-            for(let mp of currentMovingPlatforms){
-                mp.x = mp.startX + Math.sin(Date.now() * 0.003 * mp.speed) * mp.range;
-            }
-            
-            if(currentScene === 3) {
-                pendulum.angle += pendulum.angularSpeed;
-                if(pendulum.angle > pendulum.maxAngle) {
-                    pendulum.angle = pendulum.maxAngle;
-                    pendulum.angularSpeed = -pendulum.angularSpeed;
-                }
-                if(pendulum.angle < -pendulum.maxAngle) {
-                    pendulum.angle = -pendulum.maxAngle;
-                    pendulum.angularSpeed = -pendulum.angularSpeed;
-                }
-            }
-        }
-        
-        function updateGame(){
-            if(!gameRunning) return;
-            
-            if(Math.abs(player.vx) > 1.5 && player.onGround) {
-                walkFrameCounter = (walkFrameCounter + 1) % (walkFrameDelay * 2);
-            } else {
-                walkFrameCounter = 0;
-            }
-            
-            let move = (input.left ? -1 : 0) + (input.right ? 1 : 0);
-            player.vx = move * player.speed;
-            player.x += player.vx;
-            if(player.x < 8) player.x = 8;
-            if(player.x + player.w > LOGIC_W - 8) player.x = LOGIC_W - player.w - 8;
-            
-            player.vy += player.gravity;
-            player.y += player.vy;
-            player.onGround = false;
-            
-            // 静态平台碰撞
-            for(let plat of currentPlat){
-                if(plat.type === 'moving') continue;
-                const platRect = {x:plat.x, y:plat.y, w:plat.w, h:plat.h};
-                const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
-                if(collide(pRect, platRect)){
-                    if(player.vy >= 0 && (player.y + player.h - plat.y <= plat.h + 8)){
-                        player.y = plat.y - player.h;
-                        player.vy = 0;
-                        player.onGround = true;
-                    }
-                    else if(player.vy < 0 && (plat.y + plat.h - player.y <= 12)){
-                        player.y = plat.y + plat.h;
-                        player.vy = 0;
-                    }
-                    else {
-                        if(player.x + player.w/2 < plat.x + plat.w/2) player.x = plat.x - player.w;
-                        else player.x = plat.x + plat.w;
-                    }
-                }
-            }
-            
-            // 移动平台碰撞
-            for(let mp of currentMovingPlatforms){
-                const platRect = {x:mp.x, y:mp.y, w:mp.w, h:mp.h};
-                const pRect = {x:player.x, y:player.y, w:player.w, h:player.h};
-                if(collide(pRect, platRect)){
-                    if(player.vy >= 0 && (player.y + player.h - mp.y <= mp.h + 8)){
-                        player.y = mp.y - player.h;
-                        player.vy = 0;
-                        player.onGround = true;
-                        player.x += mp.vx || 0;
-                    }
-                    else if(player.vy < 0 && (mp.y + mp.h - player.y <= 12)){
-                        player.y = mp.y + mp.h;
-                        player.vy = 0;
-                    }
-                    else {
-                        if(player.x + player.w/2 < mp.x + mp.w/2) player.x = mp.x - player.w;
-                        else player.x = mp.x + mp.w;
-                    }
-                }
-            }
-            
-            // 尖刺碰撞
-            for(let sp of spikes){
-                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, {x:sp.x,y:sp.y,w:sp.w,h:sp.h})){
-                    deathReset(); return;
-                }
-            }
-            
-            // 动态机关伤害判定
-            for(let h of movingHazards){
-                let hx = h.currentX !== undefined ? h.currentX : h.x;
-                let hy = h.y;
-                let hazardRect;
-                if(h.type === 'laser'){
-                    hazardRect = {x:hx, y:0, w:h.width, h:hy - 10};
-                } else if(h.type === 'flame_pillar' && h.active){
-                    hazardRect = {x:h.x - h.radius, y:h.y - h.radius*1.5, w:h.radius*2, h:h.radius*3};
-                } else continue;
-                if(hazardRect && collide({x:player.x,y:player.y,w:player.w,h:player.h}, hazardRect)){
-                    deathReset(); return;
-                }
-            }
-            
-            if(currentScene === 3) {
-                if(checkPendulumCollision({x:player.x,y:player.y,w:player.w,h:player.h})) {
-                    deathReset(); return;
-                }
-            }
-            
-            if(player.y + player.h > LOGIC_H + 50){ deathReset(); return; }
-            if(player.y < -80){ deathReset(); return; }
-            
-            if(input.jump && player.onGround){
-                player.vy = player.jumpPower;
-                player.onGround = false;
-                input.jump = false;
-            }
-            
-            for(let s of currentStars){
-                if(!s.col){
-                    const starRect = {x:s.x - s.size/2, y:s.y - s.size/2, w:s.size, h:s.size};
-                    if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, starRect)){
-                        s.col = true;
-                        score += 100;
-                        message = "⭐ +100 星辉 ⭐";
-                        msgTimer = 25;
-                    }
-                }
-            }
-            
-            if(currentScene === 0 && player.x + player.w > LOGIC_W - 20) { changeScene(1); player.x = 30; }
-            else if(currentScene === 1 && player.x + player.w > LOGIC_W - 20) { changeScene(2); player.x = 30; }
-            else if(currentScene === 2 && player.x + player.w > LOGIC_W - 20) { changeScene(3); player.x = 30; }
-            else if(currentScene === 3 && player.x + player.w > LOGIC_W - 20) { changeScene(4); }
-            
-            if(currentScene === 4 && !gameVictory && scenes[4].spaceshipZone){
-                if(collide({x:player.x,y:player.y,w:player.w,h:player.h}, scenes[4].spaceshipZone)){
-                    winGame(score); return;
-                }
-            }
-            
-            if(player.vx > 2) player.facingRight = true;
-            if(player.vx < -2) player.facingRight = false;
-            
-            updateHazards();
-            if(msgTimer > 0) msgTimer--;
-            else message = "";
-        }
-        
-        // 绘图函数（保留所有绘图逻辑）
-        function drawBeautifulPlatform(x, y, w, h, type, colorIdx) {
-            const colors = sceneColors[colorIdx];
-            if(type === 'questionBlock') {
-                const blockSize = Math.min(w, h * 1.2);
-                const offsetX = x + (w - blockSize) / 2;
-                const offsetY = y + (h - blockSize) / 2;
-                const grad = ctx.createLinearGradient(offsetX, offsetY, offsetX + blockSize, offsetY + blockSize);
-                grad.addColorStop(0, colors.primary);
-                grad.addColorStop(1, colors.secondary);
-                ctx.fillStyle = grad;
-                ctx.fillRect(offsetX, offsetY, blockSize, blockSize);
-                ctx.strokeStyle = colors.glow;
-                ctx.lineWidth = 3;
-                ctx.strokeRect(offsetX + 2, offsetY + 2, blockSize - 4, blockSize - 4);
-                ctx.font = `bold ${Math.floor(blockSize * 0.55)}px "Segoe UI"`;
-                ctx.fillStyle = "#FFFFFF";
-                ctx.shadowBlur = 4;
-                ctx.shadowColor = "#FFFFFF";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText("?", offsetX + blockSize/2, offsetY + blockSize/2);
-                ctx.shadowBlur = 0;
-                ctx.textAlign = "left";
-            } else if(type === 'rocketPad') {
-                ctx.fillStyle = "#5A6A8C";
-                ctx.fillRect(x, y, w, h);
-                ctx.fillStyle = "#8A9AC0";
-                ctx.fillRect(x + 5, y - 6, w - 10, 8);
-            } else if(type === 'moving') {
-                const grad = ctx.createLinearGradient(x, y, x, y + h);
-                grad.addColorStop(0, "#FFAA66");
-                grad.addColorStop(1, "#DD8844");
-                ctx.fillStyle = grad;
-                ctx.fillRect(x, y, w, h);
-                ctx.fillStyle = "#FFDDAA";
-                for(let i=0;i<3;i++) ctx.fillRect(x + 10 + i*25, y + 4, 8, h-8);
-            } else {
-                const grad = ctx.createLinearGradient(x, y, x, y + h);
-                grad.addColorStop(0, colors.primary);
-                grad.addColorStop(1, colors.secondary);
-                ctx.fillStyle = grad;
-                ctx.fillRect(x, y, w, h);
-                ctx.fillStyle = "#FFF8E7";
-                const dotCount = Math.floor(w / 25);
-                for(let i = 0; i < dotCount; i++) {
-                    const dotX = x + 12 + (i * 27) % (w - 20);
-                    const dotY = y + h - 8 - (i % 10);
-                    ctx.beginPath();
-                    ctx.arc(dotX, dotY, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-        }
-        
-        function drawPlatforms(){
-            const colorIdx = scenes[currentScene].colorIdx;
-            for(let plat of currentPlat){
-                drawBeautifulPlatform(plat.x, plat.y, plat.w, plat.h, plat.type, colorIdx);
-            }
-            for(let mp of currentMovingPlatforms){
-                drawBeautifulPlatform(mp.x, mp.y, mp.w, mp.h, "moving", colorIdx);
-            }
-        }
-        
-        function drawBackground(){
-            const bgKey = `bg${currentScene}`;
-            const bgImg = loadedImages[bgKey];
-            if(bgImg && bgImg.complete && bgImg.naturalWidth > 0){
-                ctx.drawImage(bgImg, 0, 0, LOGIC_W, LOGIC_H);
-            } else {
-                const g = ctx.createLinearGradient(0,0,0,LOGIC_H);
-                g.addColorStop(0,"#1a1338");g.addColorStop(0.5,"#2a1f4a");g.addColorStop(1,"#3a2a5a");
-                ctx.fillStyle=g;ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
-            }
-            for(let i=0;i<40;i++){
-                ctx.fillStyle = `rgba(255,240,200,0.1)`;
-                ctx.fillRect((i*211)%LOGIC_W, (i*97)%LOGIC_H, 2,2);
-            }
-            ctx.fillStyle = "#E8D4A8";
-            ctx.fillRect(0, 760, LOGIC_W, 50);
-        }
-        
-        function drawSpikes(){
-            for(let sp of spikes){
-                ctx.fillStyle = "#6A4A2A"; ctx.fillRect(sp.x, sp.y, sp.w, sp.h);
-                ctx.fillStyle = "#C88C54";
-                for(let i=0;i<4;i++){
-                    ctx.beginPath();
-                    ctx.moveTo(sp.x + i*(sp.w/4), sp.y);
-                    ctx.lineTo(sp.x + i*(sp.w/4) + sp.w/8, sp.y - 14);
-                    ctx.lineTo(sp.x + i*(sp.w/4) + sp.w/4, sp.y);
-                    ctx.fill();
-                }
-            }
-        }
-        
-        function drawStars(){
-            for(let s of currentStars){
-                if(!s.col){
-                    ctx.fillStyle = `rgb(${s.color[0]},${s.color[1]},${s.color[2]})`;
-                    ctx.shadowBlur = 6;
-                    ctx.beginPath();
-                    for(let i=0;i<5;i++){
-                        let ang = (i*72-36)*Math.PI/180;
-                        let x1 = s.x+Math.cos(ang)*s.size/2;
-                        let y1 = s.y+Math.sin(ang)*s.size/2;
-                        let ang2 = (i*72)*Math.PI/180;
-                        let x2 = s.x+Math.cos(ang2)*s.size/3;
-                        let y2 = s.y+Math.sin(ang2)*s.size/3;
-                        if(i===0) ctx.moveTo(x1,y1);
-                        else ctx.lineTo(x1,y1);
-                        ctx.lineTo(x2,y2);
-                    }
-                    ctx.fill();
-                }
-            }
+            ctx.beginPath(); ctx.moveTo(pendulum.centerX, pendulum.centerY); ctx.lineTo(endX, endY);
+            ctx.strokeStyle = "#FF88AA"; ctx.lineWidth = 5; ctx.shadowBlur = 10; ctx.shadowColor = "#FF4466"; ctx.stroke();
+            ctx.fillStyle = "#FF5577";
+            ctx.beginPath(); ctx.moveTo(endX - 12, endY - 8); ctx.lineTo(endX, endY + 24); ctx.lineTo(endX + 12, endY - 8); ctx.fill();
+            ctx.fillStyle = "#FFAACC"; ctx.beginPath(); ctx.arc(endX, endY - 4, 10, 0, Math.PI * 2); ctx.fill();
             ctx.shadowBlur = 0;
         }
-        
-        function drawHazards(){
-            for(let h of movingHazards){
-                if(h.type === 'laser'){
-                    ctx.fillStyle = "rgba(255,100,80,0.6)";
-                    ctx.fillRect(h.currentX,0,h.width,h.y-10);
-                    ctx.fillStyle = "rgba(255,200,100,0.8)";
-                    ctx.fillRect(h.currentX+1,0,h.width-2,h.y-10);
-                } else if(h.type === 'flame_pillar' && h.active){
-                    ctx.fillStyle = "#FF5A2A";
-                    ctx.shadowBlur=16;
-                    ctx.beginPath();
-                    ctx.ellipse(h.x, h.y - h.radius/2, h.radius, h.radius*2, 0, 0, Math.PI*2);
-                    ctx.fill();
-                    ctx.fillStyle = "#FFAA40";
-                    ctx.beginPath();
-                    ctx.ellipse(h.x, h.y - h.radius/3, h.radius-6, h.radius-6, 0, 0, Math.PI*2);
-                    ctx.fill();
-                    ctx.shadowBlur=0;
-                }
-            }
-            
-            if(currentScene === 3) {
-                const endX = pendulum.centerX + Math.sin(pendulum.angle) * pendulum.length;
-                const endY = pendulum.centerY + Math.cos(pendulum.angle) * pendulum.length;
-                ctx.beginPath();
-                ctx.moveTo(pendulum.centerX, pendulum.centerY);
-                ctx.lineTo(endX, endY);
-                ctx.strokeStyle = "#FF6688";
-                ctx.lineWidth = pendulum.lineWidth;
-                ctx.shadowBlur = 8;
-                ctx.shadowColor = "#FF3366";
-                ctx.stroke();
-                ctx.fillStyle = "#FF3366";
-                ctx.shadowBlur = 12;
-                ctx.beginPath();
-                ctx.moveTo(endX - 10, endY - 6);
-                ctx.lineTo(endX, endY + 20);
-                ctx.lineTo(endX + 10, endY - 6);
-                ctx.fill();
-                ctx.fillStyle = "#FF88AA";
-                ctx.beginPath();
-                ctx.arc(endX, endY - 3, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = "#FFFFFF";
-                ctx.beginPath();
-                ctx.arc(endX - 3, endY - 5, 3, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
+    }
+    
+    function drawPlayer() {
+        if(spaceshipFlyAnim && currentScene === 4 && gameVictory) return;
+        ctx.save();
+        ctx.translate(player.x + player.w/2, player.y + player.h/2);
+        if(player.facingRight) ctx.scale(-1, 1);
+        let imgToDraw = null;
+        const isMoving = Math.abs(player.vx) > 1.5 && player.onGround;
+        if(isMoving && walkFrame % 2 === 0 && loadedImages.playerWalk && loadedImages.playerWalk.complete) imgToDraw = loadedImages.playerWalk;
+        else if(loadedImages.playerStand && loadedImages.playerStand.complete) imgToDraw = loadedImages.playerStand;
+        if(imgToDraw) {
+            ctx.drawImage(imgToDraw, -player.w*0.7, -player.h*0.7, player.w*1.4, player.h*1.4);
+        } else {
+            ctx.fillStyle = "#FFD8A0"; ctx.fillRect(-player.w/2,-player.h/2,player.w,player.h);
+            ctx.fillStyle = "#F0A87A"; ctx.fillRect(-player.w/2+8,-player.h/2-6,player.w-16,10);
+            ctx.fillStyle = "#4A2A1A"; ctx.fillRect(-player.w/2+12,-player.h/2+12,8,8);
+            ctx.fillRect(-player.w/2+32,-player.h/2+12,8,8);
         }
-        
-        function drawRealisticSpaceship(x, y) {
-            const shipY = y + spaceshipFlyY;
-            ctx.fillStyle = "#E8E8F0";
-            ctx.beginPath();
-            ctx.moveTo(x + 60, shipY - 25);
-            ctx.lineTo(x + 95, shipY + 15);
-            ctx.lineTo(x + 85, shipY + 35);
-            ctx.lineTo(x + 60, shipY + 45);
-            ctx.lineTo(x + 35, shipY + 35);
-            ctx.lineTo(x + 25, shipY + 15);
-            ctx.fill();
-            ctx.fillStyle = "#FF5555";
-            ctx.beginPath();
-            ctx.moveTo(x + 60, shipY - 28);
-            ctx.lineTo(x + 68, shipY - 12);
-            ctx.lineTo(x + 52, shipY - 12);
-            ctx.fill();
-            ctx.fillStyle = "#88AAFF";
-            ctx.beginPath();
-            ctx.arc(x + 60, shipY + 12, 10, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = "#2266AA";
-            ctx.beginPath();
-            ctx.arc(x + 58, shipY + 10, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = "#FFFFFF";
-            ctx.beginPath();
-            ctx.arc(x + 55, shipY + 7, 2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = "#CCCCDD";
-            ctx.beginPath();
-            ctx.moveTo(x + 35, shipY + 28);
-            ctx.lineTo(x + 20, shipY + 45);
-            ctx.lineTo(x + 35, shipY + 38);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(x + 85, shipY + 28);
-            ctx.lineTo(x + 100, shipY + 45);
-            ctx.lineTo(x + 85, shipY + 38);
-            ctx.fill();
-            // 喷气特效（逐渐加速）
-            const flameSize = 12 + spaceshipSpeed * 2;
-            ctx.fillStyle = `rgba(255, ${100 - spaceshipSpeed * 20}, 68, 0.9)`;
-            ctx.beginPath();
-            ctx.moveTo(x + 48, shipY + 45);
-            ctx.lineTo(x + 60, shipY + 55 + spaceshipSpeed * 3);
-            ctx.lineTo(x + 72, shipY + 45);
-            ctx.fill();
-            ctx.fillStyle = `rgba(255, 180, 100, 0.8)`;
-            ctx.beginPath();
-            ctx.moveTo(x + 52, shipY + 48);
-            ctx.lineTo(x + 60, shipY + 52 + spaceshipSpeed * 2);
-            ctx.lineTo(x + 68, shipY + 48);
-            ctx.fill();
+        ctx.restore();
+    }
+    
+    function drawUI(){
+        if(!gameVictory) {
+            ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(LOGIC_W-170, 12, 158, 54);
+            ctx.fillStyle = "rgba(255,240,200,0.9)"; ctx.fillRect(LOGIC_W-168, 14, 154, 50);
+            const grad = ctx.createLinearGradient(LOGIC_W-168, 14, LOGIC_W-14, 64);
+            grad.addColorStop(0, "#FFD700"); grad.addColorStop(1, "#FFAA44");
+            ctx.fillStyle = grad; ctx.fillRect(LOGIC_W-166, 16, 150, 46);
+            ctx.font = "bold 34px monospace"; ctx.fillStyle = "#4A2E62";
+            ctx.fillText(`${Math.floor(score)}`, LOGIC_W-138, 56);
         }
-        
-        function drawSpaceship(){
-            if(currentScene !== 4) return;
-            const r = scenes[4].spaceshipZone;
-            if(spaceshipFlyAnim) {
-                spaceshipSpeed += spaceshipAccel;
-                spaceshipFlyY -= spaceshipSpeed;
-                if(spaceshipFlyAlpha > 0) spaceshipFlyAlpha -= 0.008;
-                ctx.globalAlpha = spaceshipFlyAlpha;
-            }
-            drawRealisticSpaceship(r.x, r.y);
-            ctx.globalAlpha = 1;
+        if(message && !gameVictory){
+            ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(LOGIC_W/2-150, LOGIC_H-48, 300, 36);
+            ctx.font = "bold 20px monospace"; ctx.fillStyle = "#FFFAD0";
+            ctx.fillText(message, LOGIC_W/2-ctx.measureText(message).width/2, LOGIC_H-28);
         }
-        
-        function drawPlayer() {
-            if(spaceshipFlyAnim && currentScene === 4 && gameVictory) return;
-            ctx.save();
-            ctx.translate(player.x + player.w/2, player.y + player.h/2);
-            if(player.facingRight) ctx.scale(-1, 1);
-            let imgToDraw = null;
-            const isMoving = Math.abs(player.vx) > 1.5 && player.onGround;
-            if(isMoving && (walkFrameCounter < walkFrameDelay)) {
-                if(loadedImages.playerWalk && loadedImages.playerWalk.complete) imgToDraw = loadedImages.playerWalk;
-                else if(loadedImages.playerStand) imgToDraw = loadedImages.playerStand;
-            } else if(!player.onGround) {
-                if(loadedImages.playerWalk && loadedImages.playerWalk.complete) imgToDraw = loadedImages.playerWalk;
-                else if(loadedImages.playerStand) imgToDraw = loadedImages.playerStand;
-            } else {
-                if(loadedImages.playerStand && loadedImages.playerStand.complete) imgToDraw = loadedImages.playerStand;
-            }
-            if(imgToDraw) {
-                ctx.drawImage(imgToDraw, -player.w*0.7, -player.h*0.7, player.w*1.4, player.h*1.4);
-            } else {
-                ctx.fillStyle = "#FFD8A0";
-                ctx.fillRect(-player.w/2,-player.h/2,player.w,player.h);
-                ctx.fillStyle = "#F0A87A";
-                ctx.fillRect(-player.w/2+8,-player.h/2-6,player.w-16,10);
-                ctx.fillStyle = "#4A2A1A";
-                ctx.fillRect(-player.w/2+12,-player.h/2+12,8,8);
-                ctx.fillRect(-player.w/2+32,-player.h/2+12,8,8);
-            }
-            ctx.restore();
+        if(!gameVictory) {
+            let q = scenes[currentScene].name;
+            ctx.font = "18px monospace"; ctx.fillStyle = "#FFF0BF";
+            ctx.fillText(q + " →", 20, LOGIC_H-20);
         }
-        
-        function drawUI(){
-            if(!gameVictory) {
-                ctx.font = "bold 32px monospace";
-                ctx.fillStyle = "#FFF2E0";
-                ctx.fillRect(LOGIC_W-160,18,148,46);
-                ctx.fillStyle = "#4A2E62";
-                ctx.fillText(`${Math.floor(score)}`, LOGIC_W-138,56);
-            }
-            if(message && !gameVictory){
-                ctx.font = "bold 18px monospace";
-                ctx.fillStyle = "#FFFAD0";
-                ctx.shadowBlur=4;
-                ctx.fillText(message, LOGIC_W/2-ctx.measureText(message).width/2, LOGIC_H-28);
-                ctx.shadowBlur=0;
-            }
-            if(!gameVictory) {
-                let q = scenes[currentScene].name;
-                ctx.font = "16px monospace";
-                ctx.fillStyle = "#FFF0BF";
-                ctx.fillText(q + " →", 20, LOGIC_H-20);
-            }
-        }
-        
-        function gameLoop(){
-            updateGame();
-            
-            const shook = applyShake();
-            drawBackground();
-            drawPlatforms();
-            drawSpikes();
-            drawStars();
-            drawHazards();
-            drawSpaceship();
-            drawPlayer();
-            drawUI();
-            if(shook) restoreShake();
-            
-            requestAnimationFrame(gameLoop);
-        }
-        
-        startBtn.addEventListener('click', () => { 
-            if(!resourcesLoaded) return;
-            playButtonClick();
-            initBackgroundMusic();
-            initButtonSound();
-            fullReset(); 
-            startOverlay.style.display = 'none'; 
-            bottomControls.style.display = 'flex';
-            gameRunning = true;
-            if(bgMusic && !musicMuted) startBackgroundMusic();
-        });
-        
-        victoryRestartBtn.addEventListener('click', () => {
-            playButtonClick();
-            fullReset();
-            victoryOverlay.style.display = 'none';
-            startOverlay.style.display = 'none';
-            bottomControls.style.display = 'flex';
-            gameRunning = true;
-            if(bgMusic && !musicMuted) startBackgroundMusic();
-        });
-        
-        initButtonSound();
-        loadAllResources();
-        reloadScene(0);
-        gameLoop();
-    })();
+    }
+    
+    function gameLoop(){
+        updateGame();
+        const shook = applyShake();
+        drawBackground();
+        drawPlatforms();
+        drawSpikes();
+        drawStars();
+        drawHazards();
+        drawSpaceship();
+        drawPlayer();
+        drawUI();
+        if(shook) restoreShake();
+        requestAnimationFrame(gameLoop);
+    }
+    
+    startBtn.addEventListener('click', () => { 
+        if(!resourcesLoaded) return;
+        playSound('button');
+        initAudio();
+        initBackgroundMusic();
+        fullReset(); 
+        startOverlay.style.display = 'none'; 
+        bottomControls.style.display = 'flex';
+        gameRunning = true;
+        if(bgMusic && !musicMuted) startBackgroundMusic();
+    });
+    
+    victoryRestartBtn.addEventListener('click', () => {
+        playSound('button');
+        fullReset();
+        victoryOverlay.style.display = 'none';
+        startOverlay.style.display = 'none';
+        bottomControls.style.display = 'flex';
+        gameRunning = true;
+        if(bgMusic && !musicMuted) startBackgroundMusic();
+    });
+    
+    loadAllResources();
+    reloadScene(0);
+    gameLoop();
+})();
 </script>
 </body>
 </html>
