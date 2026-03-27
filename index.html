@@ -356,12 +356,13 @@
         { primary: "#6A8ABA", secondary: "#7A9ACA", glow: "#9ABADA", light: "#C0E0FF" }
     ];
     
-    // 五境关卡数据
+    // ==================== 五境关卡数据（修复版） ====================
+    // 地面全部延伸到屏幕底部，不留空白
     const scenes = [
         { name:"🌙 月之森·沙滩", colorIdx:0,
             platforms: [ 
-                {x:0,y:540,w:320,h:40,type:"ground"},{x:400,y:540,w:300,h:40,type:"ground"},
-                {x:760,y:540,w:340,h:40,type:"ground"},{x:1180,y:540,w:260,h:40,type:"ground"},
+                {x:0,y:540,w:320,h:270,type:"groundFull"},{x:400,y:540,w:300,h:270,type:"groundFull"},
+                {x:760,y:540,w:340,h:270,type:"groundFull"},{x:1180,y:540,w:260,h:270,type:"groundFull"},
                 {x:110,y:460,w:60,h:60,type:"questionBlock"},{x:330,y:390,w:60,h:60,type:"questionBlock"},
                 {x:550,y:320,w:60,h:60,type:"questionBlock"},{x:810,y:250,w:60,h:60,type:"questionBlock"},
                 {x:1070,y:180,w:60,h:60,type:"questionBlock"}
@@ -372,9 +373,9 @@
             spikes: [], hazards: [], movingPlatforms: [] },
         { name:"⚔️ 尖刺回廊·沙滩", colorIdx:1,
             platforms: [ 
-                {x:0,y:540,w:240,h:40,type:"ground"},{x:320,y:540,w:220,h:40,type:"ground"},
-                {x:600,y:540,w:240,h:40,type:"ground"},{x:900,y:540,w:260,h:40,type:"ground"},
-                {x:1240,y:540,w:200,h:40,type:"ground"},
+                {x:0,y:540,w:240,h:270,type:"groundFull"},{x:320,y:540,w:220,h:270,type:"groundFull"},
+                {x:600,y:540,w:240,h:270,type:"groundFull"},{x:900,y:540,w:260,h:270,type:"groundFull"},
+                {x:1240,y:540,w:200,h:270,type:"groundFull"},
                 {x:90,y:450,w:60,h:60,type:"questionBlock"},{x:370,y:380,w:60,h:60,type:"questionBlock"},
                 {x:650,y:310,w:60,h:60,type:"questionBlock"},{x:970,y:240,w:60,h:60,type:"questionBlock"}
             ],
@@ -386,13 +387,13 @@
             hazards: [], movingPlatforms: [] },
         { name:"🔥 火焰峡谷·沙滩", colorIdx:2,
             platforms: [ 
-                {x:0,y:540,w:220,h:40,type:"ground"},{x:300,y:540,w:200,h:40,type:"ground"},
-                {x:560,y:540,w:220,h:40,type:"ground"},{x:840,y:540,w:240,h:40,type:"ground"},
-                {x:1140,y:540,w:300,h:40,type:"ground"},
+                {x:0,y:540,w:220,h:270,type:"groundFull"},{x:300,y:540,w:200,h:270,type:"groundFull"},
+                {x:560,y:540,w:220,h:270,type:"groundFull"},{x:840,y:540,w:240,h:270,type:"groundFull"},
+                {x:1140,y:540,w:300,h:270,type:"groundFull"},
                 {x:70,y:440,w:60,h:60,type:"questionBlock"},{x:330,y:370,w:60,h:60,type:"questionBlock"},
                 {x:610,y:300,w:60,h:60,type:"questionBlock"},{x:930,y:230,w:60,h:60,type:"questionBlock"},
-                // 移动平台 - 必须站上去才能跳过高处
-                {x:400,y:420,w:100,h:20,type:"moving",moveRange:140, speed:1.2, startX:400, currentX:400, vx:0}
+                // 移动平台 - 调高位置，必须站上去才能跳到下一个平台
+                {x:400,y:400,w:100,h:20,type:"moving",moveRange:140, speed:1.2, startX:400, currentX:400, vx:0}
             ],
             stars: [{x:125,y:400,size:14,col:false,color:[255,220,140]},{x:385,y:330,size:14,col:false,color:[255,200,190]},
                      {x:665,y:260,size:14,col:false,color:[210,210,255]},{x:985,y:190,size:14,col:false,color:[255,220,120]}],
@@ -400,15 +401,16 @@
             hazards: [{x:280,y:440,interval:100,radius:28,type:"flame_pillar",active:false,timer:0},
                       {x:600,y:350,interval:110,radius:28,type:"flame_pillar",active:false,timer:0},
                       {x:920,y:260,interval:95,radius:28,type:"flame_pillar",active:false,timer:0}],
-            movingPlatforms: [{x:400,y:420,w:100,h:20,range:140, speed:1.2, startX:400, currentX:400, dir:1}] },
+            movingPlatforms: [{x:400,y:400,w:100,h:20,range:140, speed:1.2, startX:400, currentX:400, dir:1}] },
         { name:"🌀 时空回廊·钟摆", colorIdx:3,
             platforms: [ 
-                {x:0,y:540,w:200,h:40,type:"ground"},{x:280,y:540,w:180,h:40,type:"ground"},
-                {x:520,y:540,w:200,h:40,type:"ground"},{x:780,y:540,w:220,h:40,type:"ground"},
-                {x:1060,y:540,w:380,h:40,type:"ground"},
+                {x:0,y:540,w:200,h:270,type:"groundFull"},{x:280,y:540,w:180,h:270,type:"groundFull"},
+                {x:520,y:540,w:200,h:270,type:"groundFull"},{x:780,y:540,w:220,h:270,type:"groundFull"},
+                {x:1060,y:540,w:380,h:270,type:"groundFull"},
+                // 问号块（不重叠）
                 {x:250,y:430,w:60,h:60,type:"questionBlock"},{x:510,y:360,w:60,h:60,type:"questionBlock"},
                 {x:770,y:290,w:60,h:60,type:"questionBlock"},{x:1030,y:220,w:60,h:60,type:"questionBlock"},
-                // 绕行平台
+                // 绕行平台（不重叠）
                 {x:180,y:470,w:80,h:20,type:"ground"},{x:280,y:470,w:80,h:20,type:"ground"},
                 {x:1000,y:470,w:80,h:20,type:"ground"},{x:1100,y:470,w:80,h:20,type:"ground"},
                 {x:600,y:500,w:240,h:20,type:"ground"}
@@ -421,7 +423,7 @@
             hazards: [], movingPlatforms: [], hasPendulum: true },
         { name:"🚀 飞船码头·沙滩", colorIdx:4,
             platforms: [ 
-                {x:0,y:540,w:1440,h:40,type:"ground"},
+                {x:0,y:540,w:1440,h:270,type:"groundFull"},
                 {x:100,y:460,w:140,h:30,type:"ground"},{x:340,y:400,w:120,h:26,type:"questionBlock"},
                 {x:580,y:460,w:160,h:30,type:"ground"},{x:820,y:400,w:140,h:30,type:"ground"},
                 {x:1120,y:340,w:160,h:30,type:"rocketPad"}
@@ -499,7 +501,6 @@
         flamePulse = (flamePulse + 0.22) % (Math.PI * 2);
         const shipY = y + spaceshipFlyY;
         
-        // 主体
         ctx.fillStyle = "#E8E8F0";
         ctx.shadowBlur = 8;
         ctx.shadowColor = "#88AAFF";
@@ -512,7 +513,6 @@
         ctx.lineTo(x + 22, shipY + 12);
         ctx.fill();
         
-        // 红色鼻锥
         ctx.fillStyle = "#FF5555";
         ctx.beginPath();
         ctx.moveTo(x + 60, shipY - 32);
@@ -520,7 +520,6 @@
         ctx.lineTo(x + 50, shipY - 12);
         ctx.fill();
         
-        // 驾驶舱
         ctx.fillStyle = "#88AAFF";
         ctx.beginPath();
         ctx.arc(x + 60, shipY + 10, 12, 0, Math.PI * 2);
@@ -534,7 +533,6 @@
         ctx.arc(x + 55, shipY + 5, 2.5, 0, Math.PI * 2);
         ctx.fill();
         
-        // 侧翼
         ctx.fillStyle = "#CCCCDD";
         ctx.beginPath();
         ctx.moveTo(x + 32, shipY + 28);
@@ -547,11 +545,9 @@
         ctx.lineTo(x + 88, shipY + 40);
         ctx.fill();
         
-        // 多级火焰特效
         const speedFactor = Math.min(1, spaceshipSpeed / 14);
         const pulseSize = Math.sin(flamePulse) * 4;
         
-        // 第一级火焰（内层亮白）
         ctx.fillStyle = `rgba(255, 240, 120, ${0.9 + speedFactor * 0.6})`;
         ctx.beginPath();
         ctx.moveTo(x + 52, shipY + 44);
@@ -559,7 +555,6 @@
         ctx.lineTo(x + 68, shipY + 44);
         ctx.fill();
         
-        // 第二级火焰（中层橙色）
         ctx.fillStyle = `rgba(255, 140, 60, ${0.95 + speedFactor * 0.7})`;
         ctx.beginPath();
         ctx.moveTo(x + 48, shipY + 42);
@@ -567,7 +562,6 @@
         ctx.lineTo(x + 72, shipY + 42);
         ctx.fill();
         
-        // 第三级火焰（外层红色拖尾）
         ctx.fillStyle = `rgba(255, 70, 40, ${0.85 + speedFactor * 0.8})`;
         ctx.beginPath();
         ctx.moveTo(x + 44, shipY + 40);
@@ -575,7 +569,6 @@
         ctx.lineTo(x + 76, shipY + 40);
         ctx.fill();
         
-        // 尾气粒子拖影
         if(spaceshipSpeed > 4) {
             const particleCount = Math.min(8, Math.floor(spaceshipSpeed / 2.5));
             for(let i = 0; i < particleCount; i++) {
@@ -678,7 +671,6 @@
     }
     
     function deathReset(){ triggerShake('death', 16); fullReset(); }
-    
     function updateGame(){
         if(!gameRunning) return;
         
@@ -835,6 +827,26 @@
             ctx.fillStyle = grad; ctx.fillRect(x, y, w, h);
             ctx.fillStyle = "#FFDDAA"; ctx.fillRect(x + 5, y + 3, w - 10, 4);
             ctx.fillStyle = "#FFAA66"; ctx.fillRect(x + 5, y + h - 6, w - 10, 3);
+        } else if(type === 'groundFull') {
+            // 延伸到屏幕底部的完整地面
+            const groundHeight = LOGIC_H - y;
+            const grad = ctx.createLinearGradient(x, y, x, y + groundHeight);
+            grad.addColorStop(0, colors.primary);
+            grad.addColorStop(0.3, colors.secondary);
+            grad.addColorStop(1, "#C8AC7A");
+            ctx.fillStyle = grad;
+            ctx.fillRect(x, y, w, groundHeight);
+            // 顶部装饰线
+            ctx.fillStyle = colors.light;
+            ctx.fillRect(x, y, w, 4);
+            // 白色装饰点（只在上半部分）
+            ctx.fillStyle = "#FFF8E7";
+            const dotCount = Math.floor(w / 22);
+            for(let i = 0; i < dotCount; i++) {
+                const dotX = x + 10 + (i * 26) % (w - 20);
+                const dotY = y + 12 + (i % 15);
+                ctx.beginPath(); ctx.arc(dotX, dotY, 2, 0, Math.PI * 2); ctx.fill();
+            }
         } else {
             const grad = ctx.createLinearGradient(x, y, x, y + h);
             grad.addColorStop(0, colors.primary); grad.addColorStop(1, colors.secondary);
@@ -870,17 +882,6 @@
             ctx.fillStyle=g; ctx.fillRect(0,0,LOGIC_W,LOGIC_H);
         }
         drawStarField();
-        // 底部沙滩完全填满
-        ctx.fillStyle = "#E8D4A8";
-        ctx.fillRect(0, LOGIC_H - 55, LOGIC_W, 55);
-        ctx.fillStyle = "#D4BC7A";
-        ctx.fillRect(0, LOGIC_H - 25, LOGIC_W, 25);
-        for(let i=0;i<LOGIC_W/30;i++){
-            ctx.fillStyle = "#FFF2CC";
-            ctx.beginPath();
-            ctx.arc(15 + i*35, LOGIC_H - 12, 3, 0, Math.PI*2);
-            ctx.fill();
-        }
     }
     
     function drawSpikes(){
@@ -954,11 +955,9 @@
         if(spaceshipFlyAnim && currentScene === 4) return;
         ctx.save();
         ctx.translate(player.x + player.w/2, player.y + player.h/2);
-        // 默认图片朝左，需要翻转时用scale
         if(player.facingRight) ctx.scale(-1, 1);
         let imgToDraw = null;
         const isWalking = (input.left || input.right) && player.onGround;
-        // 行走时循环播放行走图，站立时用站立图
         if(isWalking && loadedImages.playerWalk && loadedImages.playerWalk.complete) {
             imgToDraw = loadedImages.playerWalk;
         } else if(loadedImages.playerStand && loadedImages.playerStand.complete) {
